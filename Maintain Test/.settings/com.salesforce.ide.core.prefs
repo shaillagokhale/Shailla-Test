@@ -1,0 +1,14 @@
+eclipse.preferences.version=1
+endpointApiVersion=34.0
+endpointEnvironment=Sandbox
+endpointServer=test.salesforce.com
+httpsProtocol=true
+ideVersion=34.0
+keependpoint=false
+metadataFormatVersion=34.0
+namespacePrefix=
+packageName=unpackaged
+preferToolingDeployment=true
+projectIdentifier=IDE-4801541777550195476
+readTimeout=600
+username=shaila.gokhale@theglobalfund.org.maintain
