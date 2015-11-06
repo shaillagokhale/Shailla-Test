@@ -1,10 +1,3 @@
-/*
-    *@author       TCS Developer
-    *@date         17/02/2014 
-    *@description  This class is used to approve the Account (PR)
-    *@Used for     AccountApprovalController
-*/
-
 public without sharing class AccountApprovalController {
     
     public List<Account_Approval__c> lstAccountApprovals {get;set;}
@@ -15,12 +8,9 @@ public without sharing class AccountApprovalController {
     public Contact grantAgreement {get;set;}
     public Contact disbursementRequest1 {get;set;}
     public Contact disbursementRequest2 {get;set;}
-    //Added by Zak Kaufman 2014-8-12 so that primary contacts who are not one of the authorized can be displayed
-    public list<Contact> primarycontact {get;set;}
-    Public list<Contact> lstPrimaryContact {get;set;}
     public Contact contactCCMChair {get;set;}
     public Contact contactCCMCivilSociety {get;set;}
-	//test
+
     public Boolean FO {get;set;}
     public Id accountId;
     public Account acc {get;set;}
@@ -37,12 +27,11 @@ public without sharing class AccountApprovalController {
         grantAgreement = new Contact();
         disbursementRequest1 = new Contact();
         disbursementRequest2 = new Contact();
-        primarycontact = new List<Contact>();
         contactCCMChair = new Contact();
-        contactCCMCivilSociety = new Contact();        
+        contactCCMCivilSociety = new Contact();
         
         accountId = ApexPages.currentPage().getParameters().get('accId');
-        lstAccountApprovals = [Select Id, Status__c, Assigned_To__c, Comments__c from Account_Approval__c 
+           lstAccountApprovals = [Select Id, Status__c, Assigned_To__c, Comments__c from Account_Approval__c 
                               where Account__c = :accountId AND Status__c = 'Pending'];
         if(lstAccountApprovals.size() > 0) {
             currentApprovalRequest = lstAccountApprovals[0]; }
@@ -65,15 +54,8 @@ public without sharing class AccountApprovalController {
               PR_Fiscal_Cycle__c,
               Ethics_COI_Code_of_Conduct__c,
               Submitted_GIP_Id__c,
-              Locked__c,Grantee_Name__c,
-              Address_line_1_Primary__c,
-              Address_line_2_Primary__c,
-              Address_line_3_Primary__c,
-              City_Primary__c,
-              State_Province_Primary__c,           
-              Zip_Postal_Code_Primary__c,
-              Country_Mailing_Address_Primary__c              
-                
+              Locked__c
+  
               from Account where Id = :accountId];
         
         if(acc.Submitted_GIP_Id__c != null) getGIP(acc.Submitted_GIP_Id__c);      
@@ -90,7 +72,9 @@ public without sharing class AccountApprovalController {
            UserInfo.getUserId() == currentApprovalRequest.Assigned_To__c ) {
           FO = true;  }
         else { 
-          FO = false; }        
+          FO = false; }
+        
+
         return null;
     }
     
@@ -105,11 +89,6 @@ public without sharing class AccountApprovalController {
     }
     
     Public void getGIP(String gipId){
-        Boolean GAisprimary = false;
-        Boolean DR1isprimary = false;
-        Boolean DR2isprimary = false;
-        
-        system.debug('enter into method'+gipId);
         List<Implementation_Period__c> lstGIP = [Select Auth_Sig_for_Grant_Agreement__c, Auth_Sig_for_Disbursement_Request_1__c, 
                                                 Auth_Sig_for_Disbursement_Request_2__c, CCM_Chair__c, CCM_Civil_Society_Representative__c
                                                 from Implementation_Period__c where Id = :gipId];
@@ -117,36 +96,19 @@ public without sharing class AccountApprovalController {
         
         if(implementationPeriod.Auth_Sig_for_Grant_Agreement__c != null)
            grantAgreement = getContactById(implementationPeriod.Auth_Sig_for_Grant_Agreement__c);
-           if(grantAgreement.Primary_Contact__c == TRUE) GAisprimary = TRUE;
         if(implementationPeriod.Auth_Sig_for_Disbursement_Request_1__c != null)
            disbursementRequest1 = getContactById(implementationPeriod.Auth_Sig_for_Disbursement_Request_1__c);
-           if(disbursementRequest1.Primary_Contact__c == TRUE) DR1isprimary = TRUE;
         if(implementationPeriod.Auth_Sig_for_Disbursement_Request_2__c != null)
            disbursementRequest2 = getContactById(implementationPeriod.Auth_Sig_for_Disbursement_Request_2__c);
-           if(disbursementRequest2.Primary_Contact__c == TRUE) DR2isprimary = TRUE;
-       // if(GAisprimary == false && DR1isprimary == false && DR2isprimary == false){
-            List<Contact> lstPrimaryContact = [Select Id,Primary_Contact__c  from Contact where AccountId =: accountId AND Role__c IN ('Other','Focal point')];
-            system.debug(lstPrimaryContact+' ----------');
-            if(lstPrimaryContact.size() >0){
-                for(Contact objContact: lstPrimaryContact){
-                    if(objContact.Primary_Contact__c == true){
-                        primarycontact.add(getContactById(objContact.Id));
-                    }else{
-                        primarycontact.add(getContactById(objContact.Id));
-                    }if(primarycontact.size() == 4)
-                        break;
-                }
-                
-                
-            }
-            system.debug('-----------'+primarycontact.size());
-      //  }
+        
         if(implementationPeriod.CCM_Chair__c != null)
            contactCCMChair = getContactById(implementationPeriod.CCM_Chair__c);
         if(implementationPeriod.CCM_Civil_Society_Representative__c != null)
            contactCCMCivilSociety = getContactById(implementationPeriod.CCM_Civil_Society_Representative__c);
+
     }
-        
+    
+    
     public Contact getContactById(String contactId){
         Contact con = new Contact();
         List<Contact> lstContacts = [Select Id, FirstName, LastName, Salutation, Title, Primary_Contact__c,
