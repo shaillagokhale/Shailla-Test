@@ -1,0 +1,1077 @@
+<apex:page standardController="Page__c" extensions="ModulesAndInterventions" showHeader="true" sidebar="false" id="page"> 
+
+    <apex:stylesheet value="{!URLFOR($Resource.GoalsJs, 'assets/css/bootstrap.css')}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.GoalsJs, 'assets/css/bootstrap-responsive.css')}"/>
+    <apex:includeScript value="{!$Resource.jquery142}" />
+      <style> 
+        .left{
+            width:100px !important;
+        }
+        /* To push content below navbar */
+        @media (min-width: 980px) {
+        body {
+            margin-top: 41px;
+        }
+
+        }
+        .span9 {
+            display: -moz-grid-line;
+            width: 94%;
+        }
+        h6{
+        font-size:14px;
+        }
+        a.brand > a > img {
+            height:40px;
+        }
+        .summary {
+        border: 1px solid black;
+            padding:10px;
+        }
+        div.active{
+            background-color: #D1D1D1;
+        }
+        .add_indicator {
+            margin: 30px;
+            padding:40px;
+            border: 1px solid #CCC;
+        }
+        
+        .indicator{
+            border:1px solid #CCC;
+            padding:10px;
+            margin-bottom:10px;
+        }
+        
+        .baseline {
+            width: 350px;
+            display: inline-block;
+            margin-right:20px;
+        }
+        
+        .target {
+            width: 350px;
+            display: inline-block;
+        }
+        .popupButtonYes{
+            background-color: #49C739 !important;
+            background-image: none !important;
+            color: white !important;
+            font-size: 12.9pt !important;
+            font-weight: bold !important;
+            height: 30px !important;;
+            width: 90px !important;;
+        }
+        .popupButtonCancel{
+            background-color: #d82516 !important;
+            background-image: none !important;
+            color: white !important;
+            font-size: 12.9pt !important;
+            font-weight: bold !important;
+            height: 30px !important;;
+            width: 90px !important;;
+        }
+        .blankCell{
+            width:5px;
+        }
+        .custPopup{
+            background-color: #ededed;
+            border-width: 0px;
+            border-radius:20px;
+            border-style: solid;
+            z-index: 9999;
+            left: 40%;
+            padding:10px;
+            position: absolute;
+            margin-top:-60px;
+            //top:50%;
+            width:300px;
+            //height:130px;
+        }
+        .custPopuptwo{
+            background-color: #ededed;
+            border-width: 0px;
+            border-radius:20px;
+            border-style: solid;
+            z-index: 9999;
+            left: 40%;
+            padding:10px;
+            position: absolute;
+            margin-top:-60px;
+            //top:50%;
+            width:600px;
+            //height:130px;
+        }
+        .popupBackground{
+            background-color:black;
+            opacity: 0.50;
+            filter: alpha(opacity = 20);
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            z-index: 9998;
+            top: 0;
+            left: 0;
+        }
+        .grey{
+        background-color:#F1F1F1;
+        }
+        .margin20{
+            margin-left:1%;
+            margin-bottom:16px;
+            margin-top:16px;
+            width:60%;
+        }            
+        .h3{
+            font-size:24px;
+            margin-left:1%;
+            margin-top:16px;
+            font-weight:bold;
+        }
+        .h4{
+            font-size:18px;
+            margin-bottom:16px;
+            margin-top:16px;
+            font-weight:bold;
+        }
+        .link{
+            color:#2E7BBB;
+        }
+        .help{
+            font-size:18px;
+            font-weight:bold;
+            line-height:1.5;
+        }
+        .container, .navbar-static-top .container, .navbar-fixed-top .container, .navbar-fixed-bottom .container {
+            display: inline-block;
+            margin-left: 1% !important;
+            margin-right: 1% !important;
+            width: 97%;
+        }
+        .10right{
+            margin-right:10px;
+        }
+        .containerTGF{
+            display: inline-block;
+            margin-left:1%;
+            margin-right:1%;
+            width: 97%;
+        }
+        .webkitright {
+            text-align: right;
+            white-space: nowrap;
+        };
+        .webkitleft1 {
+            height: 69px !important;
+            width: 220px !important;
+        };
+        .headerSearchContainer {
+            margin-top: -20px !important;
+        }    
+        .phHeaderCustomLogo .headerSearchLeftRoundedCorner {
+            margin-top: -20px !important;
+        } 
+        .deletePopup{
+            background-color: #EDEDED !important;
+            border-top: 0px !important;
+            text-align:center !important;
+        }
+         .popupButtonCancel{
+            background-color: #d82516 !important;
+            background-image: none !important;
+            color: white !important;
+            font-size: 12.9pt !important;
+            font-weight: bold !important;
+            height: 30px !important;;
+            width: 90px !important;;
+        }
+        .popupButtonYes{
+            background-color: #49C739 !important;
+            background-image: none !important;
+            color: white !important;
+            font-size: 12.9pt !important;
+            font-weight: bold !important;
+            height: 30px !important;;
+            width: 90px !important;;
+        }
+        .custPopupDelete{
+            background-color: #ededed;
+            border-width: 0px;
+            border-radius:10px;
+            border-style: solid;
+            z-index: 9999;
+            margin-top:35px;
+            padding:10px;
+            position: absolute;
+            width:30%;
+        }
+        .popupBackgroundPR{
+            background-color:black;
+            opacity: 0.50;
+            filter: alpha(opacity = 20);
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            z-index: 9998;
+            top: 0;
+            left: 0;
+        }
+    </style>
+    
+    <!--<apex:includeScript value="{!$Resource.GoalsJs/assets/js/bootstrap.js}" />-->
+    <apex:includeScript value="{URLFOR(!$Resource.GoalsJs, 'assets/js/bootstrap.js')}" />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js">
+    
+    </script>
+    <!--<script src="assets/js/bootstrap.js">
+    </script>-->
+    <script>
+      $(document).ready(function () {
+          $('label.tree-toggler').click(function () {
+              $(this).parent().children('ul.tree').toggle(300);
+          });
+      });
+      
+    function toggleChildDisplay(index, link, behavior) {
+        var childDiv = document.getElementById('childSection' + index);
+        //link = link.substring(0, link.lastIndexOf(':'));
+        if(behavior == 'expand') {
+            if(childDiv != null) {
+                childDiv.style.display = 'block' ;
+                // show collapse image and hide expand
+                //document.getElementById(link + ':minusCommandLink').style.display = '';
+                document.getElementById('minusCommandLink'+ index).style.display = '';
+                document.getElementById('plusCommandLink'+ index).style.display = 'none';
+                //document.getElementById(link + ':plusCommandLink').style.display = 'none';
+                
+                // set the value to inputHidden
+                //document.getElementById(link + ':showDetail').value = true ;
+                document.getElementById(link).value = true ;
+            }
+        } else {
+            if(childDiv != null) {
+                childDiv.style.display = 'none' ;
+                // show expand image and hide collapse
+                //document.getElementById(link + ':plusCommandLink').style.display = '';
+                document.getElementById('plusCommandLink'+ index).style.display = '';
+                document.getElementById('minusCommandLink'+ index).style.display = 'none';
+                //document.getElementById(link + ':minusCommandLink').style.display = 'none';
+                
+                // set the value to inputHidden
+                //document.getElementById(link + ':showDetail').value = false ;
+                document.getElementById(link).value = false ;
+            }
+        }
+    }
+    function InputInterventionName(optCI,inpCI,EditImage,SaveImage,CancelImage,Indentifier){
+        if(Indentifier == 'Edit'){
+            document.getElementById(optCI).style.display = 'none';
+            document.getElementById(inpCI).style.display = '';
+            document.getElementById(EditImage).style.display = 'none';
+            document.getElementById(SaveImage).style.display = '';
+            document.getElementById(CancelImage).style.display = '';
+        }else if(Indentifier == 'Cancel'){
+            document.getElementById(optCI).style.display = '';
+            if(document.getElementById(inpCI).value == ''){
+                document.getElementById(optCI).innerHTML = 'Other';
+            }
+            document.getElementById(inpCI).style.display = 'none';
+            document.getElementById(EditImage).style.display = '';
+            document.getElementById(SaveImage).style.display = 'none';
+            document.getElementById(CancelImage).style.display = 'none';
+        }
+        return false;
+    }
+    function SaveNameOnEnter(e,saveClick){
+        if(e.keyCode == 13){
+            document.getElementById(saveClick).click();
+        }
+    }
+    </script>
+    <script>
+      $(document).ready(function () {
+          $('label.tree-toggler').click(function () {
+              $(this).parent().children('ul.tree').toggle(300);
+          });
+          
+           if ( $.browser.webkit ) {
+            $("#phHeaderLogoImage").parents("table").find("td").eq(2).removeClass("right").addClass("webkitright");  
+            $("#phHeaderLogoImage").parents("table").find("td").eq(0).removeClass("left").addClass("webkitleft1");           
+           };
+      });
+    </script>
+    <div class="h3">
+        {!$Label.Modules_and_Interventions} 
+    <div class="pull-right" style="margin-right:1%">
+        <img src="/img/func_icons/util/info16.png" style="margin-right:3px;"/>
+        <!-- TCS 11/09/2014 Replace if condition of value attribute of outputLink from if(CONTAINS($Profile.Name,'PR')||CONTAINS($Profile.Name,'LFA')||CONTAINS($Profile.Name,'CM')||CONTAINS($Profile.Name,'CCM') -->
+        <apex:outputLink styleClass="link help" style="display: inline-block;" target="_blank" value="{!if(blnExternalPro=true,'/GM','')}/apex/CN_Guidance_New?id={!Page__c.Guidance__c}&lang={!strLanguage}">{!$Label.See_Help}</apex:outputLink>
+    </div>
+    </div>
+    <div class="margin20">
+    <div id="Infopanel" class="alert alert-info">                        
+        <button type="button" class="close" data-dismiss="alert" onclick="closePanel();">
+             ×
+        </button>
+        <b>
+          {!$Label.Modules_Interventions_Instructions}.
+        </b>
+    </div>
+    <c:CNbreadcrumb recordId="{!Page__c.Id}"/>    
+    <chatter:feedWithFollowers id="chatterFeed" entityId="{!Page__c.Id}"/>
+    </div>
+
+    <apex:form id="frm"> 
+    
+        <apex:actionFunction name="jsDeleteModule" action="{!DeleteModule}" reRender="frm" status="Processing" >
+            <apex:param name="deleteModuleIndex" value="" />
+        </apex:actionFunction>         
+    <div class="containerTGF">                     
+        <div class="row">
+        <table width="100%">
+            <tr>
+              <td width="20%" valign="top" align="left">
+                <!--START SIDEBAR-->          
+                <c:Sidebar RecordId="{!Page__c.Id}"/>
+                <!--END SIDEBAR, START MAIN SECTION-->
+              </td>
+              <td valign="top" align="left">
+                 <div class="span9">
+                 <apex:outputPanel id="ModulesPanel">
+                    <apex:actionFunction name="actSaveGrantIntervention" action="{!SaveGrantIntervention}" reRender="frm" status="Processing">
+                        <apex:param value="" name="ChildSaveIndex" id="ChildSaveIndex" />
+                        <apex:param value="" name="SaveIndex" id="SaveIndex"/>
+                    </apex:actionFunction>
+                    <apex:actionFunction name="actEditImplementationPeriod" action="{!EditImplementationPeriod}" reRender="frm" status="Processing">
+                        <apex:param name="ModuleIndex" id="ModuleIndex" value=""/>
+                        <apex:param name="interventionIndex" id="interventionIndex" value=""/>
+                        <apex:param name="PRIndex" id="PRIndex" value=""/>
+                    </apex:actionFunction>
+                    <apex:actionFunction name="actCancelImplementationPeriod" action="{!CancelImplementationPeriod}" reRender="frm" status="Processing">
+                        <apex:param name="ModuleIndex" id="ModuleIndex1" value=""/>
+                        <apex:param name="interventionIndex" id="interventionIndex1" value=""/>
+                        <apex:param name="PRIndex" id="PRIndex1" value=""/>
+                    </apex:actionFunction>
+                    <apex:actionFunction name="actSaveImplementationPeriod" action="{!SaveImplementationPeriod}" reRender="frm" status="Processing">
+                        <apex:param name="ModuleIndex" id="ModuleIndex2" value=""/>
+                        <apex:param name="interventionIndex" id="interventionIndex2" value=""/>
+                        <apex:param name="PRIndex" id="PRIndex2" value=""/>
+                    </apex:actionFunction>
+                    <apex:actionFunction name="actSaveCustomIntName" action="{!SaveCustomIntName}" reRender="frm" status="Processing">
+                        <apex:param name="ModuleIndex" id="ModuleIndex3" value=""/>
+                        <apex:param name="interventionIndex" id="interventionIndex3" value=""/>
+                    </apex:actionFunction>
+                    
+                    <div style="margin-bottom:16px;margin-top:16px;">                    
+                        <span class="h3">
+                           {!$Label.Modules_text}
+                        </span>
+                     </div>
+                     <span>
+                         <apex:outputtext style="font-size:14px;margin-bottom:6px;" value="{!$Label.Expand_Module}."/>
+                     </span>
+                     <table class="table" width="100%" cellspacing="0" cellpadding="0" border="0">
+                        <tbody>
+                            <apex:variable var="Count" value="{!1}"/>
+                            <apex:repeat value="{!lstModules}" var="Modules">
+                                <tr>
+                                    <td width="5%" class="grey">                                        
+                                        <apex:inputHidden id="showDetail" value="{!Modules.showChildDetails}" />
+                                        <i class="icon-plus pull-right" id="plusCommandLink{!Count}" onclick="toggleChildDisplay('{!Count}', '{!$Component.showDetail}', 'expand');" style="display:{!if(Modules.showChildDetails == true,'none','')}" ></i>
+                                        <i class="icon-minus pull-right" id="minusCommandLink{!Count}" onclick="toggleChildDisplay('{!Count}', '{!$Component.showDetail}', 'collapse');" style="display:{!if(Modules.showChildDetails == true,'','none')}" > </i>
+                                    </td>
+                                    <td width="5%" class="grey">
+                                        <span class="badge badge-inverse">{!Count}</span>
+                                    </td>
+                                    <td class="grey" colspan="2">
+                                        <h6><b>
+                                            <apex:outputText value="{!Modules.ModuleDescription}" style="display:{!if(Modules.blnDisplay == true,'','none')}"/>
+                                        </b></h6>
+                                        <!--<apex:inputTextarea value="{!Modules.ModuleDescription}" style="height: 20px; width: 300px;display:{!if(Modules.blnDisplay == true,'none','')}"/>-->                                  
+                                    </td>
+                                 
+                                             <td class="grey" style="padding-right:10px;text-align:right;">
+                                                                                                             
+                                        <apex:commandLink styleClass="TGFbtn TGFbtn-mini TGFbtn-success 10right" style="display:{!if((Modules.blnDisplay == true && Modules.isCustomRow == true && blnEditModule),'','none')}" reRender="frm" action="{!EditModule}"  status="Processing">
+                                            <i class="icon-edit icon-white"></i>
+                                            <strong>{!$Label.Edit}</strong>
+                                            <apex:param value="{!Count-1}" name="EditIndex" />
+                                        </apex:commandLink>
+                                        
+                                        <apex:commandLink styleClass="TGFbtn TGFbtn-mini TGFbtn-success 10right" style="text-align: left;margin-right:10px;display:{!if((Modules.blnDisplay == false && Modules.isCustomRow == true),'','none')}" action="{!SaveModule}" reRender="frm" status="Processing">
+                                            <i class="icon-edit icon-white"></i> 
+                                            <strong>{!$Label.Save}</strong>
+                                            <apex:param value="{!Count-1}" name="SaveIndex" />
+                                        </apex:commandLink>                                       
+                                        <!-- TCS 11/09/2014 Replaced blnReadonly from blnDeleteModule in diplay condition-->
+                                        <apex:commandLink styleClass="TGFbtn TGFbtn-mini TGFbtn-danger" style="text-align: left;margin-right:10px;display:{!if(AND(Modules.blnDisplay == true,blnDeleteModule),'','none')}" 
+                                                onclick="return OpenPopup('{!$Component.tstpopup}');">
+                                                <!-- action="{!ConfirmDeleteModule}" reRender="tstpopup" oncomplete="OpenPopup('{!$Component.tstpopup}');" status="Processing">-->
+                                            <i class="icon-trash icon-white"></i> 
+                                            <strong>{!$Label.Delete}</strong>
+                                            <!--<apex:param value="{!Count-1}" name="DeleteIndex" />-->
+                                        </apex:commandLink>
+                                                                                                                   
+                                        <apex:commandLink styleClass="TGFbtn TGFbtn-mini TGFbtn-danger" style="text-align: left;display:{!if((Modules.blnDisplay == false && Modules.isCustomRow == true),'','none')}" action="{!CancelModule}" reRender="frm" status="Processing">
+                                            <i class="icon-trash icon-white"></i> 
+                                            <strong>{!$Label.Cancel}</strong>
+                                            <apex:param value="{!Count-1}" name="CancelIndex" />
+                                        </apex:commandLink>
+                                        
+                                        <apex:outputPanel id="tstpopup" style="display:none;">
+                                           <apex:outputPanel id="popupBackground" styleClass="popupBackground"/>
+                                           <apex:outputPanel id="custPopup" styleClass="custPopup" >
+                                               <table width="100%" cellspacing="0" cellpadding="0" border="0" >
+                                                    <tr>
+                                                       <td colspan="4" class="deletePopup" align="center" style="padding:0px !important; text-align:center !important;border-top:0px !important;">
+                                                           <apex:outputtext style="color:#6590c4; font-size: 13.9pt;font-weight: bold;" value="{!$Label.Are_you_sure}"/>
+                                                       </td>
+                                                    </tr>
+                                              
+                                                    <tr>                  
+                                                        <td colspan="10" class="deletePopup" align="center" style="padding:0px !important;text-align:center !important;border-top:0px !important;">
+                                                        <br></br>
+                                                           <apex:outputtext style="color:#6590c4; font-size: 13.9pt;font-weight: bold;" value="{!$Label.Delete_Module_Alert}."/>
+                                                        </td>
+                                                    </tr>
+                                                    
+                                                    <tr>
+                                                        <td width="47%" class="deletePopup" align="right" style="padding:0px !important;text-align:right !important;border-top:0px !important;">
+                                                        <br></br>
+                                                           <apex:commandButton styleClass="popupButtonYes" value="{!$Label.Yes}" action="{!DeleteModule}" reRender="frm" status="Processing">
+                                                               <apex:param value="{!Count-1}" name="deleteModuleIndex" />
+                                                           </apex:commandButton>
+                                                        </td>
+                                                        <td width="6%" class="deletePopup" style="padding:0px !important;text-align:center !important;border-top:0px !important;"></td>
+                                                        <td width="47%" align="left" class="deletePopupCancel" style="padding:0px !important;text-align:left !important;border-top:0px !important;">
+                                                        <br></br>
+                                                           <apex:commandButton styleClass="popupButtonCancel" value="{!$Label.Cancel}" onclick="return ClosePopup('{!$Component.tstpopup}');"/>
+                                                        </td>
+                                                    </tr>
+                                                </table>
+                                            </apex:outputPanel>
+                                        </apex:outputPanel>
+                                     </td>
+                                </tr>
+                               
+                                <tr>
+                                    <td colspan="5">
+                                        <div id="childSection{!Count}" style="display:{!if(Modules.showChildDetails == true,'','none')}">
+                                        
+                                        <table width="100%">
+                                            <apex:variable var="innerCount" value="{!1}"/>
+                                            <apex:repeat value="{!Modules.childInterventions}" var="intervention" >
+                                            <tr>
+                                                <td colspan="1" width="50%">
+                                                    <apex:outputText value="{!intervention.intdescription}" style="padding-left:20px;display:{!if(intervention.blnIndicatorDisplay == true,if(intervention.objIntervention.Standard_or_Custom__c != 'Custom','','none'),'none')}"/>
+                                                    <apex:outputText id="optCIName" value="{!IF(strCNLanguage == 'FRENCH', intervention.objIntervention.Custom_Intervention_Name_French__c, IF(strCNLanguage == 'RUSSIAN', intervention.objIntervention.Custom_Intervention_Name_Russian__c, IF(strCNLanguage == 'SPANISH', intervention.objIntervention.Custom_Intervention_Name_Spanish__c, intervention.objIntervention.Custom_Intervention_Name__c)))}" style="padding-left:20px;display:{!if(intervention.blnIndicatorDisplay == true,if(intervention.objIntervention.Standard_or_Custom__c == 'Custom','','none'),'none')}"/>
+                                                    <apex:image id="imgEdit" style=" padding-bottom: 4px;padding-left: 4px;cursor:pointer;border-radius: 5px;display:{!if(intervention.blnIndicatorDisplay == true,if(intervention.objIntervention.Standard_or_Custom__c == 'Custom',if(blnEditIntervention,'','none'),'none'),'none')}" value="{!$Resource.EditImage}" height="17px" width="15px" title="{!$Label.Edit}" onclick="return InputInterventionName('{!$Component.optCIName}','{!$Component.inpCIName}','{!$Component.imgEdit}','{!$Component.imgSave}','{!$Component.imgCancel}','Edit');"/>
+                                                    <apex:inputText id="inpCIName" value="{!intervention.IntDescription}" style="display:{!if(intervention.blnIndicatorDisplay == false,if(intervention.objIntervention.Standard_or_Custom__c == 'Custom','','none'),'none')};" onkeypress="SaveNameOnEnter(event,'{!$Component.imgSave}');"/>
+                                                    <apex:image id="imgSave" style="cursor:pointer;border-radius: 5px;padding-bottom:9px;padding-left:5px;display:{!if(intervention.blnIndicatorDisplay == false,if(intervention.objIntervention.Standard_or_Custom__c == 'Custom','','none'),'none')};" value="{!$Resource.CheckImage}" height="20" width="20" title="Save" onclick="actSaveCustomIntName('{!Count-1}','{!innerCount-1}');"/>
+                                                    <apex:image id="imgCancel" style="cursor:pointer;border-radius: 5px;padding-left: 2px;padding-bottom:10px;display:{!if(intervention.blnIndicatorDisplay == false,if(intervention.objIntervention.Standard_or_Custom__c == 'Custom','','none'),'none')};" value="{!$Resource.CrossImage}" height="20" width="25" title="Cancel" onclick="return InputInterventionName('{!$Component.optCIName}','{!$Component.inpCIName}','{!$Component.imgEdit}','{!$Component.imgSave}','{!$Component.imgCancel}','Cancel');"/>
+                                                    
+                                                    <!--<apex:inputTextarea value="{!intervention.objIntervention.name}" style="padding-left:80px;height:20px;display:{!if(intervention.blnIndicatorDisplay == false,'','none')}"/>-->
+                                                <!--
+                                                    <apex:outputPanel rendered="{!if(Modules.childInterventions.size > 0,false,true)}"> 
+                                                        <apex:inputTextarea value="{!intervention.intdescription}" />
+                                                        <apex:image style="cursor:pointer;border-radius: 5px;padding-bottom:7px;" value="{!$Resource.check_green}" height="20" width="20" title="Save"/>
+                                                    </apex:outputPanel>  -->
+                                                </td>
+                                                <td style="padding-left:0;text-align: right;" width="30%">
+                                                    <apex:outputPanel id="PRPopup" style="display:none;">
+                                                        <apex:outputPanel styleClass="popupBackground"/>
+                                                        <apex:outputPanel styleClass="custPopup" >
+                                                            <h5 style="float:left"> {!$Label.Select_PRs} </h5>
+                                                            <apex:outputPanel rendered="{!IF(intervention.implementationPeriods != null, true, false)}" >    
+                                                                <table width="100%" cellspacing="10" cellpadding="0" border="0">
+                                                                    <apex:repeat value="{!intervention.implementationPeriods}" var="pr">
+                                                                    <tr>
+                                                                        <td style="text-align:left !important;padding:0px !important;border-top:0px !important;">
+                                                                            <apex:inputCheckbox value="{!pr.isSelected}"/>
+                                                                        </td>
+                                                                        <td style="text-align:left !important;padding:0px !important;border-top:0px !important;"> 
+                                                                           <B>{!pr.implementationPeriod.Principal_Recipient__r.Name}</B>
+                                                                        </td>
+                                                                    </tr>
+                                                                    <tr><td style="height:6px;text-align:left !important;padding:0px !important;border-top:0px !important;"></td></tr>
+                                                                    </apex:repeat>
+                                                                </table>
+                                                        </apex:outputPanel>
+                                                            
+                                                        <apex:outputPanel rendered="{!IF(intervention.implementationPeriods.size > 0, false, true)}" >    
+                                                            <br/>
+                                                            <center align="left">
+                                                            &nbsp;&nbsp;{!$Label.No_other_PRs}.
+                                                            </center>
+                                                            <br/>
+                                                        </apex:outputPanel>
+                                                          
+                                                            <table>
+                                                                <tr>
+                                                                    <td width="47%" align="right" style="border-top:0px !important;">
+                                                                        <apex:commandButton styleClass="popupButtonYes" value="{!$Label.Save}" action="{!AddSelectedPR}" reRender="frm" status="Processing">
+                                                                            <apex:param value="{!innerCount-1}" name="ChildEditIndex" />
+                                                                            <apex:param value="{!Count-1}" name="EditIndex" />
+                                                                        </apex:commandButton>
+                                                                    </td>
+                                                                    <td width="6%" style="border-top:0px !important;"></td>
+                                                                    <td width="47%" align="left" style="border-top:0px !important;">
+                                                                        <apex:commandButton styleClass="popupButtonCancel" value="{!$Label.Cancel}" onclick="return CloseNewPrPopup('{!$Component.PRPopup}');" /><!-- action="{!CancelAddPR}" reRender="frm" status="Processing"/>-->
+                                                                    </td>
+                                                                </tr>
+                                                            </table>
+                                                        </apex:outputPanel>
+                                                    </apex:outputPanel>
+                                                    <apex:variable value="{!0}" var="PrShortNameCount"/>
+                                                    <apex:repeat value="{!intervention.WrapPrShortNameList}" var="shortName" >
+                                                         
+                                                        <!--<apex:outputText value="{!shortName.prShortName}" styleClass="badge badge-inverse" style="margin-right:5px"/>-->
+                                                        <span class="badge badge-inverse" style="margin-right:5px;padding-top: 3px;">
+                                                            <apex:outputPanel rendered="{!!shortName.blndisplayPRPicklist}">
+                                                                {!shortName.prShortName}&nbsp;&nbsp;
+                                                                <!-- TCS 11/09/2014 Replaced rendering condition from rendered="{!!blnReadOnly}" -->
+                                                                <apex:image style="cursor:pointer;border-radius: 5px;" value="{!$Resource.EditImage}" height="17px" width="15px" onclick="actEditImplementationPeriod('{!Count-1}','{!innerCount-1}','{!PrShortNameCount}');" title="{!$Label.Edit}" rendered="{!blnEditPR}"/>
+                                                                 <!-- TCS 11/09/2014 Replaced rendering condition from rendered="{!!blnReadOnly}" -->
+                                                                <apex:image style="cursor:pointer;border-radius: 5px;padding-left: 2px;" value="{!$Resource.DeleteImage}" height="17px" width="15px" title="{!$Label.Delete}" onclick="return OpenPopup('{!$Component.IPDeletePopup    }');" rendered="{!blnDeletePR}"/>
+                                                                <apex:outputPanel id="IPDeletePopup" style="display:none;">
+                                                                    <apex:outputPanel styleClass="popupBackground" />
+                                                                    <apex:outputPanel styleClass="custPopup" style="width: 636px !important;" >
+                                                                        <table width="100%" cellspacing="0" cellpadding="0" border="0">
+                                                                            <!--<tr><td style="height:10px;"></td></tr>-->
+                                                                            <tr>
+                                                                                <td colspan="3" align="center" style="text-align:center !important;border-top:0px !important;">
+                                                                                    <apex:outputtext style="color:#6590c4; font-size: 13.9pt;font-weight: bold;" value="{!$Label.Remove_PR_Intervention_Warning}?"/>
+                                                                                </td>
+                                                                            </tr>
+                                                                            <!--<tr><td style="height:6px;"></td></tr>-->
+                                                                            <tr>
+                                                                                <td colspan="3" align="center" style="text-align:center !important;border-top:0px !important;">
+                                                                                    <apex:outputtext style="color:#6590c4; font-size: 13.9pt;font-weight: bold;" value="{!$Label.Delete_Budget_Data}."/>
+                                                                                </td>
+                                                                            </tr>
+                                                                            <!--<tr><td style="height:10px;"></td></tr>-->
+                                                                            <tr>
+                                                                                <td width="47%" align="right" style="text-align:right !important;border-top:0px !important;">
+                                                                                    <apex:commandButton styleClass="popupButtonYes" value="{!$Label.Yes}" action="{!DeleteImplementationPeriod}" reRender="frm" status="Processing">
+                                                                                        
+                                                                                        <apex:param name="ModuleIndex" id="ModuleIndex" value="{!Count-1}"/>
+                                                                                        <apex:param name="interventionIndex" id="interventionIndex" value="{!innerCount-1}"/>
+                                                                                        <apex:param name="PRIndex" id="PRIndex" value="{!PrShortNameCount}"/>
+                                                                                    </apex:commandButton>
+                                                                                </td>
+                                                                                <td width="6%" style="text-align:center !important;border-top:0px !important;"></td>
+                                                                                <td width="47%" align="left" style="text-align:left !important;border-top:0px !important;">
+                                                                                    <apex:commandButton styleClass="popupButtonCancel" value="{!$Label.Cancel}" onclick="return closeinterventionDeletePopup('{!$Component.IPDeletePopup}');"/> <!-- action="{!CancelInterventionDelete}" reRender="frm" status="Processing"/>-->
+                                                                                </td>
+                                                                            </tr>
+                                                                        </table>
+                                                                    </apex:outputPanel>
+                                                                </apex:outputPanel>
+                                                            </apex:outputPanel>
+                                                            <apex:outputPanel rendered="{!shortName.blndisplayPRPicklist}">
+                                                                <apex:selectList value="{!shortName.EditPRName}" size="1" style="width: 121px;height: 24px;padding-top: 0px;">
+                                                                    <apex:selectOptions value="{!intervention.EditPROptions}"></apex:selectOptions>
+                                                                </apex:selectList>&nbsp;&nbsp;
+                                                                <apex:image style="cursor:pointer;border-radius: 5px;padding-bottom:7px;" value="{!$Resource.CheckImage}" height="20" width="20" onclick="actSaveImplementationPeriod('{!Count-1}','{!innerCount-1}','{!PrShortNameCount}');" title="Edit"/>
+                                                                <apex:image style="cursor:pointer;border-radius: 5px;padding-left: 2px;padding-bottom:5px;" value="{!$Resource.CrossImage}" height="20" width="25" title="Cancel" onclick="actCancelImplementationPeriod('{!Count-1}','{!innerCount-1}','{!PrShortNameCount}');"/>
+                                                            </apex:outputPanel>
+                                                        </span>
+                                                        <apex:variable value="{!PrShortNameCount+1}" var="PrShortNameCount"/>
+                                                    </apex:repeat>
+                                                    <apex:outputtext value="{!$Label.Select_a_PR_for_this_intervention}" rendered="{!if(intervention.WrapPrShortNameList.size==0 && blnAddPR==true,true,false)}" style="color:red;margin-right:12px"/>                                                   
+                                               </td>
+                                               <td style="padding-left:0;text-align: right;" width="20%">
+                                                    <apex:commandLink styleClass="TGFbtn TGFbtn-mini TGFbtn-success" style="display:{!if(AND(intervention.blnIndicatorDisplay == true,blnAddPR),'','none')};margin-right:10px" onclick="return OpenNewPrPopup('{!$Component.PRPopup}');" ><!-- action="{!AddNewPR}"  status="Processing" >-->
+                                                        <i class="icon-plus-sign icon-white"></i>
+                                                            <strong>{!$label.Add_PRs}</strong>
+                                                        <!--<apex:param value="{!innerCount-1}" name="ChildEditIndex" />
+                                                        <apex:param value="{!Count-1}" name="EditIndex" />-->
+                                                   </apex:commandLink>
+                                                    <apex:commandLink styleClass="TGFbtn TGFbtn-mini TGFbtn-success" style="display:{!if(intervention.blnIndicatorDisplay == true && intervention.isAddedFromCustom == true && blnEditIntervention,'','none')};margin-right:10px" reRender="frm" action="{!EditGrantIntervention}"  status="Processing">
+                                                        <i class="icon-edit icon-white"></i>
+                                                        <strong>{!$Label.Edit}</strong>
+                                                        <apex:param value="{!innerCount-1}" name="ChildEditIndex" />
+                                                        <apex:param value="{!Count-1}" name="EditIndex" />
+                                                    </apex:commandLink>
+                                                    <apex:commandLink styleClass="TGFbtn TGFbtn-mini TGFbtn-success" style="display:{!if(intervention.blnIndicatorDisplay == false && intervention.isAddedFromCustom == true,'','none')};margin-right:10px" action="{!SaveGrantIntervention}" reRender="frm" status="Processing">
+                                                        <i class="icon-edit icon-white"></i> 
+                                                        <strong>{!$Label.Save}</strong>
+                                                        <apex:param value="{!innerCount-1}" name="ChildSaveIndex" />
+                                                        <apex:param value="{!Count-1}" name="SaveIndex" />
+                                                    </apex:commandLink>                                                                                                      
+                                                    
+                                                    <apex:commandLink styleClass="TGFbtn TGFbtn-mini TGFbtn-danger" style="display:{!if(intervention.blnIndicatorDisplay == false && intervention.isAddedFromCustom == true,'','none')};margin-right:10px" action="{!CancelInterventionEdit}" reRender="frm" status="Processing">
+                                                        <i class="icon-trash icon-white"></i> 
+                                                        <strong>{!$Label.Cancel}</strong>
+                                                        <apex:param value="{!innerCount-1}" name="ChildCancelIndex" />
+                                                        <apex:param value="{!Count-1}" name="CancelIndex" />
+                                                    </apex:commandLink>
+                                                    
+                                                    <apex:commandLink styleClass="TGFbtn TGFbtn-mini TGFbtn-danger" style="display:{!if(AND(intervention.blnIndicatorDisplay == true,blnDeleteIntervention),'','none')};margin-right:10px" onclick="return openinterventionDeletePopup('{!$Component.interventionDeletePopup}');" > <!-- action="{!ConfirmInterventionDelete}" reRender="frm" status="Processing">-->
+                                                        <i class="icon-trash icon-white"></i> 
+                                                        <strong>{!$Label.Delete}</strong>
+                                                        <!--<apex:param value="{!innerCount-1}" name="ChildDeleteIndex" />
+                                                        <apex:param value="{!Count-1}" name="DeleteIndex" />-->
+                                                        
+                                                    </apex:commandLink>
+                                                    <apex:outputPanel id="interventionDeletePopup" style="display:none;">
+                                                        <apex:outputPanel styleClass="popupBackground" />
+                                                        <apex:outputPanel styleClass="custPopup"  >
+                                                            <table width="100%" cellspacing="0" cellpadding="0" border="0">
+                                                                <!--<tr><td style="height:10px;"></td></tr>-->
+                                                                <tr>
+                                                                    <td colspan="3" align="center" style="text-align:center !important;border-top:0px !important;">
+                                                                        <apex:outputtext style="color:#6590c4; font-size: 13.9pt;font-weight: bold;" value="{!$Label.Are_you_sure}"/>
+                                                                    </td>
+                                                                </tr>
+                                                                <!--<tr><td style="height:6px;"></td></tr>-->
+                                                                <tr>
+                                                                    <td colspan="3" align="center" style="text-align:center !important;border-top:0px !important;">
+                                                                        <apex:outputtext style="color:#6590c4; font-size: 13.9pt;font-weight: bold;" value="{!$Label.This_Module_Intervention_will_be_deleted}."/>
+                                                                    </td>
+                                                                </tr>
+                                                                <!--<tr><td style="height:10px;"></td></tr>-->
+                                                                <tr>
+                                                                    <td width="47%" align="right" style="text-align:right !important;border-top:0px !important;">
+                                                                        <apex:commandButton styleClass="popupButtonYes" value="{!$Label.Yes}" action="{!DeleteIntervention}" reRender="frm" status="Processing">
+                                                                            <apex:param value="{!innerCount-1}" name="ChildDeleteIndex" />
+                                                                            <apex:param value="{!Count-1}" name="DeleteIndex" />
+                                                                        </apex:commandButton>
+                                                                    </td>
+                                                                    <td width="6%" style="text-align:center !important;border-top:0px !important;"></td>
+                                                                    <td width="47%" align="left" style="text-align:left !important;border-top:0px !important;">
+                                                                        <apex:commandButton styleClass="popupButtonCancel" value="{!$Label.Cancel}" onclick="return closeinterventionDeletePopup('{!$Component.interventionDeletePopup}');"/> <!-- action="{!CancelInterventionDelete}" reRender="frm" status="Processing"/>-->
+                                                                    </td>
+                                                                </tr>
+                                                            </table>
+                                                        </apex:outputPanel>
+                                                    </apex:outputPanel>
+                                                </td>
+                                                <apex:variable var="innerCount" value="{!innerCount+1}"/>
+                                            </tr>
+                                            
+                                            </apex:repeat>
+                                            <tr id="AddNewCusInterventionRow{!Count}" style="display:none;">
+                                                <td colspan="2">
+                                                    <apex:inputTextarea id="txtIntName" value="{!Modules.strAddNewCustomInterventionDec}" style="resize:none;padding-left:80px;height:20px;"/>
+                                                </td>
+                                                <td colspan="2" style="text-align:right">
+                                                    
+                                                </td>
+                                                <td style="padding-left:0;padding-right: 10px;text-align: right;">
+                                                    <apex:commandLink styleClass="TGFbtn TGFbtn-mini TGFbtn-success" onclick="return ValidateNewInt('{!$Component.txtIntName}','{!if(Modules.childInterventions != null,Modules.childInterventions.size + 1,1)}','{!Count-1}')">
+                                                        <i class="icon-edit icon-white"></i> 
+                                                        <strong>{!$Label.Save}</strong>
+                                                        <!--<apex:param value="{!if(Modules.childInterventions != null,Modules.childInterventions.size + 1,1)}" name="ChildSaveIndex" />
+                                                        <apex:param value="{!Count-1}" name="SaveIndex" />-->
+                                                    </apex:commandLink>
+                                                    
+                                                    <apex:commandLink styleClass="TGFbtn TGFbtn-mini TGFbtn-danger" onclick="return closeNewIntRow('AddNewCusInterventionRow{!Count}','AddStdCusIntBtnTr{!Count}')"><!-- action="{!CancelInterventionEdit}" reRender="frm" status="Processing">-->
+                                                        <i class="icon-trash icon-white"></i> 
+                                                        <strong>{!$Label.Cancel}</strong>
+                                                        <!--<apex:param value="{!innerCount-1}" name="ChildCancelIndex" />
+                                                        <apex:param value="{!Count-1}" name="CancelIndex" />-->
+                                                    </apex:commandLink>
+                                                </td>
+                                            </tr>
+                                            <tr id="AddStdCusIntBtnTr{!Count}">
+                                                <td>
+                                                <span style="margin-right:10px;">
+                                                <apex:commandLink styleClass="TGFbtn TGFbtn-mini TGFbtn-success" rendered="{!if(AND(Modules.Module != null && Modules.Module.Catalog_Module__c != null,blnAddIntervention),true,false)}" onclick="return OpenaddInterventionsPopup('{!$Component.addInterventionsPopup}')"> <!-- action="{!AddNewIntervention}" rerender="frm, addInterventionsPopup" status="Processing" rendered="{!Modules.showStandardInterventionButton}" > -->
+                                                    <i class="icon-plus-sign icon-white"></i>
+                                                    <strong>{!$Label.Add_Interventions}</strong>
+                                                    <!--<apex:param name="parentRowIndex" value="{!Count-1}" />-->
+                                                </apex:commandLink>
+                                                </span>
+                                               
+                                                
+                                                <apex:outputPanel id="addInterventionsPopup" style="display:none;">
+                                                    <apex:outputPanel styleClass="popupBackground" />
+                                                    <apex:outputPanel styleClass="custPopuptwo" >
+                                                        <h5> {!$label.Select_interventions} </h5>
+                                                        <br></br>
+                                                        <apex:outputPanel rendered="{!IF(Modules.lstinterventions != null, true, false)}" >    
+                                                            <table width="100%" cellspacing="10" cellpadding="0" border="0">
+                                                                <apex:repeat value="{!Modules.lstinterventions}" var="intervention">
+                                                                <tr>
+                                                                    <td width="18px;" style="padding:0px !important;border-top:0px !important;">
+                                                                        <apex:inputCheckbox value="{!intervention.isSelected}"/>
+                                                                    </td>
+                                                                    <td style="padding:0px !important;border-top:0px !important;"> 
+                                                                       <apex:outputtext style="font-weight:bold" value="{!if(strLanguage=='FRENCH',intervention.catalogIntervention.French_Name__c,if(strLanguage=='SPANISH',intervention.catalogIntervention.Spanish_Name__c,if(strLanguage=='RUSSIAN',intervention.catalogIntervention.Russian_Name__c,intervention.catalogIntervention.Name)))}"/>
+                                                                    </td>
+                                                                </tr>
+                                                                <tr><td style="height:6px;padding:0px !important;border-top:0px !important;"></td></tr>
+                                                                </apex:repeat>
+                                                            </table>
+                                                        </apex:outputPanel>
+                                                        
+                                                        <apex:outputPanel rendered="{!IF(Modules.lstinterventions.size > 0, false, true)}" >    
+                                                            <br/>
+                                                            <center align="left">
+                                                            &nbsp;&nbsp;{!$label.No_new_interventions}
+                                                            </center>
+                                                            <br/>
+                                                        </apex:outputPanel>
+                                                       
+                                                        
+                                                        <table>
+                                                            <tr>
+                                                                <td width="47%" align="right" style="border-top:0px !important;">
+                                                                    <apex:commandButton styleClass="popupButtonYes" value="{!$Label.Save}" action="{!AddSelectedIntervention}" reRender="frm" status="Processing">
+                                                                        <apex:param name="parentRowIndex" value="{!Count-1}" />
+                                                                    </apex:commandButton>
+                                                                </td>
+                                                                <td width="6%" style="border-top:0px !important;"></td>
+                                                                <td width="47%" align="left" style="border-top:0px !important;">
+                                                                    <apex:commandButton styleClass="popupButtonCancel" value="{!$Label.Cancel}" onclick="return CanceladdInterventionsPopup('{!$Component.addInterventionsPopup}')"/> <!-- action="{!CancelAddIntervention}" reRender="frm" status="Processing"/>-->
+                                                                </td>
+                                                            </tr>
+                                                        </table>
+                                                    </apex:outputPanel>
+                                                </apex:outputPanel>
+                                                
+                                                </td>
+                                                <td colspan="4"></td>
+                                            </tr>
+                                        </table>
+                                        </div>
+                                    </td>
+                                </tr>      
+                                        
+                                <apex:variable var="Count" value="{!Count+1}"/>
+                            </apex:repeat>
+                            
+                            <tr id="AddnewModuletr" style="display:none;">
+                                <td width="5%" class="grey">
+                                     <!-- <apex:commandLink action="{!toogleShowChilDetailOfModule}" reRender="frm, moduleChildPanel" status="Processing" style="display:{!if(Modules.showChildDetails == true,'none','')}" >
+                                         <i class="icon-plus pull-right"></i> 
+                                         <apex:param value="{!Modules.IndexModule}" name="toggleIndex" />
+                                     </apex:commandLink>
+                                     <apex:commandLink action="{!toogleShowChilDetailOfModule}" reRender="frm, moduleChildPanel" status="Processing" style="display:{!if(Modules.showChildDetails == true,'','none')}" >
+                                         <i class="icon-minus pull-right"></i>
+                                         <apex:param value="{!Modules.IndexModule}" name="toggleIndex" />
+                                     </apex:commandLink> 
+                                    <apex:inputHidden id="showDetail" value="{!Modules.showChildDetails}" />
+                                    <i class="icon-plus pull-right" id="plusCommandLink{!Modules.IndexModule}" onclick="toggleChildDisplay('{!Modules.IndexModule}', '{!$Component.showDetail}', 'expand');" style="display:{!if(Modules.showChildDetails == true,'none','')}" ></i>
+                                    <i class="icon-minus pull-right" id="minusCommandLink{!Modules.IndexModule}" onclick="toggleChildDisplay('{!Modules.IndexModule}', '{!$Component.showDetail}', 'collapse');" style="display:{!if(Modules.showChildDetails == true,'','none')}" > </i>-->
+                                </td>
+                                <td width="5%" class="grey">
+                                    <span class="badge badge-inverse">{!if(lstModules != null && lstModules.size > 0,lstModules.size + 1,1)}</span>
+                                </td>
+                                <td class="grey" colspan="2">
+                                    <apex:inputTextarea id="txtNewCusModule" value="{!strAddNewModuleDescription}" style="height: 20px; width: 300px;resize:none;"/>  
+                                </td>
+                                 <td class="grey" style="padding-right:10px;text-align:right;">
+                                    <apex:actionFunction name="actSaveModule" action="{!SaveModule}" reRender="frm" status="Processing">
+                                        <apex:param value="{!if(lstModules != null,lstModules.size+1,1)}" name="SaveIndex"/>
+                                    </apex:actionFunction>
+                                    <apex:commandLink styleClass="TGFbtn TGFbtn-mini TGFbtn-success 10right" style="text-align: left;margin-right:10px;" onclick="return validateModuleName('{!$Component.txtNewCusModule}');" >
+                                        <i class="icon-edit icon-white"></i> 
+                                        <strong>{!$Label.Save}</strong>
+                                        <!--<apex:param value="{!if(lstModules != null,lstModules.size+1,1)}" name="SaveIndex" />-->
+                                    </apex:commandLink>                                       
+                                    <apex:commandLink styleClass="TGFbtn TGFbtn-mini TGFbtn-danger" style="text-align: left;" onclick="return CancelNewModuleRow();"> <!-- action="{!CancelModule}" reRender="frm" status="Processing"> -->
+                                        <i class="icon-trash icon-white"></i> 
+                                        <strong>{!$Label.Cancel}</strong>
+                                    </apex:commandLink>
+                                    
+                                 </td>
+                            </tr>
+                            
+                            <tr id="AddStdCustomModuleBtn">
+                                <td colspan="4"></td>
+                                <td style="padding-left:0px;padding-right:10px;text-align:right">
+                                    <apex:inputHidden id="addModuleConfirmHidden" value="{!blnAddModuleConfirm}" />
+                                    <apex:commandLink styleClass="TGFbtn TGFbtn-mini TGFbtn-success" onclick="AddNewModule(); return false;" style="margin-right:10px" rendered="{!blnAddModule}">
+                                        <i class="icon-plus-sign icon-white"></i>
+                                        <strong>{!$Label.Add_Modules}</strong>
+                                    </apex:commandLink>
+                                    <apex:outputPanel id="addModulePopup" style="display : none">
+                                        <apex:outputPanel styleClass="popupBackground" />
+                                        <apex:outputPanel styleClass="custPopuptwo" >
+                                            <h5 style="float:left;"> {!$Label.Select_modules} </h5><br/>
+                                            <apex:outputPanel rendered="{!IF(lstCatModules.size > 0, true, false)}" >    
+                                                <table width="100%" cellspacing="10" cellpadding="0" border="0">
+                                                    <apex:repeat value="{!lstCatModules}" var="module">
+                                                    <tr>
+                                                        <td style="padding:0px !important;border-top:0px !important;">
+                                                            <apex:inputCheckbox value="{!module.isSelected}"/>
+                                                        </td>
+                                                        <td style="padding:0px !important;border-top:0px !important;"> 
+                                                           <apex:outputtext style="font-weight:bold" value="{!if(strLanguage=='FRENCH',module.catalogModule.French_Name__c,if(strLanguage=='SPANISH',module.catalogModule.Spanish_Name__c,if(strLanguage=='RUSSIAN',module.catalogModule.Russian_Name__c,module.catalogModule.Name)))}"/>
+                                                        </td>
+                                                    </tr>
+                                                    <tr><td style="height:6px;padding:0px !important;border-top:0px !important;"></td></tr>
+                                                    </apex:repeat>
+                                                </table>
+                                            </apex:outputPanel>
+                                            
+                                            
+                                            <apex:outputPanel rendered="{!IF(lstCatModules.size > 0, false, true)}" >    
+                                                  <br/>
+                                                <center align="left">
+                                                &nbsp;&nbsp;{!$Label.No_new_modules}
+                                                </center>
+                                                   <br/>
+                                            </apex:outputPanel>
+                                            
+                                            <table>
+                                                <tr>
+                                                    <td width="47%" align="right" style="padding:0px !important;border-top:0px !important;">
+                                                        <apex:commandButton styleClass="popupButtonYes" value="{!$Label.Save}" action="{!AddSelectedModule}" reRender="frm" status="Processing"/>
+                                                    </td>
+                                                    <td width="6%" style="padding:0px !important;border-top:0px !important;"></td>
+                                                    <td width="47%" align="left" style="padding:0px !important;border-top:0px !important;">
+                                                        <apex:commandButton styleClass="popupButtonCancel" value="{!$Label.Cancel}" onclick="return CancelAddModule();" />
+                                                        <!--<apex:commandButton styleClass="popupButtonCancel" value="Cancel" action="{!CancelAddModule}" reRender="frm" oncomplete="CancelAddModule();" status="Processing"/>
+                                                         <apex:commandButton styleClass="popupButtonCancel" value="Cancel" oncomplete="CancelAddModule('page:frm:addModuleConfirmHidden');" reRender="frm"/> -->
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                        </apex:outputPanel>
+                                    </apex:outputPanel>
+                                  
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                <hr></hr>
+                <!-- End of right content -->
+                </apex:outputPanel>
+                </div>
+              <!-- end of wrapping table -->
+              </td>
+            </tr>
+          </table>
+            <!-- /end of righht-left row -->
+            </div>
+        <!-- /container -->
+        </div>
+        
+        <!-- Confirm delete popup box for delete module -->
+        
+        <!-- Confirm delete popup box for delete intervention -->
+        
+
+        <style>
+        .ProcessingBackground
+        {
+            background-color: black;
+            opacity: 0.50;
+            filter: alpha(opacity = 50);
+            width: 100%;
+            height: 100%;
+            position: fixed;
+            z-index: 9999;
+            top:0;
+            left:0;
+        }
+        .Processing
+        {
+            z-index: 9999;
+            left: 50%;
+            top: 50%;
+            text-align: center;
+            position: fixed;
+        }        
+        </style>
+        <div id="divProcessing" style="display:none;">
+            <div class="ProcessingBackground"></div>
+            <div class="Processing">
+                <apex:image alt="Processing" url="{!$Resource.LoadingCircle}" />
+            </div>
+        </div>  
+        <apex:actionStatus id="Processing" onstart="document.getElementById('divProcessing').style.display = '';" onstop="document.getElementById('divProcessing').style.display = 'none';">                            
+        </apex:actionStatus> 
+        <script>
+            
+            function AddNewModule() {
+                var popupEle = document.getElementById('page:frm:addModulePopup');
+                popupEle.style.display = '' ;
+            }
+            
+            function CancelAddModule() {
+                var popupEle = document.getElementById('page:frm:addModulePopup');
+                popupEle.style.display = 'none' ;
+                return false;
+            }           
+            
+            function SetStringAddGoal(panelId,setAdd){
+                var spans = document.getElementById(panelId).childNodes;
+                var addStr = '';
+                for(var i=0;i<spans.length;i++){
+                    if(spans[i].tagName == 'SPAN'){
+                        if(spans[i].className.indexOf('badge badge-inverse') != -1){
+                            if(addStr == '') addStr = spans[i].id;
+                            else addStr += ','+spans[i].id;
+                        }
+                    }
+                }
+                return addStr;
+            }
+            function OpenPopup(PopupPanelId){
+                document.getElementById(PopupPanelId).style.display = '';
+                /*
+                var confirmMsg = 'This Module, including all related Interventions and Indicators, will be deleted.' ;
+                if(confirm(confirmMsg)) {
+                    jsDeleteModule(PopupPanelId);
+                }
+                */
+                return false;
+            }
+            function ClosePopup(PopupPanelId){
+                document.getElementById(PopupPanelId).style.display = 'none';
+                return false;
+            }
+            function closePanel(){
+                document.getElementById('Infopanel').style.display = 'none';
+            }
+            function DisplaySelectIndicatorPanel(){
+                document.getElementById('SelectCatalogIndicator').style.display = '';
+                document.getElementById('tableCusStdBtn').style.display = 'none';
+                return false;
+            }
+            function hideSelectCalalogIndi(){
+                document.getElementById('SelectCatalogIndicator').style.display = 'none';
+                document.getElementById('tableCusStdBtn').style.display = '';
+                document.getElementById('AddStdIndiLabel').style.display = 'none';
+                document.getElementById('AddStdIndiSec').style.display = 'none';
+                return false;
+            }
+            function showstdIndi(SelectedIndicator){
+                if(document.getElementById(SelectedIndicator).value != ''){
+                    actCreateIndicatorOnSelectCatalog();
+                    return false;
+                }else{
+                    return false;
+                }
+            }
+            function showstdIndiOncomplete(){
+                document.getElementById('AddStdIndiLabel').style.display = '';
+                document.getElementById('AddStdIndiSec').style.display = '';
+                document.getElementById('tableCusStdBtn').style.display = 'none';
+                document.getElementById('SelectCatalogIndicator').style.display = '';
+            }
+            function cancelStdIndi(){
+                document.getElementById('AddStdIndiLabel').style.display = 'none';
+                document.getElementById('AddStdIndiSec').style.display = 'none';
+                document.getElementById('tableCusStdBtn').style.display = '';
+                document.getElementById('SelectCatalogIndicator').style.display = 'none';
+                return false;
+            }
+            function CancelCustIndioncomplete(){
+                document.getElementById('custIndiLabel').style.display = 'none';
+                document.getElementById('custIndiSec').style.display = 'none';
+                document.getElementById('tableCusStdBtn').style.display = '';
+                return false;
+            }
+            function openCustIndi(){
+                document.getElementById('custIndiLabel').style.display = '';
+                document.getElementById('custIndiSec').style.display = '';
+                document.getElementById('tableCusStdBtn').style.display = 'none';
+                return false;
+            }
+            function AddNewModuleRow(NewModuleName){
+                document.getElementById('AddStdCustomModuleBtn').style.display = 'none';
+                document.getElementById('AddnewModuletr').style.display = '';
+                document.getElementById(NewModuleName).value = '';
+                return false;
+            }
+            function CancelNewModuleRow(){
+                document.getElementById('AddStdCustomModuleBtn').style.display = '';
+                document.getElementById('AddnewModuletr').style.display = 'none';
+                return false;
+            }
+            
+            function OpenaddInterventionsPopup(OpenIntervationPanel){
+                document.getElementById(OpenIntervationPanel).style.display = '';
+                return false;
+            }
+            function CanceladdInterventionsPopup(OpenIntervationPanel){
+                document.getElementById(OpenIntervationPanel).style.display = 'none';
+                return false;
+            }
+            
+            function CloseaddInterventionsPopup(OpenIntervationPanel){
+                document.getElementById(OpenIntervationPanel).style.display = 'none';
+                return false;
+            }
+            function closeinterventionDeletePopup(interventionDeletePanel){
+                document.getElementById(interventionDeletePanel).style.display = 'none';
+                return false;
+            }
+            function openinterventionDeletePopup(interventionDeletePanel){
+                document.getElementById(interventionDeletePanel).style.display = '';
+                return false;
+            }
+            function AddNewIntervantionRow(NewIntTr,IntBtnTr,IntName){
+                document.getElementById(NewIntTr).style.display = '';
+                document.getElementById(IntBtnTr).style.display = 'none';
+                document.getElementById(IntName).value = '';
+                return false;
+            }
+            function closeNewIntRow(NewIntTr,IntBtnTr){
+                document.getElementById(NewIntTr).style.display = 'none';
+                document.getElementById(IntBtnTr).style.display = '';
+                return false;
+            }
+            function OpenNewPrPopup(PrPanel){
+                document.getElementById(PrPanel).style.display = '';
+                return false;
+            }
+            function CloseNewPrPopup(PrPanel){
+                document.getElementById(PrPanel).style.display = 'none';
+                return false;
+            }
+            function ValidateNewInt(IntName,ChildSaveIndex,SaveIndex){
+                if(document.getElementById(IntName).value != ''){
+                    actSaveGrantIntervention(ChildSaveIndex,SaveIndex);
+                    return false;
+                }else{
+                    alert('{!$Label.Enter_Intervention_Name}.');
+                    return false;
+                }
+            }
+            function validateModuleName(CustModule){
+                if(document.getElementById(CustModule).value != ''){
+                    actSaveModule();
+                    return false;
+                }else{
+                    alert('{!$Label.Enter_Module_Name}.');
+                    return false;
+                }
+            }
+            function switchMenu(obj,obj1,obj2,hdn,val) 
+            {   
+            var AllLI = document.getElementsByTagName('li');
+            for(var i=0;i<AllLI.length;i++){
+                if(AllLI[i].id == obj){
+                    if(AllLI[i].style.display != 'none'){
+                        AllLI[i].style.display = 'none';
+                    }else{
+                        AllLI[i].style.display = '';
+                    }
+                }
+            }
+            document.getElementById(hdn).value=val; 
+            
+            var e2 = document.getElementById(obj1);                                       
+            if ( e2.style.display != 'none' ) {
+                e2.style.display = 'none';
+            }
+            else {
+                e2.style.display = '';
+            }
+            var e3 = document.getElementById(obj2);                                       
+            if ( e2.style.display != 'none' ) {
+                e3.style.display = 'none';
+            }
+            else {
+                e3.style.display = '';
+            }
+        }    
+        </script>        
+    </apex:form>
+</apex:page>

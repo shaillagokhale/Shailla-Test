@@ -1,0 +1,746 @@
+<!--*******************************************************************************
+* VisualForce {Page}: {TeamStructure}
+* DateCreated  : 07/22/2013 Updated from tgftest 9/26/2013
+----------------------------------------------------------------------------------
+* Purpose:
+* - Team Structure page opens through a button on work plan 
+    and will be used for country teams to manage their teams.
+  - This page opens from 'Team Structure' button of work plan object.
+----------------------------------------------------------------------------------
+* History:
+* - VERSION  DEVELOPER NAME    DATE            DETAIL FEATURES
+    1.0                       07/22/2013     INITIAL DEVELOPMENT
+********************************************************************************-->
+<apex:page id="pageTeam" controller="ctrlTeamStructure" sidebar="false">
+    <style>        
+        .odd:hover, .even:hover{
+            background-color: #E3F3FF !important;
+        }
+        body .bRelatedList .pbBody table.list, body .apexp .pbBody table.list {
+            border: 0px solid #000000;
+            padding:0px;
+        }            
+        .headerRowLower{
+            border:1px solid #E0E3E5 !important;
+            font-weight:bold;
+            background-color:#0066BB !important;
+            color:white !important;
+            white-space: normal !important;
+        }
+        .headerRowResource{
+            border:1px solid #E0E3E5 !important;
+            font-weight:bold;
+            background-color:grey !important;
+            color :white !important;
+            height: 46px;
+        }
+        .totalRow{
+            border-top:1px;
+            font-weight:bold !important;
+        }        
+        .noBorder ,table.noBorder tr td,table.noBorder td{
+            border: 0px !important;
+            padding: 0px;
+        }
+        .CollapseExpandAllText{
+            font-size: 12px;
+            font-weight: normal;
+            vertical-align:top;
+        }
+        .CollapseExpandAllImage{
+            cursor:pointer;
+            height:20px;
+            width:20px;
+        }
+        .ProcessingBackground
+        {
+            background-color: black;
+            opacity: 0.50;
+            filter: alpha(opacity = 50);
+            width: 100%;
+            height: 100%;
+            position: fixed;
+            z-index: 9999;
+            top:0;
+            left:0;
+        }
+        .Processing
+        {
+            z-index: 9999;
+            left: 50%;
+            top: 50%;
+            text-align: center;
+            position: fixed;
+        }
+        .custPopup{
+            background-color: white;
+            border-width: 0px;
+            border-radius:10px;
+            border-style: solid;
+            /*z-index: 9999;*/
+            z-index: 51;
+            left: 10%;
+            padding:10px;
+            position: absolute;
+            top:5%;
+            width:80%;
+        }
+        .popupBackground{
+            background-color:black;
+            opacity: 0.20;
+            filter: alpha(opacity = 20);
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            /*z-index: 9998;*/
+            z-index: 50;
+            top: 0;
+            left: 0;
+           
+        }
+        .custPopupNew{
+            background-color: white;
+            border-width: 0px;
+            border-radius:10px;
+            border-style: solid;
+            /*z-index: 9999;*/
+            z-index: 51;
+            left: 10%;
+            padding:10px;
+            position: absolute;
+            top:50%;
+            width:80%;
+        }
+        .popupBackgroundNew{
+            background-color:black;
+            opacity: 0.20;
+            filter: alpha(opacity = 20);
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            /*z-index: 9998;*/
+            z-index: 50;
+            top: 0;
+            left: 0;  
+        }
+        .TextAreaStyle{
+            resize: none;
+        }
+        .relatedListIcon {
+            background-image: url("/img/icon/custom51_100/globe24.png");
+            background-position: 0 0;
+            height: 24px;
+            width: 24px;
+        }
+    </style>
+    <script>       
+        function DeleteRate(DeleteConRateIndex,DeleteRateIndex){
+            if(confirm('Are you sure you want to delete?'))
+            { 
+                callDeleteRate(DeleteConRateIndex,DeleteRateIndex);  
+            }
+            return false;
+        }
+                
+        function openLookupPopup(id, objName,ipHidden,CountryId,ParentAccountId, WpId){
+            objName = objName.replace('Group,','');
+            var url;
+            if('{!$Profile.Name}' =='LFA Portal User'){
+                url="/LFA/apex/LookupPage?lktp=" + objName + "&idfield=" + id + "&ParentId=" +ParentAccountId+ "&idHidden=" + ipHidden +"&lksrch=" + "&Country=" +CountryId + "&WpId=" +WpId;
+            }else{
+                url="/apex/LookupPage?lktp=" + objName + "&idfield=" + id + "&ParentId=" +ParentAccountId+ "&idHidden=" + ipHidden +"&lksrch=" + "&Country=" +CountryId + "&WpId=" +WpId;
+            }
+            newWin=window.open(url, 'Popup','height=800,width=1200,left=100,top=100,resizable=yes,scrollbars=yes,toolbar=no,status=no');
+            if (window.focus){
+                newWin.focus();
+            }           
+            return false;
+        }
+        
+        function closeLookupPopup(){
+            if (null!=newWin){
+                newWin.close();
+                var ipHiddenConId = document.getElementById('pageTeam:frm:ipHiddenCon').value;                         
+                callAddContactRow(ipHiddenConId);
+            }
+        }
+        function openCountryLookupPopup(CountryIDs){
+            //objName = objName.replace('Group,','');
+            //var url="/apex/LookupPage?lktp=" + objName + "&idfield=" + id + "&ParentId=" +ParentAccountId+ "&idHidden=" + ipHidden +"&lksrch=" + "&Country=" +CountryId;        
+            if('{!$Profile.Name}' =='LFA Portal User'){
+                var url="/LFA/CoutnryLookupPage?CountryID=" + CountryIDs;
+            }else{
+                var url="/apex/CoutnryLookupPage?CountryID=" + CountryIDs;
+            }
+            newWin=window.open(url, 'Popup','height=500,width=600,left=100,top=100,resizable=no,scrollbars=yes,toolbar=no,status=no');
+            if (window.focus){
+                newWin.focus();
+            }           
+            return false;
+        }
+        function closeCountryLookupPopup(){
+            if (null!=newWin){
+                newWin.close();
+                //var ipHiddenConId = document.getElementById('pageTeam:frm:ipHiddenCon').value;                         
+                //callAddContactRow(ipHiddenConId);
+            }
+        }
+        function showHideOtherRole(selectedRoleName,otherRoleName,hdnRoleName){
+            var hdnRole = document.getElementById(hdnRoleName).value;
+            document.getElementById(hdnRoleName).value = selectedRoleName.options[selectedRoleName.selectedIndex].text;
+            if(selectedRoleName.options[selectedRoleName.selectedIndex].text == 'Other Professional'){
+                document.getElementById(otherRoleName).style.display = '';
+            }else{
+                document.getElementById(otherRoleName).style.display = 'none';            
+            }
+        }
+    </script>
+    <apex:sectionHeader subtitle="Team Structure"/>
+    <apex:form id="frm">
+        <script>
+            function changeActiveLFAMember(input,contactIndex){                
+                var ObjVal = input.value;                
+                var i=1;
+                var otherObj = document.getElementById('pageTeam:frm:pageB:reptCon:'+contactIndex+':reptConRate:'+i+':ipConActMem');                               
+                while(otherObj != null){                    
+                    otherObj.value = ObjVal;
+                    i++;
+                    otherObj = document.getElementById('pageTeam:frm:pageB:reptCon:'+contactIndex+':reptConRate:'+i+':ipConActMem');
+                }
+            }
+            function changeExperience(input,contactIndex){
+                var ObjVal = input.value;                
+                var i=1;                
+                var otherObj = document.getElementById('pageTeam:frm:pageB:reptCon:'+contactIndex+':reptConRate:'+i+':ipConLevelExp');                                
+                while(otherObj != null){                    
+                    otherObj.value = ObjVal;                   
+                    i++;
+                    otherObj = document.getElementById('pageTeam:frm:pageB:reptCon:'+contactIndex+':reptConRate:'+i+':ipConLevelExp');
+                }
+            }
+        
+            function DisplayErrorMsg(){            
+                var ErrorMsg = '{!strErrorMsg}';                           
+                if(ErrorMsg != ''){
+                    alert(ErrorMsg);
+                }
+                return false;
+            }
+            function ConvertNum(textvalue)
+            {        
+                textvalue= textvalue.replace("$", "");
+                textvalue= textvalue.replace(/,/g, "");
+                textvalue= textvalue.replace("'", "");
+                var num1 = 0;
+                if(textvalue.indexOf("USD") != -1){
+                    var indexusd = textvalue.indexOf("USD");
+                    var textvalue1 = textvalue.substring(indexusd+4,textvalue.length);
+                    for(i=0;textvalue1.length;i++)
+                    {    
+                        if(isNaN(textvalue1[i]))
+                        {    
+                            break;
+                        }
+                        else
+                        {   
+                            num1+=textvalue1[i];
+                        }
+                    }
+                }else{
+                    num1=textvalue;
+                }
+                var num= parseFloat(num1);
+                num=num.toFixed(2);
+                if(isNaN(num)){
+                    return 0;
+                }else{
+                    return num;
+                }                
+            }
+           function CalculateRateDifference(Currentyear,NextYear,opTextDifference,hdnDifference){
+                if(Currentyear != null && NextYear != null){
+                    var CurrentYearRate = ConvertNum(document.getElementById(Currentyear).innerHTML);
+                    var NxtYearRate = ConvertNum(document.getElementById(NextYear).value);          
+                }
+                if(CurrentYearRate != null && CurrentYearRate != 'undefined' && 
+                    NxtYearRate != null && NxtYearRate != 'undefined'){               
+                    var DiffRate;
+                    if(NxtYearRate > 0){
+                        DiffRate = (1 - CurrentYearRate / NxtYearRate)*100;                    
+                        DiffRate = DiffRate.toFixed(2);
+                    }else if(NxtYearRate == 0 || NxtYearRate <0 ){
+                        DiffRate = 0.00;
+                    }
+                    DiffRate = DiffRate.toString();                    
+                    if(DiffRate.indexOf(".") == -1) DiffRate = DiffRate+".00";                 
+                    document.getElementById(opTextDifference).innerHTML = DiffRate;
+                    document.getElementById(hdnDifference).value = DiffRate;
+                }
+            }
+            function ShowHideField(CheckId,inLocation,outLocation,inGfApproved,outGfApproved,inRate,outRate){
+                if(CheckId.checked == false){
+                    document.getElementById(inLocation).style.display = 'none';
+                    document.getElementById(outLocation).style.display = '';
+                    document.getElementById(inGfApproved).style.display = 'none';
+                    document.getElementById(outGfApproved).style.display = '';
+                    document.getElementById(inRate).style.display = 'none';
+                    document.getElementById(outRate).style.display = '';
+                }else{
+                    document.getElementById(inLocation).style.display = '';
+                    document.getElementById(outLocation).style.display = 'none';
+                    document.getElementById(inGfApproved).style.display = '';
+                    document.getElementById(outGfApproved).style.display = 'none';
+                    document.getElementById(inRate).style.display = '';
+                    document.getElementById(outRate).style.display = 'none';
+                }
+            }
+            function saveChangeRequest(RateId){
+                if('{!$Profile.Name}' != 'Country Team'){
+                    actSaveChangeRequest(RateId);
+                }
+                return false;    
+            }
+            function DisplayChangeRequstDetail(changeRequestID){
+                //alert('changeRequestID:' + changeRequestID);
+                if('{!$Profile.Name}' =='LFA Portal User'){
+                    var url = "/LFA/" + changeRequestID;
+                }else{
+                    var url = "/" + changeRequestID;
+                }
+                window.open(url, '_blank');
+            }
+            
+            function DeleteChangeRequest(CRIndex){
+                //alert(CRIndex);
+                if(confirm('Are you sure you want to delete?'))
+                { 
+                    actDeleteChangeRequest(CRIndex);
+                }
+                return false;
+            }
+        </script>
+        <apex:inputHidden id="ipHiddenCon" value="{!strConId}"/>
+        <!--<apex:inputHidden id="hdnDeleteCountryId" value="{!strDeleteCountryId}"/>-->
+        <!--<apex:inputHidden id="hdnDeleteIndex" value="{!DeleteIndex}"/>-->
+        
+        
+        <apex:actionFunction action="{!DeleteRates}" name="callDeleteRate"  reRender="frm" status="Processing">                        
+            <apex:param name="DeleteConRateIndex" value="" id="DeleteConRateIndex"/>
+            <apex:param name="DeleteRateIndex" value="" id="DeleteRateIndex"/>
+        </apex:actionFunction>
+        <!--<apex:actionFunction action="{!DeleteChangeRequest}" name="actDeleteChangeRequest"  reRender="frm" status="Processing">                        
+            <apex:param name="CRIndex" value="" id="CRIndex"/>
+            
+        </apex:actionFunction>-->
+        
+        <apex:actionFunction action="{!addContactRow}" oncomplete="DisplayErrorMsg()" name="callAddContactRow"  reRender="frm" status="Processing" >
+            <apex:param name="AddConId" value="" id="AddConId"/>
+        </apex:actionFunction>
+        
+        <apex:actionFunction name="actSaveChangeRequest" action="{!SaveChangeRequest}" reRender="frm" status="Processing">
+            <apex:param name="RateId" value="" id="RateId"/>
+        </apex:actionFunction>
+        
+        
+        <!--<apex:actionFunction name="actFillDetailsOnChange" action="{!FillDetailsOnChange}" reRender="ContactPopup" status="Processing">
+            <apex:param name="Index" value="" id="Index"/>
+        </apex:actionFunction>-->
+        
+        <apex:actionfunction name="actShowInactive" action="{!ShowInactive}" reRender="frm" status="Processing"/>
+        <apex:actionfunction name="actHideInactive" action="{!HideInactive}" reRender="frm" status="Processing"/>      
+        <apex:pageBlock id="pageB">
+            <apex:pageMessages />
+            <apex:pageBlockSection columns="1">
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="Country :"/>
+                    <apex:outputText value="{!strCountryName}"/>
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="Region :"/>
+                    <apex:outputText value="{!strCountryRegion}"/>
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="LFA :"/>
+                    <apex:outputText value="{!strAccName}"/>
+                </apex:pageBlockSectionItem>
+            </apex:pageBlockSection>
+            <p>
+                <apex:outputPanel >
+                    <apex:outputtext value="If someone is missing from your team, please contact the LFA Coordination Team." style="font-weight:bold"/>
+                </apex:outputPanel>
+                <apex:outputPanel style="float:right">
+                    <apex:outputLabel value="Year: " style="font-weight:bold"></apex:outputLabel>
+                    <apex:selectList style="width:125px;" id="RateYear" size="1" value="{!strRateYear}" multiselect="false">
+                        <apex:selectOptions value="{!RateYear}"></apex:selectOptions>
+                        <apex:actionSupport event="onchange" action="{!FillListOnSelectYear}" reRender="oppnlMain" status="Processing"/> <!-- reRender="opmainLocation" -->
+                    </apex:selectList>
+                </apex:outputPanel>
+            </p>
+            <br/>
+            <apex:outputPanel id="oppnlMain">
+                <table width="100%" cellspacing="0" cellpadding="0" border="0" class="list">                                        
+                    <thead>
+                         <tr>
+                            <th>
+                                <apex:image styleClass="CollapseExpandAllImage" url="{!$Resource.ExpandAll1}" title="Hide Inactive" onclick="actHideInactive();" rendered="{!blnShowInactive}"/>
+                                <apex:outputText styleClass="CollapseExpandAllText" value="Hide Inactive" rendered="{!blnShowInactive}"></apex:outputText>
+                                <apex:image styleClass="CollapseExpandAllImage" url="{!$Resource.CollapseAll1}" title="Show Inactive" onclick="actShowInactive();" rendered="{!blnHideInactive}"/>
+                                <apex:outputText styleClass="CollapseExpandAllText" value="Show Inactive" rendered="{!blnHideInactive}"></apex:outputText>
+                            </th>
+                        </tr>
+                        <tr>
+                            <!--<th width="3%" />-->
+                            <th class="headerRowLower" width="12%"><apex:outputLabel value="First Name"/></th>
+                            <th class="headerRowLower" width="12%"><apex:outputLabel value="Last Name"/></th>
+                                                      
+                            <th class="headerRowLower" width="9%"><apex:outputLabel value="Yrs of Relevant Experience"/></th>                                     
+                            <th class="headerRowResource" width="15%"><apex:outputLabel value="LFA Role"/></th>
+                            <th class="headerRowResource" width="3%"><apex:outputLabel value="Active?"/></th>  
+                            <th class="headerRowResource" width="9%"><apex:outputLabel value="Location"/></th>
+                            <th class="headerRowResource" width="8%"><apex:outputLabel value="GF Approved"/></th>                                    
+                            <th class="headerRowResource" width="5%"><apex:outputLabel value="Current Daily Rate"/></th>
+                            <th class="headerRowResource" width="5%"><apex:outputLabel value="Change Request"/></th>
+                            <!--<th class="headerRowResource" width="4%"><apex:outputLabel value="2014 Daily Rate"/></th>
+                            <th class="headerRowResource" width="5%"><apex:outputLabel value="% Diff"/></th>-->
+                        </tr>
+                    </thead>
+                    <apex:variable id="variable" var="CountContact" value="{!0}"/>                    
+                    <apex:repeat id="reptCon" value="{!lstWrapContactRate}" var="wrpContactRate">                       
+                        <apex:variable id="variableRate1" var="CountRate" value="{!0}"/>
+                        <apex:repeat id="reptConRate" value="{!wrpContactRate.lstWrpRate}" var="Rate">                                                           
+                            <tr>                                 
+                                <!--<td class="dataCell" align="right">-->
+                                    <!--
+                                    <apex:commandButton value="+" status="Processing" style="vertical-align:middle;display:{!if($Profile.Name=='LFA Coordination','',if($Profile.Name=='System Administrator','','none'))}" action="{!addContactRateRow}" reRender="frm" rendered="{!If(CountRate +1 == wrpContactRate.lstWrpRate.size,true,false)}">
+                                        <apex:param value="{!wrpContactRate.objContact.Id}" name="ContactId" assignTo="{!ContactId}"/>
+                                    </apex:commandButton> 
+                                    <apex:image style="cursor:pointer;vertical-align:middle;display:{!if($Profile.Name=='LFA Coordination','',if($Profile.Name=='System Administrator','','none'))}" value="{!$Resource.DeleteImage}" height="20"  width="25" title="Delete" onclick="DeleteRate('{!CountContact}','{!CountRate}');" />                                                                                                  
+                                    -->
+                                <!--</td>-->                          
+                                <td class="dataCell" rowspan="{!wrpContactRate.lstWrpRate.size}" style="border-bottom:0px !important;display:{!If(CountRate == 0,'','none')};vertical-align:top;">
+                                    <apex:outputField id="ipConFName" value="{!wrpContactRate.objContact.FirstName}"  />
+                                </td>
+                                <td class="dataCell" rowspan="{!wrpContactRate.lstWrpRate.size}" style="display:{!If(CountRate == 0,'','none')};vertical-align:top;">
+                                     <apex:outputField id="ipConLName" value="{!wrpContactRate.objContact.LastName}" rendered="{!if($Profile.Name == 'LFA Coordination' || $Profile.Name == 'System Administrator' ,false,true)}" /> 
+                                 <apex:outputLink id="ipLinkConLName" rendered="{!if($Profile.Name == 'LFA Coordination' || $Profile.Name == 'System Administrator' ,true,false)}" value="/{!wrpContactRate.objContact.Id}">{!wrpContactRate.objContact.LastName} </apex:outputLink>
+                                </td>
+                                <!--<td class="dataCell" rowspan="{!wrpContactRate.lstWrpRate.size}" style="display:{!If(CountRate == 0,'','none')};vertical-align:top;">
+                                    <apex:outputField id="ipConActMem" value="{!wrpContactRate.objContact.Active_LFA_Member__c}" onchange="changeActiveLFAMember(this,'{!CountContact}');"  />
+                                </td>-->                                   
+                                <td class="dataCell" rowspan="{!wrpContactRate.lstWrpRate.size}" style="display:{!If(CountRate == 0,'','none')};vertical-align:top;">
+                                    <apex:outputField id="ipConLevelExp" value="{!wrpContactRate.objContact.Experience__c}" />                                    
+                                </td>
+                                <td class="dataCell">                                         
+                                    <table cellspacing="0" cellpadding="0" border="0" class="noBorder">
+                                        <tr>
+                                            <td>
+                                                <!--
+                                                <apex:selectList id="selListRole"  style="width:100%;vertical-align:middle;" value="{!Rate.objRate.LFA_Role__c}" onchange="showHideOtherRole(this,'{!$Component.ipOtherLFARole}','{!$Component.ipHiddenRoleName}')" size="1">                                                       
+                                                    <apex:selectOptions value="{!RoleOptions}"></apex:selectOptions>                                                    
+                                                </apex:SelectList>
+                                                <apex:inputHidden id="ipHiddenRoleName" value="{!Rate.strRoleName}"/>
+                                                -->
+                                                {!Rate.strRoleName}
+                                            </td>
+                                            </tr>
+                                            <tr><td style="padding:0px; height: 4px; display:{!If(Rate.strRoleName == 'Other Professional','','none')}"></td></tr>
+                                            <tr>
+                                                <td>
+                                                <apex:outputField id="ipOtherLFARole" value="{!Rate.objRate.Other_LFA_Role__c}" style="display:{!If(Rate.strRoleName == 'Other Professional','','none')};vertical-align:middle;width:98%;"/>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </td>     
+                                <td align="center">
+                                    <apex:outputPanel id="panelRateActive" rendered="{!if(strRateYear == '' || strRateYear == 'Current Year',true,false)}">
+                                        <apex:outputfield id="ipRateActive" value="{!Rate.objRate.Active__c}" style="vertical-align:middle;" />
+                                    </apex:outputPanel>
+                                    <apex:outputPanel id="panelRateActiveLastYear" rendered="{!if(strRateYear == 'Last Year',true,false)}">
+                                        <apex:outputfield id="ipRateActiveLastYear" value="{!Rate.objRate.Last_Year_Active__c}" style="vertical-align:middle;" />
+                                    </apex:outputPanel>
+                                    <apex:outputPanel id="panelRateActiveNextYear" rendered="{!if(strRateYear == 'Next Year',true,false)}">
+                                        <apex:outputfield id="ipRateActiveNextYear" value="{!Rate.objRate.Next_Year_Active__c}" style="vertical-align:middle;" />
+                                    </apex:outputPanel>
+                                </td>                           
+                                <td >
+                                    <!--<apex:inputField id="ipRateLocation" value="{!Rate.objRate.LFA_Location__c}" style="vertical-align:middle;width:97%;display:none"/>-->
+                                    <!--<apex:selectList id="ipRateLocation" value="{!Rate.objRate.LFA_Location__c}" size="1" style="display:{!if(Rate.objRate.Active__c == true,'','none')};">
+                                        <apex:selectOptions value="{!LocationOptions}"></apex:selectOptions>
+                                    </apex:selectList>
+                                    <apex:outputText id="opRateLocation" value="{!Rate.objRate.LFA_Location__c}" style="vertical-align:middle;width:97%;display:{!if(Rate.objRate.Active__c == false,'','none')};"/>
+                                    -->
+                                    <apex:outputPanel id="panelRateLocation" rendered="{!if(strRateYear == '' || strRateYear == 'Current Year',true,false)}">
+                                        {!Rate.objRate.LFA_Location__c}
+                                    </apex:outputPanel>
+                                    <apex:outputPanel id="panelRateLocationLastYear" rendered="{!if(strRateYear == 'Last Year',true,false)}">
+                                        {!Rate.objRate.Last_Year_LFA_Location__c}
+                                    </apex:outputPanel>
+                                    <apex:outputPanel id="panelRateLocationNextYear" rendered="{!if(strRateYear == 'Next Year',true,false)}">
+                                        {!Rate.objRate.Next_Year_LFA_Location__c}
+                                    </apex:outputPanel>
+                                </td>
+                                <td>
+                                    <!--<apex:inputField id="ipRateApproved" value="{!Rate.objRate.GF_Approved__c}" style="vertical-align:middle;width:96%;display:{!if(Rate.objRate.Active__c == true,'','none')};"/>-->
+                                    <!--
+                                    <apex:selectList id="ipRateApproved" value="{!Rate.objRate.GF_Approved__c}" size="1" style="display:{!if(Rate.objRate.Active__c == true,'','none')};">
+                                        <apex:selectOptions value="{!GfApprovedOptions}"></apex:selectOptions>
+                                    </apex:selectList>
+                                    <apex:outputText id="opRateApproved" value="{!Rate.objRate.GF_Approved__c}" style="vertical-align:middle;width:96%;display:{!if(Rate.objRate.Active__c == false,'','none')};"/>
+                                    -->
+                                    <apex:outputPanel id="panelRateApproved" rendered="{!if(strRateYear == '' || strRateYear == 'Current Year',true,false)}">
+                                        {!Rate.objRate.GF_Approved__c}
+                                    </apex:outputPanel>
+                                    <apex:outputPanel id="panelRateApprovedLastYear" rendered="{!if(strRateYear == 'Last Year',true,false)}">
+                                        {!Rate.objRate.Last_Year_GF_Approved__c}
+                                    </apex:outputPanel>
+                                    <apex:outputPanel id="panelRateApprovedNextYear" rendered="{!if(strRateYear == 'Next Year',true,false)}">
+                                        {!Rate.objRate.Next_Year_GF_Approved__c}
+                                    </apex:outputPanel>
+                                </td>                                         
+                                <td class="dataCell">
+                                    <apex:outputPanel id="panelCurrentRate" rendered="{!if(strRateYear == '' || strRateYear == 'Current Year',true,false)}">
+                                        <apex:OutputField id="opCurrentRate" value="{!Rate.objRate.Rate__c}" style="vertical-align:middle;"/>
+                                    </apex:outputPanel>
+                                    <apex:outputPanel id="panelCurrentRateLastYear" rendered="{!if(strRateYear == 'Last Year',true,false)}">
+                                        <apex:OutputField id="opCurrentRateLastYear" value="{!Rate.objRate.Last_Year_Daily_Rate__c}" style="vertical-align:middle;"/>
+                                    </apex:outputPanel>
+                                    <apex:outputPanel id="panelCurrentRateNextYear" rendered="{!if(strRateYear == 'Next Year',true,false)}">
+                                        <apex:OutputField id="opCurrentRateNextYear" value="{!Rate.objRate.Next_Year_Daily_Rate__c}" style="vertical-align:middle;"/>
+                                    </apex:outputPanel>
+                                </td>
+                                <td class="dataCell" align="center">
+                                    <apex:image value="{!$Resource.EditPencil}" title="Submit Change Request" width="30px" height="30px" onclick="return saveChangeRequest('{!Rate.objRate.Id}')" rendered="{!IF(Rate.strPendingCRID == null,true,false)}" style="display:{!if(strRateYear == 'Last Year','none','')}"/>
+                                    <a href="{!if($Profile.Name=='LFA Portal User','/LFA','')}/{!Rate.strPendingCRID}">
+                                        <apex:image value="{!$Resource.EditPencilBlue}" title="Review Pending Change Request" width="30px" height="30px" rendered="{!IF(Rate.strPendingCRID != null,true,false)}"/>
+                                    </a>
+                                </td>
+                                <td class="dataCell" style="display:none">
+                                    <!--RefreshButtonPending
+                                    <apex:inputField id="ipNxtYearRate" value="{!Rate.objRate.Next_Year_Daily_Rate__c}" style="vertical-align:middle;width:94%;display:{!if(Rate.objRate.Active__c == true,'','none')};" onchange="CalculateRateDifference('{!$Component.opCurrentRate}','{!$Component.ipNxtYearRate}','{!$Component.optxtDiff}','{!$Component.hdnDiff}');"/>
+                                    <apex:outputField id="opNxtYearRate" value="{!Rate.objRate.Next_Year_Daily_Rate__c}" style="vertical-align:middle;width:94%;display:{!if(Rate.objRate.Active__c == false,'','none')};"/>
+                                    -->
+                                    {!Rate.objRate.Next_Year_Daily_Rate__c}
+                                </td>
+                                <td class="dataCell" style="display:none">
+                                    <apex:outputText id="optxtDiff" value="{!Rate.decDifference}"/>
+                                    <script>                                       
+                                        if(document.getElementById('{!$Component.optxtDiff}').innerHTML == 0)
+                                        {                                          
+                                            document.getElementById('{!$Component.optxtDiff}').innerHTML = '0.00';
+                                        }
+                                    </script>
+                                    <apex:inputhidden id="hdnDiff" value="{!Rate.decDifference}"/>                                    
+                                    <apex:variable var="CountRate" value="{!CountRate+1}"/>                                           
+                                </td>                                 
+                             </tr>                                                       
+                        </apex:repeat>
+                        <apex:variable id="variableCon" var="CountContact" value="{!CountContact+1}"/> 
+                    </apex:repeat>
+                    <tfoot>
+                        <tr class="totalRow">                           
+                            <th class="totalRow" colspan="11">
+                                
+                                <apex:commandButton value="Add Contact/Role" title="Contact Lookup (New Window)" id="txtvalue_lkwgt" onclick="openLookupPopup('{!strAccId}','Contact','{!$Component.ipHiddenCon}','{!strCountryId}','{!strParentAccId}','{!strWorkPlanId}'); return false"  immediate="true" style="display:{!IF($Profile.Name == 'Country Team','none','')}"/>
+                                
+                                <!--<apex:commandButton value="Add Contact" action="{!ShowPopup}" reRender="ContactPopup" status="Processing"/>-->
+                            </th>
+                       </tr>
+                    </tfoot>  
+                    
+                </table> 
+                <br/>
+                <apex:pageBlock id="pbCRList" title="Change Requests" >
+                    <apex:variable var="CountCR" value="{!0}" />
+                    <apex:pageBlockTable id="pbtCRList" value="{!lstChangeRequest}" var="cr">
+                        <!--<apex:column >
+                            <apex:facet name="header">
+                                <apex:outputPanel >Action</apex:outputPanel>
+                            </apex:facet>
+                            <apex:commandLink id="lnkDeleteCR" onclick="return DeleteChangeRequest('{!CountCR}')">Delete</apex:commandLink>
+                        </apex:column>-->
+                        <apex:column >
+                            <apex:facet name="header">
+                                <apex:commandLink id="cmdSortCRName" action="{!ViewData}" value="Change Request Name{!IF(sortExpression=='Name',IF(sortDirection='ASC','▲','▼'),'')}" reRender="pbCRList" status="Processing">
+                                    <apex:param value="Name" assignTo="{!sortExpression}"></apex:param>
+                                </apex:commandLink>
+                            </apex:facet>
+                            <!--<apex:outputField value="{!cr.Name}"></apex:outputField>-->
+                            <apex:outputLink id="ipLinkCRLName" value="/{!cr.Id}">{!cr.Name}</apex:outputLink>
+                        </apex:column>
+                        <apex:column >
+                            <apex:facet name="header">
+                                <!--<apex:outputPanel >Other LFA Role</apex:outputPanel>-->
+                                <apex:commandLink id="cmdSortType"  action="{!ViewData}" value="Type{!IF(sortExpression=='type__c',IF(sortDirection='ASC','▲','▼'),'')}" reRender="pbCRList" status="Processing">
+                                    <apex:param value="type__c" assignTo="{!sortExpression}" ></apex:param>
+                                </apex:commandLink>
+                            </apex:facet>
+                            <apex:outputField value="{!cr.Type__c}"></apex:outputField>
+                        </apex:column>
+                        <apex:column >
+                            <apex:facet name="header">
+                                <!--<apex:outputPanel >Contact</apex:outputPanel>-->
+                                <apex:commandLink id="cmdSortContact"  action="{!ViewData}" value="Contact{!IF(sortExpression=='Contact__c',IF(sortDirection='ASC','▲','▼'),'')}" reRender="pbCRList" status="Processing">
+                                    <apex:param value="Contact__c" assignTo="{!sortExpression}" ></apex:param>
+                                </apex:commandLink>
+                            </apex:facet>
+                            <apex:outputField value="{!cr.Contact__c}"></apex:outputField>
+                        </apex:column>
+                        <apex:column >
+                            <apex:facet name="header">
+                                <!--<apex:outputPanel >LFA Role</apex:outputPanel>-->
+                                <apex:commandLink id="cmdSortLFARole"  action="{!ViewData}" value="LFA Role{!IF(sortExpression=='LFA_Role__c',IF(sortDirection='ASC','▲','▼'),'')}" reRender="pbCRList" status="Processing">
+                                    <apex:param value="LFA_Role__c" assignTo="{!sortExpression}" ></apex:param>
+                                </apex:commandLink>
+                            </apex:facet>
+                            <apex:outputField value="{!cr.LFA_Role__c}"></apex:outputField>
+                        </apex:column>
+                           <apex:column >
+                            <apex:facet name="header">
+                                <!--<apex:outputPanel >Status</apex:outputPanel>-->
+                                <apex:commandLink id="cmdSortStatus"  action="{!ViewData}" value="Change Request Status{!IF(sortExpression=='Status__c',IF(sortDirection='ASC','▲','▼'),'')}" reRender="pbCRList" status="Processing">
+                                    <apex:param value="Status__c" assignTo="{!sortExpression}" ></apex:param>
+                                </apex:commandLink>
+                            </apex:facet>
+                            <apex:outputField value="{!cr.Status__c}"></apex:outputField>
+                        </apex:column>
+                        <apex:column >
+                            <apex:facet name="header">
+                                <!--<apex:outputPanel >Proposed Daily Rate</apex:outputPanel>-->
+                                <apex:commandLink id="cmdSortPDR"  action="{!ViewData}" value="Proposed Daily Rate{!IF(sortExpression=='Proposed_Daily_Rate__c',IF(sortDirection='ASC','▲','▼'),'')}" reRender="pbCRList" status="Processing">
+                                    <apex:param value="Proposed_Daily_Rate__c" assignTo="{!sortExpression}" ></apex:param>
+                                </apex:commandLink>
+                            </apex:facet>
+                            <apex:outputField value="{!cr.Proposed_Daily_Rate__c}"></apex:outputField>
+                        </apex:column>
+                        <apex:column >
+                            <apex:facet name="header">
+                                <!--<apex:outputPanel >Proposed LFA Location</apex:outputPanel>-->
+                                <apex:commandLink id="cmdSortPLL"  action="{!ViewData}" value="Proposed LFA Location{!IF(sortExpression=='Proposed_LFA_Location__c',IF(sortDirection='ASC','▲','▼'),'')}" reRender="pbCRList" status="Processing">
+                                    <apex:param value="Proposed_LFA_Location__c" assignTo="{!sortExpression}" ></apex:param>
+                                </apex:commandLink>
+                            </apex:facet>
+                            <apex:outputField value="{!cr.Proposed_LFA_Location__c}"></apex:outputField>
+                        </apex:column>
+                        <apex:column >
+                            <apex:facet name="header">
+                                <!--<apex:outputPanel >Proposed Status</apex:outputPanel>-->
+                                <apex:commandLink id="cmdSortPS"  action="{!ViewData}" value="Proposed Status{!IF(sortExpression=='Proposed_Status__c',IF(sortDirection='ASC','▲','▼'),'')}" reRender="pbCRList" status="Processing">
+                                    <apex:param value="Proposed_Status__c" assignTo="{!sortExpression}" ></apex:param>
+                                </apex:commandLink>
+                            </apex:facet>
+                            <apex:outputField value="{!cr.Proposed_Status__c}"></apex:outputField>
+                        </apex:column>
+                     
+                        <apex:column >
+                            <apex:facet name="header">
+                                <!--<apex:outputPanel >Last Modified Date</apex:outputPanel>-->
+                                <apex:commandLink id="cmdSortLMD"  action="{!ViewData}" value="Last Modified Date{!IF(sortExpression=='LastModifiedDate',IF(sortDirection='ASC','▲','▼'),'')}" reRender="pbCRList" status="Processing">
+                                    <apex:param value="LastModifiedDate" assignTo="{!sortExpression}" ></apex:param>
+                                </apex:commandLink>
+                            </apex:facet>
+                            <!--<apex:outputField value="{!cr.LastModifiedDate}"></apex:outputField>-->
+                            <apex:outputText id="outCreatedDate" value="{0,date,dd.MM.yyyy}">
+                                <apex:param value="{!cr.LastModifiedDate}"/>
+                            </apex:outputText>
+                            <apex:variable var="CountCR" value="{!CountCR+1}" />
+                        </apex:column>
+                        
+                    </apex:pageBlockTable>
+                </apex:pageBlock>               
+                </apex:outputPanel>
+                <apex:pageBlockButtons > 
+                    <!--
+                    <apex:commandButton value="Quick Save" action="{!QuickSaveContact}" reRender="frm" status="Processing" style="display:{!if($Profile.Name=='LFA Coordination','',if($Profile.Name=='System Administrator','','none'))}"/>
+                    <apex:commandButton value="Save" action="{!SaveContact}" reRender="frm" status="Processing" style="display:{!if($Profile.Name=='LFA Coordination','',if($Profile.Name=='System Administrator','','none'))}"/>
+                    -->
+                    <a href="{!if($Profile.Name=='LFA Portal User','/LFA','')}/{!strWorkPlanId}">{!if($Profile.Name=='LFA Coordination','Cancel',if($Profile.Name=='System Administrator','Cancel','Back to Work Plan'))}</a>
+                </apex:pageBlockButtons>     
+                    
+        </apex:pageBlock>
+        <style>
+        .ProcessingBackground
+        {
+            background-color: black;
+            opacity: 0.50;
+            filter: alpha(opacity = 50);
+            width: 100%;
+            height: 100%;
+            position: fixed;
+            z-index: 9999;
+            top:0;
+            left:0;
+        }
+        .Processing
+        {
+            z-index: 9999;
+            left: 50%;
+            top: 50%;
+            text-align: center;
+            position: fixed;
+        }
+        .custPopup{
+            background-color: white;
+            border-width: 0px;
+            border-radius:10px;
+            border-style: solid;
+            /*z-index: 9999;*/
+            z-index: 51;
+            left: 10%;
+            padding:10px;
+            position: absolute;
+            top:5%;
+            width:80%;
+        }
+        .popupBackground{
+            background-color:black;
+            opacity: 0.20;
+            filter: alpha(opacity = 20);
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            /*z-index: 9998;*/
+            z-index: 50;
+            top: 0;
+            left: 0;
+           
+        }
+        .custPopupNew{
+            background-color: white;
+            border-width: 0px;
+            border-radius:10px;
+            border-style: solid;
+            /*z-index: 9999;*/
+            z-index: 51;
+            left: 10%;
+            padding:10px;
+            position: absolute;
+            top:50%;
+            width:80%;
+        }
+        .popupBackgroundNew{
+            background-color:black;
+            opacity: 0.20;
+            filter: alpha(opacity = 20);
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            /*z-index: 9998;*/
+            z-index: 50;
+            top: 0;
+            left: 0;  
+        }
+        .TextAreaStyle{
+            resize: none;
+        }
+        </style>
+        <div id="divProcessing" style="display:none;">
+            <div class="ProcessingBackground"></div>
+            <div class="Processing">
+                <apex:image alt="Processing" url="{!$Resource.LoadingCircle}" />
+            </div>
+        </div>  
+        <apex:actionStatus id="Processing" onstart="document.getElementById('divProcessing').style.display = '';" onstop="document.getElementById('divProcessing').style.display = 'none';">                            
+        </apex:actionStatus>
+        
+    </apex:form>
+</apex:page>

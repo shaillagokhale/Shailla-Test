@@ -1,0 +1,663 @@
+<apex:page id="page" standardController="Page__c" extensions="GMImplementers" sidebar="false" showHeader="true"> 
+
+    <apex:stylesheet value="{!URLFOR($Resource.GoalsJs, 'assets/css/bootstrap.css')}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.GoalsJs, 'assets/css/bootstrap-responsive.css')}"/>    
+    <script>function setFocusOnLoad() {}</script>
+
+    <style>
+      
+        /* To push content below navbar */
+        
+        .span9 {
+            display: -moz-grid-line;
+            width: 68%;
+        }
+        .container, .navbar-static-top .container, .navbar-fixed-top .container, .navbar-fixed-bottom .container {
+            display: inline-block;
+            margin-left: 1% !important;
+            margin-right: 1% !important;
+            width: 97%;
+        }
+        
+        @media (min-width: 980px) {
+        body {
+            margin-top: 41px;
+        }
+        }
+        
+        a.brand > a > img {
+            height:40px;
+        }
+        .summary {
+        border: 1px solid black;
+            padding:10px;
+        }
+        div.active{
+            background-color: #D1D1D1;
+        }
+        .add_indicator {
+            margin: 30px;
+            padding:40px;
+            border: 1px solid #CCC;
+        }
+        
+        .indicator{
+            border:1px solid #CCC;
+            padding:10px;
+            margin-bottom:10px;
+        }
+        
+        .baseline {
+            /*width: 350px;*/
+            width:44%;
+            display: inline-block;
+            margin-right:20px;
+        }
+        
+        .target {
+            /*width: 350px;*/
+            width:50%;
+            display: inline-block;
+        }
+        .popupButtonYes{
+            background-color: #49C739 !important;
+            background-image: none !important;
+            color: white !important;
+            font-size: 12.9pt !important;
+            font-weight: bold !important;
+            height: 30px !important;;
+            width: 90px !important;;
+        }
+        .Image{
+            cursor:pointer;
+            height:13px;
+            width:13px;
+            vertical-align:middle;
+        }
+        .popupButtonCancel{
+            background-color: #d82516 !important;
+            background-image: none !important;
+            color: white !important;
+            font-size: 12.9pt !important;
+            font-weight: bold !important;
+            height: 30px !important;;
+            width: 90px !important;;
+        }
+        .blankCell{
+            width:5px;
+        }
+        .custPopup{
+            background-color: #ededed;
+            border-width: 0px;
+            border-radius:10px;
+            border-style: solid;
+            z-index: 9999;
+            left: 40%;
+            margin-top:-60px;
+            padding:10px;
+            position: absolute;
+            width:300px;
+            height:130px;
+        }
+        .popupBackground{
+            background-color:black;
+            opacity: 0.50;
+            filter: alpha(opacity = 20);
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            z-index: 9998;
+            top: 0;
+            left: 0;
+        }
+        .white {
+            background-color:white
+        }
+        .deletePopup{
+            background-color: #EDEDED !important;
+            border-top: 0px !important;
+            text-align:center !important;
+        }
+        .deletePopupCancel{
+            background-color: #EDEDED !important;
+            border-top: 0px !important;
+            text-align:left !important;
+        }
+        
+        .pageContent {
+            color: #4A4A56; 
+            font-size: 0.9em; 
+            font-weight: bold; 
+            padding-left: 1px;
+        }
+        .pageDescription{
+            font-size: 1.8em; 
+            font-weight: normal;
+            line-height: 1.1em;
+        }
+        .margin20{
+            margin-left:1%;
+            margin-bottom:16px;
+            margin-top:16px;
+            width:95%;
+            
+        }
+        .stretch{
+            //margin-left:1%;
+            //margin-right:2%;
+        }
+            
+        .h3{
+            font-size:24px;
+            margin-left:2%;
+            margin-top:16px;
+            font-weight:bold;
+        }
+        .h4{
+            font-size:18px;
+            margin-bottom:16px;
+            margin-top:16px;
+        }
+        .link{
+            color:#2E7BBB;
+        }
+        .webkitright {
+            text-align: right;
+            white-space: nowrap;
+        };
+        .headerSearchContainer {
+            margin-top: -20px !important;
+        }    
+        .phHeaderCustomLogo .headerSearchLeftRoundedCorner {
+            margin-top: -20px !important;
+        }  
+    </style>
+    
+    <!--<apex:includeScript value="{!$Resource.GoalsJs/assets/js/bootstrap.js}" />-->
+    <apex:includeScript value="{URLFOR(!$Resource.GoalsJs, 'assets/js/bootstrap.js')}" />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js">
+    
+    </script>
+    <!--<script src="assets/js/bootstrap.js">
+    </script>-->
+    <!--<script>
+      $(document).ready(function () {
+          $('label.tree-toggler').click(function () {
+              $(this).parent().children('ul.tree').toggle(300);
+          });
+      });
+    </script>-->
+    <script>
+      $(document).ready(function () {
+          $('label.tree-toggler').click(function () {
+              $(this).parent().children('ul.tree').toggle(300);
+          });
+          
+           if ( $.browser.webkit ) {
+            $("#phHeaderLogoImage").parents("table").find("td").eq(2).removeClass("right").addClass("webkitright");  
+            
+           };
+      });
+    </script>
+    <!--<div class="h3">
+        Recipients
+    </div>
+    
+    <div class="margin20">
+    <ul class="breadcrumb">
+                <li>
+                    <a href="{!if($Profile.Name=='PR Standard Portal User','/GM','')}{!if($Profile.Name=='PR Manager Portal User','/GM','')}{!if($Profile.Name=='PR Read-Only Portal User','/GM','')}{!if($Profile.Name=='LFA GM Admin Portal User','/GM','')}{!if($Profile.Name=='LFA GM Editor Portal User','/GM','')}{!if($Profile.Name=='PR Only Portal User','/GM','')}/apex/grantmakinghome" class="link">Grant-Making </a>
+                    <span class="divider">/</span>
+                </li>
+                <li>
+                    <a href="{!if($Profile.Name=='PR Standard Portal User','/GM','')}{!if($Profile.Name=='PR Manager Portal User','/GM','')}{!if($Profile.Name=='PR Read-Only Portal User','/GM','')}{!if($Profile.Name=='LFA GM Admin Portal User','/GM','')}{!if($Profile.Name=='LFA GM Editor Portal User','/GM','')}{!if($Profile.Name=='PR Only Portal User','/GM','')}/apex/grantmakingHome?id={!Page__c.Implementation_Period__r.Grant__r.Country__c}" class="link">{!Page__c.Implementation_Period__r.Grant__r.Country__r.Name}</a>
+                    <span class="divider">/</span>
+                </li>
+                <li>
+                    {!Page__c.Implementation_Period__r.Grant__r.Name}
+                    <span class="divider">/</span>
+                </li>
+                <li>
+                    <a href="{!if($Profile.Name=='PR Standard Portal User','/GM','')}{!if($Profile.Name=='PR Manager Portal User','/GM','')}{!if($Profile.Name=='PR Read-Only Portal User','/GM','')}{!if($Profile.Name=='LFA GM Admin Portal User','/GM','')}{!if($Profile.Name=='LFA GM Editor Portal User','/GM','')}{!if($Profile.Name=='PR Only Portal User','/GM','')}/apex/grantmakingoverview?id={!Page__c.Implementation_Period__r.Id}" class="link">{!Page__c.Implementation_Period__r.Name}</a>
+                </li>
+    </ul>
+    <chatter:feedWithFollowers id="chatterFeed" entityId="{!Page__c.Id}"/>
+    </div>-->
+        <div class="container">
+    <span class="h3">
+        Recipients 
+    
+    </span>
+     <span class="pull-right"> 
+                    <a href="/apex{!if(CONTAINS($Profile.Name,'PR')||CONTAINS($Profile.Name,'LFA')||CONTAINS($Profile.Name,'CM')||CONTAINS($Profile.Name,'CCM'),'/GM','')}/GrantMakingGuidance?Id={!strGuidanceId}&lang={!strLanguage}" target="_blank" class="link" >{!$label.See_Help}</a>
+                    </span>
+                    <br/><br/>
+    <!--<div class="margin20">-->
+    <div id="Infopanel" class="alert alert-info" >                        
+                <button type="button" class="close" data-dismiss="alert" onclick="closePanel();">
+                    ×
+                </button>
+                <b>
+                Use this page to identify your Recipients.
+            </b>
+    </div>
+    <ul class="breadcrumb">
+                <li>
+                    <a href="{!if($Profile.Name=='PR Standard Portal User','/GM','')}{!if($Profile.Name=='PR Manager Portal User','/GM','')}{!if($Profile.Name=='PR Read-Only Portal User','/GM','')}{!if($Profile.Name=='LFA GM Admin Portal User','/GM','')}{!if($Profile.Name=='LFA GM Editor Portal User','/GM','')}{!if($Profile.Name=='PR Only Portal User','/GM','')}/apex/grantmakinghome" class="link">Grant-Making </a>
+                    <span class="divider">/</span>
+                </li>
+                <li>
+                    <a href="{!if($Profile.Name=='PR Standard Portal User','/GM','')}{!if($Profile.Name=='PR Manager Portal User','/GM','')}{!if($Profile.Name=='PR Read-Only Portal User','/GM','')}{!if($Profile.Name=='LFA GM Admin Portal User','/GM','')}{!if($Profile.Name=='LFA GM Editor Portal User','/GM','')}{!if($Profile.Name=='PR Only Portal User','/GM','')}/apex/grantmakingHome?id={!Page__c.Implementation_Period__r.Grant__r.Country__c}" class="link">{!Page__c.Implementation_Period__r.Grant__r.Country__r.Name}</a>
+                    <span class="divider">/</span>
+                </li>
+                <!--<li>
+                    {!Page__c.Implementation_Period__r.Grant__r.Name}
+                    <span class="divider">/</span>
+                </li>-->
+                <li>
+                    <a href="{!if($Profile.Name=='PR Standard Portal User','/GM','')}{!if($Profile.Name=='PR Manager Portal User','/GM','')}{!if($Profile.Name=='PR Read-Only Portal User','/GM','')}{!if($Profile.Name=='LFA GM Admin Portal User','/GM','')}{!if($Profile.Name=='LFA GM Editor Portal User','/GM','')}{!if($Profile.Name=='PR Only Portal User','/GM','')}/apex/grantmakingoverview?id={!Page__c.Implementation_Period__r.Id}" class="link">{!Page__c.Implementation_Period__r.Name}</a>
+                </li>
+    </ul>
+    
+    </div> 
+<div class="margin20"> 
+<chatter:feedWithFollowers id="chatterFeed" entityId="{!Page__c.Id}"/>
+ </div>
+   <br/>
+    <apex:form id="frm"> 
+
+     <div class="containerTGF">
+      <div class="row">
+      <table width="100%">
+            <tr>
+      <!--START SIDEBAR-->  
+              
+                <td width="20%" valign="top" align="left">
+                <c:GMSidebar RecordId="{!Page__c.Id}"/>
+                </td>
+                <!--END SIDEBAR, START MAIN SECTION-->
+                <!--<div class="span3 side_menu">
+                    <div class="well" style=" padding: 8px 0;">
+                        <div>
+                            <ul class="nav nav-list">
+                                <li>
+                                    <div class="tree-toggler nav-header">
+                                        <a href="{!if($Profile.Name=='PR Standard Portal User','/GM','')}{!if($Profile.Name=='PR Manager Portal User','/GM','')}{!if($Profile.Name=='PR Read-Only Portal User','/GM','')}{!if($Profile.Name=='LFA GM Admin Portal User','/GM','')}{!if($Profile.Name=='LFA GM Editor Portal User','/GM','')}{!if($Profile.Name=='PR Only Portal User','/GM','')}/apex/GrantmakingOverview?ID={!strImplementationPeriodId}" class="link">{!$label.Overview}</a>
+                                    </div>
+                                </li>
+                                <li class="divider">
+                                </li>
+                                <apex:variable value="{!0}" var="Count"/>
+
+                                <apex:repeat id="rptMain" value="{!lstPages}" var="P">
+                                    <li>
+                                        <div class="tree-toggler nav-header {!if(P.Id=strPageId,'active','')}">
+                                            <apex:inputHidden id="CollapseStatus" value="{!blnExpandSection}" />
+                                            <apex:outputpanel id="collapseimage" style="display:{!if(blnExpandSection != true && P.Modular__c == true,'','none')};margin-right:5px" rendered="{!if(lstModules.size > 0,if(P.Modular__c == true,true,false),false)}">
+                                                <apex:image styleClass="Image" url="{!$Resource.Collepse}" onclick="switchMenu('Module{!Count}','{!$Component.Expandimage}','{!$Component.collapseimage}','{!$Component.CollapseStatus}','true')" title="Expand"/>
+                                            </apex:outputpanel>
+                                            <apex:outputpanel id="Expandimage" style="display:{!if(blnExpandSection == true && P.Modular__c == true,'','none')};margin-right:5px" rendered="{!if(lstModules.size > 0,if(P.Modular__c == true,true,false),false)}">
+                                                  <apex:image styleClass="Image" url="{!$Resource.Expand}" onclick="switchMenu('Module{!Count}','{!$Component.collapseimage}','{!$Component.Expandimage}','{!$Component.CollapseStatus}','false')" title="Collapse"/>
+                                            </apex:outputpanel>-->
+                                            
+                                            <!--<img src="{!$Resource.Expand}" style="display:{!if(P.Modular__c=true,'','none')};margin-right:5px"/>-->
+                                            <!--<apex:outputtext value="{!P.Name}" rendered="{!P.Modular__c}"/>
+                                            <a href="{!if($Profile.Name=='PR Standard Portal User','/GM','')}{!if($Profile.Name=='PR Manager Portal User','/GM','')}{!if($Profile.Name=='PR Read-Only Portal User','/GM','')}{!if($Profile.Name=='LFA GM Admin Portal User','/GM','')}{!if($Profile.Name=='LFA GM Editor Portal User','/GM','')}{!if($Profile.Name=='PR Only Portal User','/GM','')}/apex/{!P.URL_prefix__c}?id={!P.Id}" class="link" style="display:{!if(P.Modular__c=true,'none','')}">{!P.Name} </a>
+                                        </div>                                    
+                                    </li>
+                                    <apex:variable var="ModuleCount" value="{!0}"/>
+                                    <apex:repeat id="rptModules" value="{!lstModules}" var="M" rendered="{!if(lstModules.Size >0,'true','false')}">
+                                        
+                                        <li id="Module{!Count}" style="display:none;">
+                                            <div class="tree-toggler nav-header}">
+                                                <a href="{!if($Profile.Name=='PR Standard Portal User','/GM','')}{!if($Profile.Name=='PR Manager Portal User','/GM','')}{!if($Profile.Name=='PR Read-Only Portal User','/GM','')}{!if($Profile.Name=='LFA GM Admin Portal User','/GM','')}{!if($Profile.Name=='LFA GM Editor Portal User','/GM','')}{!if($Profile.Name=='PR Only Portal User','/GM','')}/apex/{!P.URL_prefix__c}?id={!M.Id}" style="display:{!if(P.Modular__c=true,'','none')};margin-left:15px;font-size:10px" class="link" title="{!P.Name} - {!M.Name}">{!M.Name}</a>
+                                            </div>
+                                        </li>
+                                        <apex:variable var="ModuleCount" value="{!ModuleCount+1}"/>
+                                    </apex:repeat> 
+                                    <li class="divider">
+                                    </li>
+                                    <apex:variable value="{!Count+1}" var="Count"/>
+                                </apex:repeat>
+                            </ul>
+                        </div>
+                    </div>
+                </div>-->
+              
+                  <td valign="top" align="left">        
+             <div>
+                <div class="span9">
+                <apex:outputPanel id="GoalsPanel">                  
+                     <!--<span class="pull-right"> 
+                    <a href="{!if(CONTAINS($Profile.Name,'PR')||CONTAINS($Profile.Name,'LFA')||CONTAINS($Profile.Name,'CM')||CONTAINS($Profile.Name,'CCM'),'/GM','')}/apex/GrantMakingGuidance?Id={!strGuidanceId}&lang={!strLanguage}" target="_blank" class="link" >{!$label.See_Help}</a>
+                    </span>-->
+                    <!--<apex:commandLink styleClass="pull-right" style="display: inline-block;" value="See Help"/>-->
+                    <div class="h4">
+                            Recipients
+                    </div>
+                    <table class="table table-striped" width="100%" cellspacing="0" cellpadding="0" border="0">
+                        <tbody>
+                            <tr>
+                                <th></th>
+                                <th>Name</th>
+                                <th>Sector</th>
+                                <th colspan="3"></th>
+                            </tr>                            
+                            <apex:variable var="Count" value="{!1}"/>
+                            
+                            <apex:repeat value="{!lstPrincipalRecipients}" var="Goals">
+                                <tr>
+                                  
+                                    <td width="5%">
+                                        <span class="badge badge-inverse">{!Count}</span>
+                                    </td>
+                                    <td width="20%">
+                                        <apex:outputText id="optGoalDec" value="{!Goals.ImpName}" style="display:{!if(Goals.blnDisplay == true,'','none')}"/>
+                                        <apex:inputText maxlength="80" id="inpGoalDec" value="{!Goals.ImpName}" style="height: 20px;width: 300px;resize:none;display:{!if(Goals.blnDisplay == true,'none','')}"/>
+                                    </td>
+                                    <td width="15%">
+                                        <apex:outputText id="optPRType" value="{!Goals.Sector}" style="display:{!if(Goals.blnDisplay == true,'','none')}"/>
+                                        <apex:selectList value="{!Goals.Sector}" size="1" style="display:{!if(Goals.blnDisplay == true,'none','')}">
+                                            <apex:selectOptions value="{!SectorOptions}"></apex:selectOptions>
+                                        </apex:selectList>
+                                    </td>
+                                    <td width="8%" style="padding-left: 0;padding-right: 5px;text-align: right;">
+                                        <apex:commandLink id="cmdLinkEditGoal" styleClass="TGFbtn TGFbtn-mini TGFbtn-primary" style="display:{!if(Goals.blnDisplay == true && Goals.CustomSR == true,'','none')}" reRender="frm" action="{!EditGoal}"  status="Processing">
+                                           <i class="icon-edit icon-white"></i>
+                                            <strong>Edit</strong>
+                                            <apex:param value="{!Count-1}" name="EditIndex" />
+                                        </apex:commandLink>
+                                        <apex:commandLink id="cmdLinkSaveGoal" styleClass="TGFbtn TGFbtn-mini TGFbtn-success" style="display:{!if(Goals.blnDisplay == false && Goals.CustomSR == true,'','none')};width:37px;" action="{!UpdateCustomSR}" reRender="frm" status="Processing">
+                                            <strong>Save</strong>
+                                            <apex:param value="{!Count-1}" name="SaveIndex" />
+                                        </apex:commandLink>
+                                    </td>
+                                    <td width="8%" style="padding-left:0px;padding-right: 5px;text-align: left;">
+                                        <apex:commandLink id="cmdLinkCancelGoal" styleClass="TGFbtn TGFbtn-mini TGFbtn-danger" style="display:{!if(Goals.blnDisplay == false && Goals.CustomSR == true,'','none')};" action="{!CancelGoal}" reRender="frm" status="Processing">
+                                            <strong>Cancel</strong>
+                                            <apex:param value="{!Count-1}" name="CancelIndex" />
+                                        </apex:commandLink>
+                                        <apex:commandLink id="cmdLinkDeleteGoal" styleClass="TGFbtn TGFbtn-mini TGFbtn-danger" onclick="return OpenPopup('{!$Component.tstpopup}');" style="display:{!if(Goals.blnDisplay == true,'','none')};" rendered="{!if(CONTAINS($Profile.Name,$Label.PR_Admin)||CONTAINS($Profile.Name,$Label.PR_Read_Write_Edit)||CONTAINS($Profile.Name,'Country Team')||CONTAINS($Profile.Name,$Label.FPM)||CONTAINS($Profile.Name,'PO')||CONTAINS($Profile.Name,$Label.System_Admin),true,false)}"> 
+                                            <i class="icon-trash icon-white"></i> 
+                                            <strong>Delete</strong>
+                                        </apex:commandLink>
+                                        
+                                        <apex:outputPanel id="tstpopup" style="display:none;">
+                                            <apex:outputPanel id="popupBackground" styleClass="popupBackground"/>
+                                            <apex:outputPanel id="custPopup" styleClass="custPopup">
+                                                <table width="100%" cellspacing="0" cellpadding="0" border="0" >
+                                                    <tr>
+                                                        <td colspan="3" class="deletePopup">
+                                                            <apex:outputtext style="color:#6590c4; font-size: 13.9pt;font-weight: bold;" value="Are you sure?"/>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td colspan="3" class="deletePopup">
+                                                            <apex:outputtext style="color:#6590c4; font-size: 13.9pt;font-weight: bold;" value="This recipient will be deleted."/>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td width="47%" class="deletePopup">
+                                                            <apex:commandButton styleClass="popupButtonYes" value="Yes" action="{!DeleteGoal}" reRender="frm" status="Processing">
+                                                                <apex:param value="{!Count-1}" name="DeleteIndex" />
+                                                            </apex:commandButton>
+                                                        </td>
+                                                        <td width="6%" class="deletePopup"></td>
+                                                        <td width="47%" align="left" class="deletePopupCancel">
+                                                            <apex:commandButton styleClass="popupButtonCancel" value="Cancel" onclick="return ClosePopup('{!$Component.tstpopup}');"/>
+                                                        </td>
+                                                    </tr>
+                                                </table>
+                                            </apex:outputPanel>
+                                        </apex:outputPanel>
+                                        
+                                        <apex:variable var="Count" value="{!Count+1}"/>
+                                    </td>
+                                </tr>
+                            </apex:repeat>
+                            <!--<tr id="AddGoalNewRow" style="display:none;">
+                                <td></td>
+                                <td width="20%">
+                                    <apex:inputText maxlength="80" id="inpName" value="{!objNewAccount.Name}" style="height: 20px;width: 180px;resize:none;"/>
+                                </td>
+                                <td width="20%">
+                                    <apex:inputField id="inpSector" value="{!objNewAccount.Sector__c}" style="height: 30px;width: 180px;resize:none;"/>
+                                </td>
+                               
+                                <td width="8%" style="padding-left: 0;padding-right: 5px;text-align: right;">
+                                    <apex:actionFunction name="actSaveGoal" action="{!SaveGoal}" reRender="frm" status="Processing">
+                                        <apex:param value="{!lstPrincipalRecipients.size+1}" name="SaveIndex" />
+                                    </apex:actionFunction>
+                                    <apex:commandLink styleClass="TGFbtn TGFbtn-mini TGFbtn-success" style="width:37px;" onclick="return ValidateSave('{!$Component.inpName}');" >
+                                        <strong>Save</strong>
+                                    </apex:commandLink>
+                                </td>
+                                <td width="8%" style="padding-left:0px;padding-right: 5px;text-align: left;">
+                                    <apex:commandLink styleClass="TGFbtn TGFbtn-mini TGFbtn-danger" onclick="return CancelNewGoalRow();">
+                                        <strong>Cancel</strong>
+                                        <apex:param value="{!lstPrincipalRecipients.size+1}" name="CancelIndex" />
+                                    </apex:commandLink>
+                                </td>
+                            </tr>-->
+                            <tr id="AddExistingGoalNewRow" style="display:none;">
+                                <td width="5%">
+                                    <span class="badge badge-inverse">{!lstPrincipalRecipients.size+1}</span>
+                                </td>
+                                <td width="20%">
+                                    <apex:actionFunction action="{!fillExistingAccountFields}" name="actfillExistingAccountFields" reRender="frm" oncomplete="AddNewExistingGoalUsingJS();" status="Processing">
+                                        <!--<apex:param value="{!objNewExistingAccount.Name}" name="AccountId"/>-->
+                                    </apex:actionfunction>
+                                    <apex:selectList id="inpSelected" value="{!SelectedAccId}" size="1" onchange="actfillExistingAccountFields();">
+                                        <apex:selectOptions value="{!AccountOptions}"></apex:selectOptions>
+                                    </apex:selectList>                            
+                                    <!--<apex:inputText value="{!objNewExistingAccount.Name}" style="height: 20px;width: 180px;resize:none;"/>-->
+                                </td>
+                                <td width="20%">
+                                   <apex:outputField id="inpSector1" value="{!objNewExistingAccount.Sector__c}" style="height: 30px;width: 180px;resize:none;"/>               
+                                    <!--<apex:inputText value="{!objNewExistingAccount.Name}" style="height: 20px;width: 180px;resize:none;"/>-->
+                                </td>
+                              
+                                <td width="8%" style="padding-left: 0;padding-right: 5px;text-align: right;">
+                                    <apex:actionFunction name="actSaveGoalExisting" action="{!SaveGoalExisting}" reRender="frm" status="Processing">
+                                        <apex:param value="{!lstPrincipalRecipients.size+1}" name="SaveIndex" />
+                                    </apex:actionFunction>
+                                    <apex:commandLink styleClass="TGFbtn TGFbtn-mini TGFbtn-success" style="width:37px;" onclick="return ValidateSave1('{!$Component.inpSelected}');" >
+                                        <strong>Save</strong>                                        
+                                    </apex:commandLink>
+                                </td>
+                                <td width="8%" style="padding-left:0px;padding-right: 5px;text-align: left;">
+                                    <apex:commandLink styleClass="TGFbtn TGFbtn-mini TGFbtn-danger" onclick="return CancelNewExistingGoalRow();"> <!-- action="{!CancelGoal}" reRender="frm" status="Processing">-->
+                                        <strong>Cancel</strong>
+                                        <apex:param value="{!lstPrincipalRecipients.size+1}" name="CancelIndex" />
+                                    </apex:commandLink>
+                                </td>
+                            </tr>
+                            
+                            <tr id="AddGoalBtntr" style="display:{!if(CONTAINS($Profile.Name,$Label.PR_Admin)||CONTAINS($Profile.Name,$Label.PR_Read_Write_Edit)||CONTAINS($Profile.Name,'Country Team')||CONTAINS($Profile.Name,$Label.FPM)||CONTAINS($Profile.Name,'PO')||CONTAINS($Profile.Name,$Label.System_Admin),'','none')};">
+                                <td colspan="2" style="padding-left:10px;padding-right: 5px;">
+                                    <apex:commandLink styleClass="TGFbtn TGFbtn-mini TGFbtn-success" id="addExistingRecipient" onclick="return AddNewExistingGoalUsingJS();" style="margin-right:10px;"  >
+                                        <i class="icon-plus-sign icon-white"></i>
+                                        <strong>ADD EXISTING RECIPIENT</strong>
+                                    </apex:commandLink>
+                                    <!--<apex:commandLink styleClass="TGFbtn TGFbtn-mini TGFbtn-success" onclick="return AddNewGoalUsingJS();" rendered="false" >
+                                        <i class="icon-plus-sign icon-white"></i>
+                                        <strong>ADD NEW RECIPIENT</strong>
+                                    </apex:commandLink>-->
+                                </td>
+                                <td colspan="3">
+                                </td>
+                           </tr>
+                         </tbody>
+                    </table>
+                    <hr></hr>
+                    </apex:outputPanel>
+                <!-- End of right content -->
+                </div>
+            <!-- /end of righht-left row -->
+            </div>
+        <!-- /container -->
+        </td>
+        </tr>
+        </table>
+        </div>
+        </div>
+        <style>
+        .ProcessingBackground
+        {
+            background-color: black;
+            opacity: 0.50;
+            filter: alpha(opacity = 50);
+            width: 100%;
+            height: 100%;
+            position: fixed;
+            z-index: 9999;
+            top:0;
+            left:0;
+        }
+        .Processing
+        {
+            z-index: 9999;
+            left: 50%;
+            top: 50%;
+            text-align: center;
+            position: fixed;
+        }        
+        </style>
+        <div id="divProcessing" style="display:none;">
+            <div class="ProcessingBackground"></div>
+            <div class="Processing">
+                <apex:image alt="Processing" url="{!$Resource.LoadingCircle}" />
+            </div>
+        </div>  
+        <apex:actionStatus id="Processing" onstart="document.getElementById('divProcessing').style.display = '';" onstop="document.getElementById('divProcessing').style.display = 'none';">                            
+        </apex:actionStatus> 
+        
+        <script>
+            
+            function SetStringAddGoal(panelId,setAdd){
+                var spans = document.getElementById(panelId).childNodes;
+                var addStr = '';
+                for(var i=0;i<spans.length;i++){
+                    if(spans[i].tagName == 'SPAN'){
+                        if(spans[i].className.indexOf('badge badge-inverse') != -1){
+                            if(addStr == '') addStr = spans[i].id;
+                            else addStr += ','+spans[i].id;
+                        }
+                    }
+                }
+                return addStr;
+            }
+            function OpenPopup(PopupPanelId){
+                document.getElementById(PopupPanelId).style.display = '';
+                return false;
+            }
+            function ClosePopup(PopupPanelId){
+                document.getElementById(PopupPanelId).style.display = 'none';
+                return false;
+            }
+            function closePanel(){
+                document.getElementById('Infopanel').style.display = 'none';
+            }
+            
+            function AddNewGoalUsingJS(){
+                document.getElementById('AddGoalNewRow').style.display = '';
+                document.getElementById('AddGoalBtntr').style.display = 'none';
+                return false;
+            }
+            function AddNewExistingGoalUsingJS(){
+                document.getElementById('AddGoalBtntr').style.display = 'none';
+                document.getElementById('AddExistingGoalNewRow').style.display = '';
+                var accOptions = document.getElementById('page:frm:inpSelected').length;
+                
+                if(accOptions<2){
+                
+                document.getElementById('AddGoalBtntr').style.display = '';
+                document.getElementById('AddExistingGoalNewRow').style.display = 'none';
+                return false;
+                }
+                
+                return false;
+             }
+            
+            function CancelNewGoalRow(){
+                document.getElementById('AddGoalNewRow').style.display = 'none';
+                document.getElementById('AddGoalBtntr').style.display = '';
+                return false;
+            }
+            function CancelNewExistingGoalRow(){
+                document.getElementById('AddExistingGoalNewRow').style.display = 'none';
+                document.getElementById('AddGoalBtntr').style.display = '';
+                return false;
+            }
+            function EditExistGoal(optGoalDec,inpGoalDec,EditLink,SaveLink,CancelLink,DeleteLink){
+                document.getElementById(optGoalDec).style.display = 'none';
+                document.getElementById(inpGoalDec).style.display = '';
+                document.getElementById(EditLink).style.display = 'none';
+                document.getElementById(SaveLink).style.display = '';
+                document.getElementById(CancelLink).style.display = '';
+                document.getElementById(DeleteLink).style.display = 'none';
+                return false;
+            }
+            
+            function CancelExistGoal(optGoalDec,inpGoalDec,EditLink,SaveLink,CancelLink,DeleteLink){
+                document.getElementById(optGoalDec).style.display = '';
+                document.getElementById(inpGoalDec).style.display = 'none';
+                document.getElementById(EditLink).style.display = '';
+                document.getElementById(SaveLink).style.display = 'none';
+                document.getElementById(CancelLink).style.display = 'none';
+                document.getElementById(DeleteLink).style.display = '';
+                return false;
+            }
+            function ValidateSave(Name){
+                if(document.getElementById(Name).value != ''){
+                    actSaveGoal();
+                    return false;
+                }else{
+                    alert('You must enter an Account Name');
+                    return false;
+                }
+            }
+            function ValidateSave1(Selected){
+                if(document.getElementById(Selected).value != ''){
+                    actSaveGoalExisting();
+                    return false;
+                }else{
+                    alert('You must enter an Account Name');
+                    return false;
+                }
+            }
+            function switchMenu(obj,obj1,obj2,hdn,val) 
+            {   
+            var AllLI = document.getElementsByTagName('li');
+            for(var i=0;i<AllLI.length;i++){
+                if(AllLI[i].id == obj){
+                    if(AllLI[i].style.display != 'none'){
+                        AllLI[i].style.display = 'none';
+                    }else{
+                        AllLI[i].style.display = '';
+                    }
+                }
+            }
+            document.getElementById(hdn).value=val; 
+            
+            var e2 = document.getElementById(obj1);                                       
+            if ( e2.style.display != 'none' ) {
+                e2.style.display = 'none';
+            }
+            else {
+                e2.style.display = '';
+            }
+            var e3 = document.getElementById(obj2);                                       
+            if ( e2.style.display != 'none' ) {
+                e3.style.display = 'none';
+            }
+            else {
+                e3.style.display = '';
+            }
+        }
+            
+            
+            
+        </script>
+    </apex:form>
+</apex:page>

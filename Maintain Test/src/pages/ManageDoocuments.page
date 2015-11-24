@@ -1,0 +1,91 @@
+<apex:page standardController="Implementation_Period__c" extensions="GM_DocumentUpload" id="pgmain">
+<apex:includeScript value="{!URLFOR($Resource.JSZip)}"/>
+<apex:includeScript value="{!URLFOR($Resource.FileSaver)}"/>
+<apex:includeScript value="/soap/ajax/29.0/connection.js"/>
+
+<apex:form >
+	<apex:pageblock >
+		<apex:commandlink reRender="xyz" id="uploadZipButton" onClick="return downloadall();">
+        	<b> {!$Label.Download_All_Documents}</b>
+        </apex:commandlink>
+		<apex:pageblocksection >
+			<apex:dataTable value="{!lstWrpDocumentUpload}" id="rpt"  var="wrpDocUp" rowClasses="odd,even" styleClass="tableClass"> 
+				<apex:column width="100%">
+					{!$Label.Type} 
+					<apex:outputField value="{!wrpDocUp.objDocumentUpload.GMType__c}"/>   
+				</apex:column>
+				<apex:column width="100%">
+					{!$Label.Description}
+					<apex:outputLink target="_Blank" value="/{!wrpDocUp.objFeedItem.RelatedRecordId}?fa=nv" style="text-decoration:underline;">
+                    	{!wrpDocUp.objFeedItem.ContentFileName}
+                    </apex:outputLink>
+				</apex:column>
+				<apex:column width="100%">
+					{!$Label.File_Name} <!--- File Name--->
+					<apex:outputField value="{!wrpDocUp.objFeedItem.Body}"/>
+				</apex:column>
+				<apex:column width="100%">
+					{!$Label.Language}
+					<apex:outputField value="{!wrpDocUp.objDocumentUpload.Language__c}"/>
+				</apex:column>
+				<apex:column width="100%">
+					{!$Label.Created_Date} <!--Created Date--->
+					<apex:outputField value="{!wrpDocUp.objFeedItem.CreatedDate}"/>
+				</apex:column>
+				<apex:column width="100%">
+					{!$Label.Created_By}
+					<apex:outputField value="{!wrpDocUp.objFeedItem.CreatedBy.Name}"/>
+				</apex:column>                                                                                             
+         </apex:dataTable>                                                                                              
+         <apex:outputLabel id="olNotFound" style="border:1px solid grey;" rendered="{!lstWrpDocumentUpload.size == 0}" value="No documents have been uploaded."></apex:outputLabel>                                                                                       
+		</apex:pageblocksection>
+	</apex:pageblock>
+</apex:form>
+<script>
+        // The code supports in IE10 and above browsers
+        function downloadall(){
+            try 
+            {             
+             alert('{!$Label.Downloading_Alert}');
+            
+            var zip = new JSZip();
+            var IPName = '{!strImplementationPeriodId}';
+            var FeedItemIds =[];
+            FeedItemIds = '{!setFeedItemId}';
+            var Ids =[];
+            Ids= FeedItemIds.replace("[","('");
+            Ids = Ids.replace("]","')");
+            Ids = Ids.replace(/, /gi,"','");
+            
+            sforce.connection.sessionId = "{!$Api.Session_ID}";
+            alert(Ids);
+            var countId = sforce.connection.query("SELECT Id FROM FeedItem WHERE Id IN "+Ids);
+            for(var j=0;j<countId.size;j++)
+             {
+                
+              if(countId.size == 1){
+              
+                var result = sforce.connection.query("SELECT ContentData,ContentFileName,RelatedRecordId FROM FeedItem WHERE Id = '"+ countId.records.Id+"'");
+                } else {
+                var result = sforce.connection.query("SELECT ContentData,ContentFileName,RelatedRecordId FROM FeedItem WHERE Id = '"+ countId.records[j].Id+"'");
+                }
+                
+                var filename= result.records.ContentFileName;
+                var filecontent =result.records.ContentData;
+                zip.file(filename,filecontent,{base64:true}); 
+            }
+            
+            var content = zip.generate({type:"blob"});
+            saveAs(content, IPName+".zip"); 
+            }
+         
+          catch(e){
+            if(e == 'blob is not supported by this browser') {
+                alert('{!$Label.Browser_Compatabilty}');
+            }            
+            return false;
+         }
+         
+         }
+</script>
+</apex:page>

@@ -1,0 +1,101 @@
+<apex:page controller="ctrlProfileUserLookupPage" title="Search" showHeader="false" sideBar="false" tabStyle="Account" id="pg" readOnly="true">
+<script language="javascript">
+    window.onload = new function() 
+    { 
+        // bring popup window to front
+        window.focus(); 
+        var ele=document.getElementById('{!$Component.form.block.section.query}');
+        if (ele){
+            ele.focus();
+        }
+    }
+    
+    function fillIn(Id,Name){
+        var name = '{!strCName}';
+        var id = '{!strCId}';
+        var ele1 = top.opener.document.getElementById(id);
+        ele1.value = Id;
+        var ele = top.opener.document.getElementById(name);
+        ele.value = Name;
+        CloseWindow();
+    }
+    
+    /*function fillIn(Id){
+        var winMain=window.opener;
+        if (null==winMain){
+            winMain=window.parent.opener;
+        }        
+        ele=winMain.document.getElementById('{!JSENCODE($CurrentPage.parameters.idHidden)}');        
+        ele.value=Id;        
+        CloseWindow();
+    }*/
+    
+    function CloseWindow(){
+        var winMain=window.opener;
+        if (null==winMain){
+            winMain=window.parent.opener;
+        }
+        winMain.closeProfileUserLookupPopup();
+    }
+</script>
+<style>
+    .accountTab .secondaryPalette, .individualPalette .accountBlock .secondaryPalette {
+        border-color: #737E96;
+    }
+</style>
+<body> 
+<!--<body onBlur='javascript:window.close();'>-->
+<apex:form >
+    <apex:outputPanel id="page" layout="block" style="margin:5px;padding:10px;padding-top:2px;">
+        <apex:actionRegion >
+            <apex:outputPanel id="top" layout="block" style="margin:5px;padding:10px;padding-top:2px;">
+                <apex:outputLabel value="Search" style="font-weight:Bold;padding-right:10px;" for="txtSearch"/>
+                <apex:inputText id="txtSearch" value="{!searchString}" />
+                <span style="padding-left:5px"><apex:commandButton id="btnGo" value="Go" action="{!Search}" status="counterStatus" rerender="searchResults"></apex:commandButton></span>
+                <br/>
+                <center><apex:actionStatus startText="  Searching... Please wait..." 
+                                      stopText="" id="counterStatus"/></center>
+                <!--<div style="padding-left:50px" >You can use "*" as a wildcard next to other characters to improve your search results.</div> -->
+            </apex:outputPanel>
+            <br/>
+            <div style="font-family: 'Arial','Helvetica',sans-serif;font-size: 118%;font-weight: bold;padding: 0px 13px;" >Search Results</div>
+            <apex:outputPanel id="pnlSearchResults" style="margin:10px;height:250px;overflow-Y:auto;" layout="block">
+                
+                <apex:pageBlock id="searchResults">
+                    <apex:pageBlockTable value="{!lstCustomlookup}" var="a" rendered="{!IF(lstCustomlookup != null && lstCustomlookup.size != 0,true,false)}">
+                        <apex:column >
+                            <apex:facet name="header">
+                                <apex:outputPanel >User Name</apex:outputPanel>
+                            </apex:facet>                            
+                            <apex:outputLink onclick="fillIn('{!a.Id}','{!a.strUserName}')">{!a.strUserName}</apex:outputLink>                  
+                        </apex:column>
+                    </apex:pageBlockTable>
+                    
+                    <apex:outputPanel rendered="{!IF(lstCustomlookup == null || lstCustomlookup.size == 0,true,false)}">
+                        <div class="pbBody">
+                            <table cellspacing="0" cellpadding="0" border="0" class="list">
+                                <tbody>
+                                <tr class="headerRow">
+                                    <th class="noRowsHeader" scope="col">
+                                        User Name
+                                    </th>
+                                </tr>
+                                <tr>
+                                    <td colspan="7" class="noRows">
+                                            There are no records of this type.
+                                    </td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </apex:outputPanel>
+                </apex:pageBlock>
+                <br/>
+                <br/>
+                <div style=" border: 0 none;font-size: 0.8em;text-align: center;" class="footer">Copyright &copy; 2000-2012 salesforce.com, inc. All rights reserved.</div>
+            </apex:outputPanel>
+        </apex:actionRegion>
+    </apex:outputPanel>
+</apex:form>
+</body>
+</apex:page>

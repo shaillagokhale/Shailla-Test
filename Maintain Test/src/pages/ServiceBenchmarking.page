@@ -1,0 +1,372 @@
+<!--*******************************************************************************
+* VisualForce {Page}: {ServiceBenchmarking}
+* DateCreated  : 07/12/2013
+----------------------------------------------------------------------------------
+* Purpose:
+* - ServiceBenchmarking page used for see the all service type benchmarking details.
+    
+----------------------------------------------------------------------------------
+* History:
+* - VERSION  DEVELOPER NAME    DATE            DETAIL FEATURES
+    1.0                       07/12/2013     INITIAL DEVELOPMENT
+********************************************************************************-->
+
+<apex:page id="page" standardController="LFA_Service__c" sidebar="false" extensions="ctrlServiceBenchmarking">
+    <style>
+        .headerRowUpper{
+            border:1px solid #E0E3E5 !important;
+            font-weight:bold;
+            background-color:#bfbfbf !important;
+            color:black !important;
+        }
+        .headerRowLower{
+            border:1px solid #E0E3E5 !important;
+            font-weight:bold;
+            background-color:#0066BB !important;
+            color:white !important;
+        }
+        .odd:hover, .even:hover{
+            background-color: #E3F3FF !important;
+        }
+        .picklist{
+            width:228px;
+        }
+        .yearPicklist{
+            width:70px;
+        }
+        .blankCell{
+            width:5px;
+        }
+        body .bRelatedList .pbBody table.list, body .apexp .pbBody table.list {
+            border: 0px solid #000000;
+            padding:0px;
+        }
+        .noBorder ,table.noBorder tr td,table.noBorder td{
+            border: 0px !important;
+            padding: 0px;
+        }
+        .totalRow{
+            border-top:1px;
+            font-weight:bold !important;
+        }
+        .panelStyle{
+            text-align: center; 
+            width: 100%; 
+            display: inline-block; 
+            border-top: none; 
+            border: 1px solid #ECECEC;
+        }
+    </style>
+    <apex:sectionHeader subtitle="Benchmarking"/>
+    <apex:form id="frm">
+        <apex:outputtext value="Set the parameters by which you want to benchmark and click 'Calculate' to determine the minimum, maximum, and average LOE for LFA services in the service library."/>
+        <apex:actionFunction name="actAnalyseSearch" action="{!AnalyseSearch}" reRender="frm" status="Processing"/>
+        <apex:actionFunction name="actChangeColor" action="{!ChangeColor}" reRender="frm" status="Processing">
+            <apex:param name="ChangeColorValue" value="" />
+        </apex:actionFunction>
+        <apex:actionFunction name="actClearRisk" action="{!RemoveColor}" reRender="frm" status="Processing">
+            <apex:param name="ClearColorValue" value="" />
+        </apex:actionFunction>
+        
+        <apex:pageBlock id="pBlock">
+            <apex:pageblockButtons location="top" >
+                <apex:commandButton value="Return" rendered="{!strServiceId!=null}" action="{!ReturnToMainPage}" rerender="frm"/>
+            </apex:pageblockButtons>
+            <table>
+                <tr>
+                    <td colspan="2">
+                        <table cellspacing="0" cellpadding="0" border="0">
+                            <tr>
+                                <td>
+                                                   
+                                    <apex:selectList id="plSelectedService" styleClass="picklist"  size="1" value="{!SelectedServiceSubType}">
+                                        <apex:selectOptions value="{!ServiceSubTypeOptions}"></apex:selectOptions>
+                                    </apex:selectList>
+                                </td>
+                                <td>
+                                    <apex:outputlabel value="*" style="color:red;font-weight=bold;font-size:14px;"/>
+                                </td>
+                            </tr>  
+                        </table>   
+                    </td>
+                    <td class="blankCell"></td>
+                    <td colspan="2">
+                        <apex:selectList styleClass="picklist" size="1" value="{!SelectedRegion}">
+                            <apex:selectOptions value="{!RegionOptions}"></apex:selectOptions>
+                        </apex:selectList>
+                    </td>
+                    <td class="blankCell"></td>
+                    <td colspan="2">
+                        <apex:selectList styleClass="picklist" size="1" value="{!SelectedCountry}">
+                            <apex:selectOptions value="{!CountryOptions}"></apex:selectOptions>
+                        </apex:selectList>
+                    </td>
+                    <td class="blankCell"></td>
+                    <td>
+                        <apex:selectList styleClass="yearPicklist" size="1" value="{!SelectedYear}">
+                            <apex:selectOptions value="{!YearOptions}"></apex:selectOptions>
+                        </apex:selectList>
+                    </td>
+                    <td class="blankCell"></td>
+                    
+                    <td>
+                        <apex:selectList styleClass="picklist" size="1" value="{!SelectedLFA}">
+                            <apex:selectOptions value="{!LFAOptions}"></apex:selectOptions>
+                        </apex:selectList>
+                    </td>
+                    
+                    <td class="blankCell"></td>
+                    <td class="blankCell"></td>
+                    <td>
+                        <apex:commandButton id="btnAnalyse" value="Calculate" onclick="return ValidateServiceFilter('{!$Component.plSelectedService}');"/>
+                    </td>
+                    <td>
+                        <apex:commandButton id="btnClearFilterSearch" value="Clear Filter" reRender="frm" status="Processing" action="{!clearFilter}"/>
+                    </td>
+                </tr>
+                <tr>
+                    <td valign="top"> 
+                        <apex:selectList style="float:left;background-color:{!if(SelectedFinancialRisk == 'High','red',if(SelectedFinancialRisk  == 'Medium','yellow',if(SelectedFinancialRisk == 'Low','lightgreen','')))}" styleClass="picklist" size="1" value="{!FinancialRisk}" onchange="actChangeColor('Financial & Fiduciary Risk');return false;" >
+                            <apex:selectOptions value="{!FinancialRiskOptions}"></apex:selectOptions>
+                        </apex:selectList>
+                        
+                        <!--<apex:commandButton value="" onclick="actClearRisk('Financial & Fiduciary Risk');return false;" style="background-image: url({!$Resource.RefreshButton});background-repeat: no-repeat;background-size:100% 100%;"/>-->
+                    </td>
+                    <td>
+                        <a onclick="actClearRisk('Financial & Fiduciary Risk');return false;" style="cursor:pointer;" >
+                            <img src="{!$Resource.RefreshButton}" height="22px"/>
+                        </a>
+                    </td>
+                    <td class="blankCell"></td>
+                    <td valign="top">
+                        <apex:selectList style="float:left;background-color:{!if(SelectedHealthRisk == 'High','red',if(SelectedHealthRisk == 'Medium','yellow',if(SelectedHealthRisk == 'Low','lightgreen','')))}" styleClass="picklist" size="1" value="{!HealthRisk}" onchange="actChangeColor('Health Services & Products Risk');return false;">
+                            <apex:selectOptions value="{!HealthRiskOptions}"></apex:selectOptions>
+                        </apex:selectList>
+                      
+                        <!--<apex:commandButton value="" onclick="actClearRisk('Health Services & Products Risk');return false;" style="background-image: url({!$Resource.RefreshButton});background-repeat: no-repeat;background-size:100% 100%;"/>-->
+                    </td>
+                    <td>
+                        <a onclick="actClearRisk('Health Services & Products Risk');return false;" style="cursor:pointer;" >
+                            <img src="{!$Resource.RefreshButton}" height="22px"/>
+                        </a>
+                    </td>
+                    <td class="blankCell"></td>
+                    <td valign="top">
+                        <apex:selectList style="float:left;background-color:{!if(SelectedProgramaticRisk == 'High','red',if(SelectedProgramaticRisk == 'Medium','yellow',if(SelectedProgramaticRisk == 'Low','lightgreen','')))}" styleClass="picklist" size="1" value="{!ProgramaticRisk}" onchange="actChangeColor('Programmatic & Performance Risk');return false;" >
+                            <apex:selectOptions value="{!ProgramaticRiskOptions}"></apex:selectOptions>                            
+                        </apex:selectList>
+                    </td>
+                    <td>
+                         <a onclick="actClearRisk('Programmatic & Performance Risk');return false;" style="cursor:pointer;" >
+                            <img src="{!$Resource.RefreshButton}" height="22px"/>
+                        </a>
+                    </td>
+                </tr>
+            </table>
+            <br/>
+            <div style="width:70%">
+            <table id="ServiceTable" cellspacing="0" cellpadding="0" border="0" class="list">
+                <thead class="rich-table-thead">
+                    <tr class="headerRow">
+                        <th style="background-color:#F8F8F8;border-bottom:0px;" colspan="2"></th>
+                        <th class="headerRowUpper" colspan="4" style="border-bottom:0px !important;text-align:center;">Approved LOE</th>
+                    </tr>
+                    <tr class="totalRow" style="display:{!if(lstServiceForSearch.size > 0,'','none')}">
+                        <th class="totalRow"></th>
+                        <th class="totalRow">
+                            <apex:outputText value="Service LOE"/>
+                        </th>
+                        <th class="totalRow">
+                            <apex:outputText value="{!MinLOE}"/>
+                        </th>
+                        <th class="totalRow">
+                            <apex:outputText value="{!MaxLOE}"/>
+                        </th>
+                        <th class="totalRow">
+                            <apex:outputText value="{!AvgLOE}"/>
+                        </th>
+                        
+                        <th class="totalRow">
+                            <apex:outputText value="{!MedianLOE}"/>
+                        </th>
+                    </tr>
+                    <tr class="totalRow" style="display:{!if(lstServiceForSearch.size > 0,'','none')}">
+                        <th class="totalRow"></th>
+                        <th class="totalRow">
+                            <apex:outputText value="Service Cost"/>
+                        </th>
+                        <th class="totalRow">
+                            <apex:outputText value="$ {0, number,###,###,##0}">
+                                <apex:param value="{!MinCost}"/>
+                            </apex:outputText>
+                        </th>
+                        <th class="totalRow">
+                            <apex:outputText value="$ {0, number,###,###,##0}">
+                                <apex:param value="{!MaxCost}"/>
+                            </apex:outputText>
+                        </th>
+                        <th class="totalRow">
+                            <apex:outputText value="$ {0, number,###,###,##0}">
+                                <apex:param value="{!AvgCost}"/>
+                            </apex:outputText>
+                        </th>                        
+                        <th class="totalRow">
+                            <apex:outputText value="$ {0, number,###,###,##0}">
+                                <apex:param value="{!MedianCost}"/>
+                            </apex:outputText>
+                        </th>
+                    </tr>  
+                    <tr class="headerRow">
+                        <th width="30%" class="headerRowLower">Role</th>
+                        <th width="10%" class="headerRowLower" style="border-left:0px !important;"># of records</th>
+                        <th width="15%" class="headerRowLower" style="border-left:0px !important;border-right:0px !important;">Min</th>
+                        <th width="15%" class="headerRowLower">Max</th>
+                        <th width="15%" class="headerRowLower">Avg</th>
+                        <th width="15%" class="headerRowLower">Median</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <apex:variable value="{!0}" var="Count"/>
+                    <apex:repeat value="{!lstServiceForSearch}" var="Resource">
+                        <tr>
+                            <th class="dataCell" style="white-space: nowrap;border-bottom:0px;border-left:1px solid #E0E3E5;font-weight:normal;">
+                                <apex:outputText value="{!Resource.RoleName}"></apex:outputText>
+                            </th> 
+                            <th class="dataCell" style="border-bottom:0px;font-weight:normal;">
+                                <apex:outputText value="{!Resource.NoOfRecords}"></apex:outputText>
+                            </th> 
+                            <th class="dataCell" style="border-bottom:0px;font-weight:normal;">
+                                <apex:outputText value="{!Resource.MinValue}"></apex:outputText>
+                            </th> 
+                            <th class="dataCell" style="border-bottom:0px;font-weight:normal;">
+                                <apex:outputText value="{!Resource.MaxValue}"></apex:outputText>
+                            </th> 
+                            <th class="dataCell" style="border-bottom:0px;font-weight:normal;">
+                                <apex:outputText value="{!Resource.AvgValue}"></apex:outputText>
+                            </th> 
+                            <th class="dataCell" style="border-bottom:0px;font-weight:normal;">
+                                <apex:outputText value="{!Resource.MedianValue}"></apex:outputText>
+                            </th>
+                        </tr>
+                        <apex:variable value="{!Count+1}" var="Count"/>
+                    </apex:repeat>
+                    
+                </tbody>   
+                <!-- <tfoot style="display:{!if(lstServiceForSearch.size > 0,'','none')}">
+                    <tr class="totalRow">
+                        <th class="totalRow"></th>
+                        <th class="totalRow">
+                            <apex:outputText value="Service LOE"/>
+                        </th>
+                        <th class="totalRow">
+                            <apex:outputText value="{!MinLOE}"/>
+                        </th>
+                        <th class="totalRow">
+                            <apex:outputText value="{!MaxLOE}"/>
+                        </th>
+                        <th class="totalRow">
+                            <apex:outputText value="{!AvgLOE}"/>
+                        </th>
+                        
+                        <th class="totalRow">
+                            <apex:outputText value="{!MedianLOE}"/>
+                        </th>
+                    </tr>
+                    <tr class="totalRow">
+                        <th class="totalRow"></th>
+                        <th class="totalRow">
+                            <apex:outputText value="Service Cost"/>
+                        </th>
+                        <th class="totalRow">
+                            <apex:outputText value="$ {0, number,###,###,##0}">
+                                <apex:param value="{!MinCost}"/>
+                            </apex:outputText>
+                        </th>
+                        <th class="totalRow">
+                            <apex:outputText value="$ {0, number,###,###,##0}">
+                                <apex:param value="{!MaxCost}"/>
+                            </apex:outputText>
+                        </th>
+                        <th class="totalRow">
+                            <apex:outputText value="$ {0, number,###,###,##0}">
+                                <apex:param value="{!AvgCost}"/>
+                            </apex:outputText>
+                        </th>                        
+                        <th class="totalRow">
+                            <apex:outputText value="$ {0, number,###,###,##0}">
+                                <apex:param value="{!MedianCost}"/>
+                            </apex:outputText>
+                        </th>
+                    </tr>
+                </tfoot> -->            
+            </table>
+            <apex:outputPanel styleClass="panelStyle" rendered="{!if(lstServiceForSearch.size == 0,true,false)}">
+                <apex:outputLabel value="No benchmarking data available. Please adjust the filters."></apex:outputLabel>                            
+            </apex:outputPanel>
+            </div>
+            
+        </apex:pageBlock>
+        <style>
+            .ProcessingBackground
+            {
+                background-color: black;
+                opacity: 0.50;
+                filter: alpha(opacity = 50);
+                width: 100%;
+                height: 100%;
+                position: fixed;
+                z-index: 9999;
+                top:0;
+                left:0;
+            }
+            .Processing
+            {
+                z-index: 9999;
+                left: 50%;
+                top: 50%;
+                text-align: center;
+                position: fixed;
+            }        
+        </style>
+        <div id="divProcessing" style="display:none;">
+            <div class="ProcessingBackground"></div>
+            <div class="Processing">
+                <apex:image alt="Processing" url="{!$Resource.LoadingCircle}" />
+            </div>
+        </div>  
+        <apex:actionStatus id="Processing" onstart="document.getElementById('divProcessing').style.display = '';" onstop="document.getElementById('divProcessing').style.display = 'none';">                            
+        </apex:actionStatus> 
+        <script>
+            alternate();
+            function alternate(){ 
+                if(document.getElementsByTagName){  
+                    var table = document.getElementById("ServiceTable");   
+                    var rows = table.getElementsByTagName("tr"); 
+                    for(i = 0; i < rows.length; i++){    
+                        if(i == rows.length-1){
+                            //rows[i].className = "footer"; 
+                        }else{
+                            if(i % 2 == 0){ 
+                                    rows[i].className = rows[i].className + " even "; 
+                               
+                            }else{ 
+                                rows[i].className = rows[i].className + " odd "; 
+                            }  
+                        }     
+                    } 
+                } 
+            }
+            function ValidateServiceFilter(SelectedServiceId){
+                if(document.getElementById(SelectedServiceId).value == ''){
+                    alert('You must specify a Service Type before calculating.');
+                    return false;
+                }else{
+                    actAnalyseSearch();
+                    return false;
+                }
+            }
+        </script>
+    
+    </apex:form>
+    
+</apex:page>

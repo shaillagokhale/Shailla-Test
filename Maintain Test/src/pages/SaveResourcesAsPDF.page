@@ -1,0 +1,58 @@
+<apex:page standardController="LFA_Service__c" extensions="ctrlAddEditWorkPlan">
+    <apex:form >
+        <apex:pageBlock title="Add/Edit Resources">
+            <apex:pageBlockSection >
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="Service Name : "></apex:outputLabel>
+                    <apex:outputField value="{!LFA_Service__c.Name}"/>
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="Work Plan Name : "></apex:outputLabel>
+                    <apex:outputField value="{!LFA_Service__c.LFA_Work_Plan__r.Name}"/>
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="Service Sub Type : "></apex:outputLabel>
+                    <apex:outputField value="{!LFA_Service__c.Service_Sub_Type__c}"/>
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="Country Name : "></apex:outputLabel>
+                    <apex:outputField value="{!LFA_Service__c.LFA_Work_Plan__r.Country__r.Name}"/>
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="Grant Name : "></apex:outputLabel>
+                    <apex:outputField value="{!LFA_Service__c.Grant__r.Name}"/>
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="Status : "></apex:outputLabel>
+                    <apex:outputField value="{!LFA_Service__c.Status__c}"/>
+                </apex:pageBlockSectionItem>
+            </apex:pageBlockSection>
+            <apex:pageBlockTable width="100%" id="pbtable" value="{!ResorcesForPDF}" var="Resource">
+                <apex:column headerValue="Role" >
+                    <apex:outputText value="{!Resource.LFA_Role__r.Name}"/>
+                </apex:column>
+                <apex:column headerValue="Person">
+                    <apex:outputText value="{!Resource.Contact__r.Name}"/>
+                    <apex:facet name="footer">
+                        <apex:outputText value="Total"/>
+                    </apex:facet>
+                </apex:column>
+                <apex:column headerValue="LOE">
+                    <apex:outputField value="{!Resource.LOE__c}"/>
+                    <apex:facet name="footer">
+                        <apex:outputField value="{!LFA_Service__c.LOE__c}"/>
+                    </apex:facet>
+                </apex:column>
+                <apex:column headerValue="Rate">
+                    <apex:outputField value="{!Resource.Rate__c}"/>
+                </apex:column>
+                <apex:column headerValue="Cost">
+                    <apex:outputField value="{!Resource.Cost__c}"/>
+                    <apex:facet name="footer">
+                        <apex:outputField value="{!LFA_Service__c.Cost__c}"/>
+                    </apex:facet>
+                </apex:column>
+            </apex:pageBlockTable>
+        </apex:pageBlock>
+    </apex:form>
+</apex:page>

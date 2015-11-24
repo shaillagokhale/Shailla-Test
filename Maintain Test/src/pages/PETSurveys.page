@@ -1,0 +1,346 @@
+<apex:page standardController="Performance_Evaluation__c" extensions="ctrlPETSurveys">
+
+<style>
+/* table styles */
+    table {
+        table-layout:fixed;
+        border-spacing:0;
+        border-collapse:collapse;
+        margin: 10px 0;
+        }
+    thead,tr {
+        border-bottom:1px solid #E0E3E5;
+        }
+    thead {
+        font-weight:bold;
+        background-color:#0066BB !important;
+        color:white !important;
+        white-space:normal !important;
+    }
+    th,td {
+        padding:3px;
+        text-align:left;
+        }
+    .tableSubhead {
+        background-color:#adf;
+        font-weight:bold;
+    }
+    .rating,.rating0,.rating1,.rating2,.rating3,.rating4,.rating5 {
+        width:100px;
+        text-align:center;
+        }
+    .rating5 {background-color:#00b0f0;}
+    .rating4 {background-color:#008000;}
+    .rating3 {background-color:#99cc00;}
+    .rating2 {background-color:#ffcc00;}
+    .rating1 {background-color:#ff0000;}
+    
+    /* page blocks */
+    #pageheader {
+        width:800px;
+        }
+    #pagetitle,#services {
+        float:left;
+        clear:left;
+        }
+    #key {
+        float:right;
+        clear:none;
+        width:406px;
+        }
+    #questionnaire {
+        width:800px;
+        }
+    .clearfix:after {
+        visibility:hidden;
+        display:block;
+        font-size:0;
+        content:" ";
+        clear:both;
+        height:0;
+        }
+        
+    /* text styles */
+    .alert {color:#ff0000;}
+</style>
+
+    <h2>LFA Performance Evaluation Tool</h2><br />
+<apex:sectionHeader subtitle="[LFA Work Plan name]"/>
+    <h3>[start date] &ndash; [end date]</h3><br />
+
+
+<apex:pageBlock >
+
+<div id="pageheader">
+
+<div id="services">
+ <apex:form >
+   <apex:commandButton value="Click to View Services" onclick="window.open('#','_blank','menubar=no,innerWidth=600,innerHeight=400,toolbar=no,location=no,screenX=40,screenY=40')"/>
+ </apex:form>
+</div>
+
+
+<div id="key">
+ <table>
+  <thead>
+   <th colspan="2" style="width: 400px">Performance Rating Key</th>
+  </thead>
+  <tr>
+   <td class="rating5">5</td><td>Outstanding</td>
+  </tr>
+  <tr>
+   <td class="rating4">4</td><td>Exceeds Expectations</td>
+  </tr>
+  <tr>
+   <td class="rating3">3</td><td>Meets Expectations</td>
+  </tr>
+  <tr>
+   <td class="rating2">2</td><td>Needs Improvements <span class="alert"></span></td>
+  </tr>
+  <tr>
+   <td class="rating1">1</td><td>Unacceptable <span class="alert"></span></td>
+  </tr>
+ </table>
+</div>
+</div><!-- pageheader -->
+<div class="clearfix"></div>
+
+<apex:form id="frm">
+
+ <div id="questionnaire">
+  <table>
+   <thead>
+    <th style="width: 400px">Categories</th>
+    <th style="text-align: center">Rating</th>
+    <th style="width: 300px; max-width: 300px;">Comments to LFA</th>
+   </thead>
+   <tr class="tableSubhead">
+    <td colspan="3">Completeness, Accuracy, and Clarity</td>
+   </tr>
+   <tr>
+    <td class="question">The information in LFA deliverables is complete. The LFA used the correct GF template, where applicable, and followed the latest GF guidelines.</td>
+    <td class="rating">
+    
+     <apex:selectList id="Q1" value="{!Performance_Evaluation__c.Q1_Rating__c}" onChange="calculate();" size="1" multiselect="false">
+              <apex:selectOptions value="{!Rating}"/>
+           </apex:selectList>
+      </td>
+    <td class="comments"><apex:inputField value="{!Performance_Evaluation__c.Q1_Comments__c}" /></td>
+   </tr>
+   <tr>
+    <td class="question">The LFA's deliverables are analytical rather than purely descriptive.</td>
+    <td class="rating">
+     <apex:selectList id="Q2" value="{!Performance_Evaluation__c.Q2_Rating__c}" onChange="calculate();" size="1" multiselect="false">
+              <apex:selectOptions value="{!Rating}"/>
+           </apex:selectList>
+    </td>
+    <td class="comments"><apex:inputField value="{!Performance_Evaluation__c.Q2_Comments__c}" /></td>
+   </tr>
+   <tr>
+    <td class="question">The LFA recommendations are specific, realistic and appropriate for managing the identified risks/issues.</td>
+    <td class="rating">
+   <apex:selectList id="Q3" value="{!Performance_Evaluation__c.Q3_Rating__c}" onChange="calculate();" size="1" multiselect="false">
+              <apex:selectOptions value="{!Rating}"/>
+           </apex:selectList>
+    </td>
+    <td class="comments"><apex:inputField value="{!Performance_Evaluation__c.Q3_Comments__c}" /></td>
+   </tr>
+   <tr class="tableSubhead">
+    <td colspan="3">Analysis and Consistency</td>
+   </tr>
+   <tr>
+    <td class="question">The LFA independently verified, where applicable, and analyzed the relevant source documentation.</td>
+    <td class="rating">
+    <apex:selectList id="Q4" value="{!Performance_Evaluation__c.Q4_Rating__c}" onChange="calculate();" size="1" multiselect="false">
+              <apex:selectOptions value="{!Rating}"/>
+      </apex:selectList>
+    </td>
+    <td class="comments"><apex:inputField value="{!Performance_Evaluation__c.Q4_Comments__c}" /></td>
+   </tr>
+   <tr>
+    <td class="question">The deliverables are well-written and understandable.</td>
+    <td class="rating">
+  <apex:selectList id="Q5" value="{!Performance_Evaluation__c.Q5_Rating__c}" onChange="calculate();" size="1" multiselect="false">
+              <apex:selectOptions value="{!Rating}"/>
+           </apex:selectList>
+    </td>
+    <td class="comments"><apex:inputField value="{!Performance_Evaluation__c.Q5_Comments__c}" /></td>
+   </tr>
+   <tr>
+    <td class="question">Based on the information available, the calculations and reported information are accurate.</td>
+    <td class="rating">
+    <apex:selectList id="Q6" value="{!Performance_Evaluation__c.Q6_Rating__c}" onChange="calculate();" size="1" multiselect="false">
+              <apex:selectOptions value="{!Rating}"/>
+           </apex:selectList>
+    </td>
+    <td class="comments"><apex:inputField value="{!Performance_Evaluation__c.Q6_Comments__c}" /></td>
+   </tr>
+   <tr class="tableSubhead">
+    <td colspan="3">Practicality of Recommendations</td>
+   </tr>
+   <tr>
+    <td class="question">The LFA recommendations are specific, realistic and appropriate for managing the identified risks/issues.</td>
+    <td class="rating">
+     <apex:selectList id="Q7" value="{!Performance_Evaluation__c.Q7_Rating__c}" onChange="calculate();" size="1" multiselect="false">
+              <apex:selectOptions value="{!Rating}"/>
+           </apex:selectList>
+    </td>
+    <td class="comments"><apex:inputField value="{!Performance_Evaluation__c.Q7_Comments__c}" /></td>
+   </tr>
+   <tr class="tableSubhead">
+    <td colspan="3">Timeliness/Responsiveness/Proactivity/Communication</td>
+   </tr>
+   <tr>
+    <td class="question">The LFA response time is according to the agreed timeframe.</td>
+    <td class="rating">
+   <apex:selectList id="Q8" value="{!Performance_Evaluation__c.Q8_Rating__c}" onChange="calculate();" size="1" multiselect="false">
+              <apex:selectOptions value="{!Rating}"/>
+           </apex:selectList>
+    </td>
+    <td class="comments"><apex:inputField value="{!Performance_Evaluation__c.Q8_Comments__c}" /></td>
+   </tr>
+   <tr>
+    <td class="question">The LFA demonstrates an understanding of its role.</td>
+    <td class="rating">
+  <apex:selectList id="Q9" value="{!Performance_Evaluation__c.Q9_Rating__c}" onChange="calculate();" size="1" multiselect="false">
+              <apex:selectOptions value="{!Rating}"/>
+           </apex:selectList>
+    </td>
+    <td class="comments"><apex:inputField value="{!Performance_Evaluation__c.Q9_Comments__c}" /></td>
+   </tr>
+   <tr>
+    <td class="question">The LFA follows GF communication protocols.</td>
+    <td class="rating">
+     <apex:selectList id="Q10" value="{!Performance_Evaluation__c.Q10_Rating__c}" onChange="calculate();" size="1" multiselect="false">
+              <apex:selectOptions value="{!Rating}"/>
+           </apex:selectList>
+    </td>
+    <td class="comments"><apex:inputField value="{!Performance_Evaluation__c.Q10_Comments__c}" /></td>
+   </tr>
+   <tr>
+    <td class="question">The LFA provides relevant and timely information on developments that could have an impact on the grant.</td>
+    <td class="rating">
+    <apex:selectList id="Q11" value="{!Performance_Evaluation__c.Q11_Rating__c}" onChange="calculate();" size="1" multiselect="false">
+              <apex:selectOptions value="{!Rating}"/>
+           </apex:selectList>
+    </td>
+    <td class="comments"><apex:inputField value="{!Performance_Evaluation__c.Q11_Comments__c}" /></td>
+   </tr>
+   <tr class="tableSubhead">
+    <td colspan="3">Other</td>
+   </tr>
+   <tr>
+    <td class="question">Was there a need to request the LFA to perform significant revision of the deliverables due to poor quality of the original LFA products? If yes, explain why.</td>
+    <td class="rating">
+   <apex:selectList id="Q12" value="{!Performance_Evaluation__c.Q12_Rating__c}" onChange="calculate();" size="1" multiselect="false">
+              <apex:selectOptions value="{!Rating}"/>
+           </apex:selectList>
+    </td>
+    <td class="comments"><apex:inputField value="{!Performance_Evaluation__c.Q12_Comments__c}" /></td>
+   </tr>
+   <tr>
+    <td class="question">Was there a need to seek further significant clarification/information on the LFA report due to the poor quality of the LFA deliverable?</td>
+    <td class="rating">
+   <apex:selectList id="Q13" value="{!Performance_Evaluation__c.Q13_Rating__c}" onChange="calculate();" size="1" multiselect="false">
+              <apex:selectOptions value="{!Rating}"/>
+           </apex:selectList>
+    </td>
+    <td class="comments"><apex:inputField value="{!Performance_Evaluation__c.Q13_Comments__c}" /></td>
+   </tr>
+   <tr>
+    <td style="text-align:right; font-weight:bold;">Calculated Average</td>
+    <td><!--<apex:outputField value="{!Performance_Evaluation__c.average_Q_rating__c}" />--></td>
+    <td>&nbsp;</td>
+   </tr>
+  </table>
+ </div>
+
+ <h2>Evaluation of the LFA Team Technical Expertise</h2>
+ 
+  <table width="100%" border="1px">
+    <thead>
+     <th colspan="2">Internal Comments</th>
+     <th colspan="2">Comments to LFA</th>
+    </thead>
+    
+  <apex:repeat id="evaluations" value="{!lstResp}" var="response">
+   <tr> <td colspan="4"> {!response.Type__c} </td></tr>
+    <tr>
+    <td class="rating"><apex:outputField value="{!response.Rating__c}" /></td>
+     <td class="comments"><apex:outputField value="{!response.Comments__c}" id="comment"/></td>
+     <td class="rating"><!--<apex:inputField value="{!response.Rating_to_LFA__c}" onclick="alert(this.id);"/>--->
+      <apex:selectList id="Ratinglfa" value="{!response.Rating_to_LFA__c}" onChange="calculate();" size="1" multiselect="false">
+              <apex:selectOptions value="{!Rating}"/>
+           </apex:selectList>
+     
+     </td>
+     <td class="comments"><apex:inputField value="{!response.Comments_to_LFA__c}" id="lfacomment" /></td>
+    </tr>
+   
+  </apex:repeat>
+  </table>
+ 
+  <div id="overall">
+  <h2>Overall Rating and Comments</h2>
+  <table>
+   <tr>
+    <td>Calculated Average:</td>
+    <td class="comments"><apex:outputField value="{!Performance_Evaluation__c.Rating__c}" /></td>
+    <td rowspan="2"><apex:inputField value="{!Performance_Evaluation__c.Comments__c}"/></td>
+    <td rowspan="2">Comments on overall LFA performance to be provided here, including areas for improvement and if the calculated rating was manually adjusted also provide an explanation.</td>
+   </tr>
+   <tr>
+    <td>Adjusted Average:</td>
+    <td><!--<apex:inputField value="{!ratingAdjusted}" />--></td>
+   </tr>
+  </table>
+ </div>
+  
+
+ <apex:commandButton id="submit" value="Save & Return to Overview" action="{!save}" />
+ <apex:commandButton id="cancel" value="Cancel" action="{!cancel}" />
+ 
+ 
+</apex:form>
+
+
+
+<script>
+
+ function onLoad()
+ {
+ 
+ var items = document.getElementsByTagName("*");
+   
+     var count = 0;
+     for (var intI = 0; intI < items.length; intI++)
+           {
+           
+               var ExactVal = items[intI].id.lastIndexOf(':',items[intI].id.length);
+               var value = items[intI].id.substring(28,ExactVal);
+            
+               if ((parseInt(items[intI].id.substring(28,ExactVal)) == count )) 
+                {
+                               
+                   if(items[intI].id.substring(ExactVal + 1,items[intI].id.length) == 'comment')
+                   { 
+                    var finalVal = items[intI].id.substring(0,28) + value + ':lfacomment';
+                
+                   if(document.getElementById(finalVal).innerHTML == '')
+                       document.getElementById(finalVal).innerHTML = document.getElementById(items[intI].id).innerHTML;
+                  
+                             
+                       count = count + 1;
+                      
+                   }  
+                                     
+                }
+             }   
+ 
+ }
+window.onload = function () {
+ onLoad();
+}
+</script>
+</apex:pageBlock>
+</apex:page>

@@ -1,0 +1,48 @@
+<!--*******************************************************************************
+* VisualForce {Page}: {TRPTranslation}
+----------------------------------------------------------------------------------
+* Purpose:
+* -  VF Page create for TRPTranslation into Excel
+----------------------------------------------------------------------------------
+********************************************************************************-->
+
+<apex:page standardController="Concept_Note__c" extensions="ctrlTRPTranslation" sidebar="false" readOnly="true" showHeader="false" contentType="{!strfileName}">
+ {!xmlheader}
+    <Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet"  xmlns:html="http://www.w3.org/TR/REC-html40">  
+        <Styles>
+            <Style ss:ID="1">
+                <Font ss:Bold="1" ss:FontName="Arial Unicode MS" />
+            </Style>
+            <Style ss:ID="2">
+                <Font ss:FontName="Arial Unicode MS" />
+            </Style>
+        </Styles>
+        <apex:repeat value="{!lstTRPTranslation}" var="Sheet">  
+            <Worksheet ss:Name="{!Sheet.strSheetname}"> 
+                <Table>
+                    <Column ss:Width="125"/>
+                    <Column ss:Width="325"/>
+                    <Column ss:Width="325"/>
+                    <Column ss:Width="325"/>
+                    <Column ss:Width="325"/>
+                    <Row ss:StyleID="1">
+                        <apex:repeat value="{!Sheet.lstHeaders}" var="HeaderName">
+                            <Cell>
+                                <Data ss:Type="String"><apex:outputText escape="false" value="{!HeaderName}"/></Data>                                
+                            </Cell>
+                        </apex:repeat>
+                    </Row>                      
+                    <apex:repeat value="{!Sheet.lstData}" var="Row">
+                        <Row ss:StyleID="2">
+                            <apex:repeat value="{!Sheet.lstHeaders}" var="HeaderName">                                     
+                                <Cell>
+                                    <Data ss:Type="String"><apex:outputText escape="false" value="{!HTMLENCODE(Row[HeaderName])}"/></Data>
+                                </Cell>        
+                             </apex:repeat>
+                       </Row>                                                             
+                    </apex:repeat> 
+                </Table>
+            </Worksheet>
+        </apex:repeat>  
+    </Workbook>  
+</apex:page>

@@ -1,0 +1,5 @@
+<apex:page standardController="Goals_Objectives__c" extensions="New_Controller" action="{!checkprof}">
+    <apex:pageMessages /> 
+      <a href="{!getBackURL}">{!$Label.Back_To_Performance_Framework}</a>
+    
+</apex:page>

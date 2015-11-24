@@ -1,0 +1,756 @@
+<apex:page id="page" standardController="Concept_Note__c" extensions="CN_DocumentUpload" sidebar="false">
+    <apex:stylesheet value="{!URLFOR($Resource.GoalsJs, 'assets/css/bootstrap.css')}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.GoalsJs, 'assets/css/bootstrap-responsive.css')}"/>
+    <apex:includeScript value="{URLFOR(!$Resource.GoalsJs, 'assets/js/bootstrap.js')}" /> 
+    <apex:includeScript value="{!$Resource.jquery142}" /> 
+    <apex:includeScript value="{!URLFOR($Resource.JSZip)}"/>
+    <apex:includeScript value="{!URLFOR($Resource.FileSaver)}"/>
+    <apex:includeScript value="/soap/ajax/29.0/connection.js"/>
+    
+    <script src="{!URLFOR($Resource.charCounter)}" type="text/javascript"/>
+    <script type="text/javascript">
+        $(document).ready(function(){    
+           
+            $('.countable1').jqEasyCounter({
+                'maxChars':1000,
+                'maxCharsWarning': 700
+            });
+                     
+            $('.countable2').jqEasyCounter({
+                'maxChars': 1000,
+                'maxCharsWarning': 700,
+                'msgFontSize': '12px',
+                'msgFontColor': '#000',
+                'msgFontFamily': 'Verdana',
+                'msgTextAlign': 'left',
+                'msgWarningColor': '#F00',
+                'msgAppendMethod': 'insertBefore'
+            });
+         
+        });  
+    </script> 
+    <!-- TCS 12/8/2014: Added Script for downloading all documents: Starts Here -->
+    <script>
+        // The code supports in IE10 and above browsers
+        function downloadall(){
+            try{
+             document.getElementById('divProcessing').style.display = 'block';
+             alert('{!$Label.Downloading_Alert}');
+            var zip = new JSZip();
+            var CNName = '{!Concept_Note__c.Name}';
+            var FeedItemIds =[];
+            FeedItemIds = '{!setFeedItemId}';
+            var Ids =[];
+            Ids= FeedItemIds.replace("[","('");
+            Ids = Ids.replace("]","')");
+            Ids = Ids.replace(/, /gi,"','");
+             
+            sforce.connection.sessionId = "{!$Api.Session_ID}";
+            var countId = sforce.connection.query("SELECT Id FROM FeedItem WHERE Id IN "+Ids);
+            for(var j=0;j<countId.size;j++)
+             {
+                if(countId.size == 1){
+                var result = sforce.connection.query("SELECT ContentData,ContentFileName,RelatedRecordId FROM FeedItem WHERE Id = '"+ countId.records.Id+"'");
+                } else {
+                var result = sforce.connection.query("SELECT ContentData,ContentFileName,RelatedRecordId FROM FeedItem WHERE Id = '"+ countId.records[j].Id+"'");
+                }
+                var filename= result.records.ContentFileName;
+                var filecontent =result.records.ContentData;
+                zip.file(filename,filecontent,{base64:true}); 
+            }
+            console.log('zip files '+zip);
+            var content = zip.generate({type:"blob"});
+            console.log('Content '+content);
+            saveAs(content, CNName+".zip"); 
+            console.log('File is created ');
+            }
+          catch(e){
+            if(e == 'blob is not supported by this browser') {
+            alert('{!$Label.Browser_Compatabilty}');
+            }
+            document.getElementById('divProcessing').style.display = 'none';
+            return false;
+         }
+         
+         }
+         </script>
+         <!-- TCS 12/8/2014: Added Script for downloading all documents: Ends Here -->
+    <style>
+        .containerTGF{
+            display: inline-block;
+            margin-left:1%;
+            margin-right:1%;
+            width: 97%;
+        }
+        div.active{
+            background-color: #D1D1D1;
+        }  
+        .sidebarMenu{
+            width : 270px;
+        }
+        .h3{
+            display: inline-table;
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            line-height: 20px;
+        }
+        .h4 {
+            font-size:18px;
+            line-height: 1.5;
+            font-weight:bold;
+        }
+        .buttonStyle1{
+            background-color: #ff781d;
+            background-image: linear-gradient(to bottom, #ff781d, #ff781d);
+            background-repeat: repeat-x;
+            border-color: rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.25);
+            color: #FFFFFF;
+            text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
+        }
+        .buttonStyle2{
+            background-color: #4bacc6;
+            background-image: linear-gradient(to bottom, #4bacc6, #4bacc6);
+            background-repeat: repeat-x;
+            border-color: rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.25);
+            color: #FFFFFF;
+            text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
+        }
+        .buttonStyle3{
+            background-color: #5281bd;
+            background-image: linear-gradient(to bottom, #5281bd, #5281bd);
+            background-repeat: repeat-x;
+            border-color: rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.25);
+            color: #FFFFFF;
+            text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
+        }
+        .btnStyle {
+            -moz-border-bottom-colors: none;
+            -moz-border-left-colors: none;
+            -moz-border-right-colors: none;
+            -moz-border-top-colors: none;
+            text-decoration:none !important;;
+            color:white !important;
+            border-image: none;
+            border-style: solid;
+            border-width: 1px;
+            box-shadow: 0 1px 0 rgba(255, 255, 255, 0.2) inset, 0 1px 2px rgba(0, 0, 0, 0.05);
+            cursor: pointer;
+            display: inline-block;
+            line-height: 20px;
+            margin-bottom: 0;
+            text-align: center;
+            vertical-align: middle;
+        }
+        .custPopup{
+            background-color: #ededed;
+            border-width: 0px;
+            border-radius:10px;
+            border-style: solid;
+            z-index: 9999;
+            left: 50%;
+            margin-top:-60px;
+            padding:20px;
+            position: absolute;
+            width:350px;
+            height:380px;
+        }
+        .link{
+            color:#2E7BBB;
+            }
+        .custPopup2{
+            background-color: #ededed;
+            border-width: 0px;
+            border-radius:10px;
+            border-style: solid;
+            z-index: 9999;
+            left: 50%;
+            margin-top:-60px;
+            padding:20px;
+            position: absolute;
+            width:280px;
+            height:300px;
+       
+         }
+        .custPopupDelete{
+            background-color: #ededed;
+            border-width: 0px;
+            border-radius:10px;
+            border-style: solid;
+            z-index: 9999;
+            left: 50%;
+            margin-top:-60px;
+            padding:10px;
+            position: absolute;
+            width:300px;
+            height:130px;
+        }               
+        .popupBackground{
+            background-color:black;
+            opacity: 0.50;
+            filter: alpha(opacity = 20);
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            z-index: 9998;
+            top: 0;
+            left: 0;
+        }
+        .popupBackground2{
+            background-color:black;
+            opacity: 0.50;
+            filter: alpha(opacity = 20);
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            z-index: 9998;
+            top: 0;
+            left: 0;
+        }
+        .Image{
+            cursor:pointer;
+            height:13px;
+            width:13px;
+            vertical-align:middle;
+        }
+        .popupButtonYes{
+            background-color: #49C739 !important;
+            background-image: none !important;
+            color: white !important;
+            font-size: 12.9pt !important;
+            font-weight: bold !important;
+            height: 30px !important;;
+            width: 90px !important;;
+        }
+        .popupButtonCancel{
+            background-color: #d82516 !important;
+            background-image: none !important;
+            color: white !important;
+            font-size: 12.9pt !important;
+            font-weight: bold !important;
+            height: 30px !important;;
+            width: 90px !important;;
+        }
+        
+        .active{
+            color:black;
+            text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.2);
+            background-color: #D1D1D1;
+        }
+        .margin20{
+            margin-left:1%;
+            margin-bottom:16px;
+            margin-top:16px;
+            width:60%;
+        }
+        .title{
+            width:97%;
+            margin-left:1%;
+            margin-right:1%;
+            margin-top:16px;
+        }
+        .webkitright {
+            text-align: right;
+            white-space: nowrap;
+        };
+        .headerSearchContainer {
+            margin-top: -20px !important;
+        }    
+        .phHeaderCustomLogo .headerSearchLeftRoundedCorner {
+            margin-top: -20px !important;
+        } 
+    </style>
+    <script>
+      $(document).ready(function () {
+          $('label.tree-toggler').click(function () {
+              $(this).parent().children('ul.tree').toggle(300);
+          });
+          
+           if ( $.browser.webkit ) {
+            $("#phHeaderLogoImage").parents("table").find("td").eq(2).removeClass("right").addClass("webkitright");  
+            
+           };
+      });
+    </script>
+    <div class="title">        
+        <span class="h3">
+            {!$Label.Document_Upload} - {!Concept_Note__c.Name}
+        </span>
+        <span class="pull-right">
+            <img src="/img/func_icons/util/info16.png" style="padding-bottom:8px"/>
+            <a href="{!if((blnExternalPro),'/GM','')}/apex/CN_Guidance_New?Id={!strGuidanceId}&lang={!Concept_Note__c.Language__c}" target="_blank" class="link h4">{!$Label.See_Help}</a>
+       </span>
+    </div>
+    <div class="margin20">
+    <div id="Infopanel" class="alert alert-info">
+                <button type="button" class="close" data-dismiss="alert" onclick="closePanel();">
+                      ×
+                </button>
+                <b>
+                     {!$Label.Document_Upload_Instructions}<!--Access templates through Download buttons. Click on Upload Document to add required and supporting documents to your Concept Note.-->
+                </b>
+    </div>
+    <c:CNbreadcrumb recordId="{!Concept_Note__c.Id}"/>              
+    <!-- 
+            Chatter Commented Bases on incident INC017145
+    <chatter:feedWithFollowers entityId="{!Concept_Note__c.id}"/> -->
+    </div>  
+    <br/>
+    
+    
+    <apex:form id="frm"> 
+    <apex:actionFunction action="{!uploadFile}" name="actuploadFile"/>
+        <apex:actionFunction action="{!sortByItem}" name="sortinJS">
+            <apex:param name="sortItem" assignTo="{!sortItem}" value="" />
+        </apex:actionFunction>
+        <apex:outputPanel id="dummy" style="display:none;"/>
+        <apex:outputPanel id="FinalPanel" style="display:none;" styleClass="custPopupDelete">
+            <table>
+            <tr> 
+                <td colspan="3" align="center" style="background-color: #EDEDED;border: 0px;text-align: center;">
+                    <apex:outputtext style="color:#6590c4; font-size: 13.9pt;font-weight: bold;" value="{!$Label.TGF_Internal_Warning}"/>
+                </td> 
+            </tr>
+            <tr>
+                <apex:outputText />
+            </tr>
+            <tr>                                                                            
+                <td width="47%" style="background-color: #EDEDED;border: 0px;text-align: right;">
+                    <apex:commandButton styleClass="popupButtonYes" value="{!$Label.Yes}" onclick="return uploadfilefinal();"/>
+                </td>
+                
+                <td width="47%" style="background-color: #EDEDED;border: 0px;text-align: left;">
+                    <apex:commandButton styleClass="popupButtonCancel" value="{!$Label.No}" onclick="return openoldpopup('{!$Component.FinalPanel}')"/>
+                </td>
+            </tr>
+            </table>
+        </apex:outputPanel>  
+        <apex:inputHidden value="{!DeleteIndex}" id="hdnDeleteIndex"/>
+        <div class="containerTGF"> 
+            <div class="row">     
+            <table width="100%">
+                <tr>
+                    <td width="20%" valign="top" align="left">
+                        <!--START SIDEBAR-->
+                        <c:Sidebar RecordId="{!Concept_Note__c.Id}" />                
+                        <!--END SIDEBAR-->
+                    </td>
+                    <td width="20px"></td>
+                    <td valign="top" align="left" class="indicatorSide">                                      
+                        <apex:outputPanel id="indicatorPanel">
+                            <div class="indicators">
+                                <table width="100%" >
+                                    <tr>
+                                        <td width="50%" align="left">
+                                            <apex:selectlist value="{!SelectedTemplate}" size="1">
+                                                <apex:selectoption itemValue="{!if((blnExternalPro),'/GM','')}{!if(Concept_Note__c.Concept_Note_Type__c=='Multi-Country'||Concept_Note__c.Concept_Note_Type__c=='Regional',CASE(Concept_Note__c.Component__c,'HIV/TB','/servlet/servlet.FileDownload?file=015b0000000bfXL','/servlet/servlet.FileDownload?file=015b0000000bfXB'),if(strUserLanguage=='es',CASE(Concept_Note__c.Component__c,'Health Systems Strengthening','/servlet/servlet.FileDownload?file=015b0000000bfX6','HIV/TB','/servlet/servlet.FileDownload?file=015b0000000bfWm','/servlet/servlet.FileDownload?file=015b0000000bfTO'),if(strUserLanguage=='fr','/servlet/servlet.FileDownload?file=015b0000000bfUH',if(strUserLanguage=='ru','/servlet/servlet.FileDownload?file=015b0000000bfVU',CASE(Concept_Note__c.Component__c,'Health Systems Strengthening','/servlet/servlet.FileDownload?file=015b0000000bfWw','HIV/TB','/servlet/servlet.FileDownload?file=015b0000000bfWS','/servlet/servlet.FileDownload?file=015b0000000bfSG')))))}"                                     
+                                                    itemLabel="{!$Label.CN_Narrative}"/>
+                                                <apex:selectoption itemValue="{!if((blnExternalPro),'/GM','')}{!if(Concept_Note__c.Concept_Note_Type__c=='Multi-Country'||Concept_Note__c.Concept_Note_Type__c=='Regional','/servlet/servlet.FileDownload?file=015b0000000bfXV',CASE(strUserLanguage,'fr','/servlet/servlet.FileDownload?file=015b0000000bfUb','ru','/servlet/servlet.FileDownload?file=015b0000000bfVy','es','/servlet/servlet.FileDownload?file=015b0000000bfTn','/servlet/servlet.FileDownload?file=015b0000000bfSQ'))}"
+                                                    itemLabel="{!$Label.CCM_Endorsement_select}"/>
+                                                <apex:selectoption itemValue="{!if((blnExternalPro),'/GM','')}/servlet/servlet.FileDownload?file=015b0000000bbA2"  
+                                                    itemLabel="{!$Label.Detailed_Budget}"/>
+                                                <apex:selectoption itemValue="{!if((blnExternalPro),'/GM','')}/servlet/servlet.FileDownload?file=015b0000000bbAq"  
+                                                    itemLabel="{!$Label.PSM_Products_Cost}"/>
+                                                <apex:selectoption itemValue="{!if((blnExternalPro),'/GM','')}{!CASE(strUserLanguage,'fr','/servlet/servlet.FileDownload?file=015b0000000bfYE','ru','/servlet/servlet.FileDownload?file=015b0000000bfYE','es','/servlet/servlet.FileDownload?file=015b0000000bfYE','/servlet/servlet.FileDownload?file=015b0000000bfYE')}"  
+                                                    itemLabel="{!$Label.Willingness_Pay}"/>
+                                                <apex:selectoption itemValue="{!if((blnExternalPro),'/GM','')}{!CASE(strUserLanguage,'fr','/servlet/servlet.FileDownload?file=015b0000000bfU7','ru','/servlet/servlet.FileDownload?file=015b0000000bfW3','es','/servlet/servlet.FileDownload?file=015b0000000bfU2','/servlet/servlet.FileDownload?file=015b0000000bfSL')}"  
+                                                    itemLabel="{!$Label.Abbreviations_Annexes}"/>
+                                                <apex:selectoption itemValue="{!if((blnExternalPro),'/GM','')}{!IF(Concept_Note__c.Component__c=='HIV/TB',CASE(strUserLanguage,'es','/servlet/servlet.FileDownload?file=015b0000000bfWm','/servlet/servlet.FileDownload?file=015b0000000bfWc'),CASE(strUserLanguage,'fr','/servlet/servlet.FileDownload?file=015b0000000bfUR','ru','/servlet/servlet.FileDownload?file=015b0000000bfVe','es','/servlet/servlet.FileDownload?file=015b0000000bfTY','/servlet/servlet.FileDownload?file=015b0000000bfSk'))}"  
+                                                    itemLabel="{!$Label.Financial_Gap_Analysis_CPF}"/>
+                                                <!--<apex:selectoption itemValue="{!if(CONTAINS($Profile.Name,'CM')||CONTAINS($Profile.Name,'PR')||CONTAINS($Profile.Name,'LFA'),'/GM','')}{!CASE(strUserLanguage,'fr','/servlet/servlet.FileDownload?file=015b0000000bfUW','ru','/servlet/servlet.FileDownload?file=015b0000000bfVj','es','/servlet/servlet.FileDownload?file=015b0000000bfTd','/servlet/servlet.FileDownload?file=015b0000000bfSp')}"  
+                                                    itemLabel="{!$Label.Programmatic_Gap}"/>-->
+                                                <apex:selectoption itemValue="{!if((blnExternalPro),'/GM','')}{!CASE(strUserLanguage,'fr','/servlet/servlet.FileDownload?file=015b0000000bfUC','ru','/servlet/servlet.FileDownload?file=015b0000000bfW8','es','/servlet/servlet.FileDownload?file=015b0000000bfTs','/servlet/servlet.FileDownload?file=015b0000000bfSz')}"  
+                                                    itemLabel="{!$Label.Modular_Template}"/>
+                                                <apex:selectoption itemValue="{!if((blnExternalPro),'/GM','')}{!if(Concept_Note__c.Concept_Note_Type__c=='Multi-Country'||Concept_Note__c.Concept_Note_Type__c=='Regional','/servlet/servlet.FileDownload?file=015b0000000bfXa',CASE(strUserLanguage,'fr','/servlet/servlet.FileDownload?file=015b0000000bfUl','ru','/servlet/servlet.FileDownload?file=015b0000000bfVt','es','/servlet/servlet.FileDownload?file=015b0000000bfTi','/servlet/servlet.FileDownload?file=015b0000000bfSf'))}"  
+                                                    itemLabel="{!$Label.CCM_Eligibility_Requirements}"/>  
+                                                <!-- <apex:selectoption itemValue="{!if((blnExternalPro),'/GM','')}/resource/1412076518000/Sample_Integrated_View_pdf" -->
+                                                <apex:selectoption itemValue="{!if((blnExternalPro),'/GM','')}{!$Resource.Sample_Integrated_View_pdf}"                                    
+                                                    itemLabel="{!$Label.Sample_Integrated_View}"/>                                                                                                          
+                                            </apex:selectlist>
+                                            <br/>
+                                            <apex:commandlink styleClass="btnStyle TGFbtn-mini buttonStyle3" action="{!downloadTemplate}" target="_blank">
+                                                <i class="icon-download icon-white"/>
+                                                <b>{!$Label.Download_Template} <!--Download Template---></b>
+                                            </apex:commandlink>
+                                        </td>
+                                        <!-- TCS: 12/8/2014: Changes for US- CN2GM All Documents download: Starts Here -->
+                                        <td align="right" width="25%">
+                                            <apex:commandlink styleClass="btnStyle TGFbtn-mini buttonStyle3" id="uploadZipButton" onClick="return downloadall(); " style="display:{!IF((blnDownloadAllDocuments),'','none')}">
+                                                <b> {!$Label.Download_All_Documents}</b>
+                                            </apex:commandlink>
+                                        </td>
+                                        <!-- TCS: 12/8/2014: Changes for US- CN2GM All Documents download: Ends Here -->
+                                        <td align="left" width="25%">
+                                            <apex:commandLink styleClass="btnStyle TGFbtn-mini buttonStyle3" onclick="return openPopup('{!$Component.tstPopup2}');" style="display:{!IF((blnUploadDocument),'','none')}">
+                                                <i><apex:image height="20px" width="20px" value="{!$Resource.Upload1}"/></i>
+                                                <strong>{!$Label.Upload_Document}</strong>
+                                            </apex:commandLink>
+                                            
+                                            
+                                            <apex:outputPanel id="tstPopup2" style="display:none;">
+                                                <apex:outputPanel id="popupBackground2" styleClass="popupBackground"/>
+                                                <apex:outputPanel id="custPopup2" styleClass="custPopup">
+                                                    <table width="100%" cellspacing="0" cellpadding="0" border="0" >
+                                                       <tr>
+                                                            <td align="left">
+                                                               <apex:outputLabel id="olType" value="{!$Label.Select_Type}:"></apex:outputLabel>
+                                                            </td>
+                                                            <td>
+                                                                <apex:inputField style="display:none;" id="ifArea" value="{!objDocumentUpload.Process_Area__c}" />
+                                                                <apex:inputField id="ifType" value="{!objDocumentUpload.Type__c}" />
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td align="left">
+                                                                <apex:outputLabel id="olLanguage" value="{!$Label.Select_Language}: "></apex:outputLabel>
+                                                            </td>
+                                                            <td>                                                                
+                                                                <apex:inputField id="ifLanguage" value="{!objDocumentUpload.Language__c}" />
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>
+                                                                <apex:outputlabel id="oSection" value="{!$Label.Select} {!$Label.Section}"/>                                                                
+                                                            </td>
+                                                            <td>
+                                                                <apex:inputfield id="iSection" value="{!objDocumentUpload.Section__c}"/>
+                                                            </td>
+                                                        </tr>
+                                                        <tr>                                                            
+                                                            <td colspan="2" align="left">
+                                                                <apex:inputFile id="ipFile" value="{!objFeedItem.ContentData}" filename="{!objFeedItem.ContentFileName}" filesize="{!objFeedItem.ContentSize}"/>
+                                                            </td>                                                            
+                                                        </tr>
+                                                        <tr>
+                                                            
+                                                            <td style="color:#D00000;font-weight:bold;" colspan="2" align="left">
+                                                               {!$Label.Max_File_Size} <!--- Maximum file size is 10 MB.--->
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            
+                                                            <td style="height:17px;" colspan="2" align="left">
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            
+                                                            <td style="font-weight:bold;" colspan="2" align="left">
+                                                                {!$Label.Description}
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            
+                                                            <td style="font-weight:bold;" colspan="2" align="left">
+                                                                <apex:inputTextArea value="{!objFeedItem.body}" id="ifDescription" styleclass="countable1" style="resize:none;width:250px;height:80px;length:250px"/>
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td colspan="2" style="display:{!if((blnExternalPro||CONTAINS($Profile.Name,$Label.Customer_Community_Login_User)),'none','')}">
+                                                                <apex:inputfield id="iCheck" value="{!objDocumentUpload.TGF_Internal__c}"/>
+                                                                &nbsp;&nbsp;<b>{!$Label.TGF_Internal_Label}</b>                                                                 
+                                                            </td>                                                           
+                                                        </tr>
+                                                       
+                                                        <tr>
+                                                           
+                                                           <td align="center" colspan="2">
+                                                                <br></br>                                                                
+                                                                <apex:commandLink styleClass="TGFbtn TGFbtn-mini TGFbtn-success" onclick="return ValidateUploadFile('{!$Component.ipFile}','{!$Component.ifType}','{!$Component.ifDescription}','{!$Component.iCheck}');" rendered="{!if((blnExternalPro||CONTAINS($Profile.Name,$Label.Customer_Community_Login_User)),false,true)}">
+                                                                    <strong>{!$Label.Upload}</strong>
+                                                                </apex:commandLink>&nbsp;&nbsp;
+                                                                <apex:commandLink styleClass="TGFbtn TGFbtn-mini TGFbtn-success" onclick="return ValidateUploadFile2('{!$Component.ipFile}','{!$Component.ifType}','{!$Component.ifDescription}','{!$Component.iCheck}');" rendered="{!if((blnExternalPro||CONTAINS($Profile.Name,$Label.Customer_Community_Login_User)),true,false)}">
+                                                                    <strong>{!$Label.Upload}</strong>
+                                                                </apex:commandLink>&nbsp;&nbsp;
+                                                                <apex:commandLink styleClass="TGFbtn TGFbtn-mini TGFbtn-danger" onclick="return closePopup('{!$Component.tstPopup2}');">
+                                                                    <strong>{!$Label.Cancel}</strong>
+                                                                </apex:commandLink>
+                                                           </td>
+                                                        </tr>
+                                                    </table>
+                                                </apex:outputPanel>
+                                                <script>
+                                                    function ValidateUploadFile(fileid,Type,Description,check){
+                                                        if(document.getElementById(fileid).value == ''){
+                                                            alert('{!$Label.Select_File}.');
+                                                            return false;
+                                                        }else{
+                                                        if(document.getElementById(Type).value == ''){
+                                                            alert('{!$Label.Specify_File_Type}.');
+                                                            return false;
+                                                        }else{
+                                                        if(document.getElementById(Description).value == ''){
+                                                            alert('{!$Label.Specify_Description}.');
+                                                            return false;
+                                                        }else{
+                                                            
+                                                            if(document.getElementById(check).checked == 0){
+                                                            closePopup('page:frm:custPopup2');
+                                                            openPopup('page:frm:FinalPanel');
+                                                            return false;
+                                                        }else{    
+                                                            document.getElementById('divProcessing').style.display = '';
+                                                            actuploadFile();
+                                                            return false;
+                                                        }}}}
+                                                    }
+                                                    
+                                                    function ValidateUploadFile2(fileid,Type,Description,check){
+                                                        if(document.getElementById(fileid).value == ''){
+                                                            alert('{!$Label.Select_File}.');
+                                                            return false;
+                                                        }else{
+                                                        if(document.getElementById(Type).value == ''){
+                                                            alert('{!$Label.Specify_File_Type}.');
+                                                            return false;
+                                                        }else{
+                                                        if(document.getElementById(Description).value == ''){
+                                                            alert('{!$Label.Specify_Description}.');
+                                                            return false;
+                                                        }else{                                                                                                                        
+                                                            document.getElementById('divProcessing').style.display = '';
+                                                            actuploadFile();
+                                                            return false;
+                                                        }}}
+                                                    }
+                                                </script>
+                                            </apex:outputPanel>
+                                        </td>
+                                        
+                                    </tr>
+                                    <tr><td style="height:30px;"></td></tr>
+                                    <tr>
+                                        <td class="h3">
+                                           {!$Label.Uploaded_Documents} <!---- Uploaded documents--->
+                                        </td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="3">
+                                            <table class="table table-striped" width="100%" cellspacing="0" cellpadding="0" border="0">
+                                                <apex:variable value="{!0}" var="Count"/>                                                
+                                                <tr>                                                        
+                                                        <th>
+                                                            <apex:commandLink action="{!sortByItem}" value="{!$Label.File_Name}" > <!--- File Name--->
+                                                                <apex:param name="sortItem" assignTo="{!sortItem}" value="1" />
+                                                            </apex:commandLink>
+                                                        </th>
+                                                        <th>
+                                                            <apex:commandLink action="{!sortByItem}" value="{!$Label.Internal_Use}">
+                                                                <apex:param name="sortItem" assignTo="{!sortItem}" value="2" />
+                                                            </apex:commandLink>
+                                                        </th>
+                                                        <th>
+                                                             <apex:commandLink action="{!sortByItem}" value="{!$Label.Description}" >
+                                                                <apex:param name="sortItem" assignTo="{!sortItem}" value="3" />
+                                                             </apex:commandLink>
+                                                        </th>
+                                                        <th>
+                                                            <apex:commandLink action="{!sortByItem}" value="{!$Label.Type}">
+                                                                <apex:param name="sortItem" assignTo="{!sortItem}" value="4" />
+                                                            </apex:commandLink>
+                                                        </th>
+                                                        <th>
+                                                             <apex:commandLink action="{!sortByItem}" value="{!$Label.Language}" >
+                                                                <apex:param name="sortItem" assignTo="{!sortItem}" value="5" />
+                                                             </apex:commandLink>
+                                                        </th>
+                                                        <th>
+                                                             <apex:commandLink action="{!sortByItem}" value="{!$Label.Created_Date}"> <!--Created Date--->
+                                                                <apex:param name="sortItem" assignTo="{!sortItem}" value="6" />
+                                                             </apex:commandLink>
+                                                        </th>
+                                                        <th>
+                                                             <apex:commandLink action="{!sortByItem}" value="{!$Label.Created_By}">
+                                                                <apex:param name="sortItem" assignTo="{!sortItem}" value="7" />
+                                                             </apex:commandLink>
+                                                        </th>
+                                                        
+                                                        <th>
+                                                            
+                                                        </th>                                                    
+                                                </tr>
+                                                 <apex:variable value="{!0}" var="i"/>
+                                                <apex:repeat id="rpt" value="{!lstWrpDocumentUpload}" var="wrpDocUp"> 
+                                                    <tr style="display:{!if(((blnExternalPro || CONTAINS($Profile.Name,$Label.Customer_Community_Login_User)) && wrpDocUp.objDocumentUpload.TGF_Internal__c && wrpDocUp.objDocumentUpload.Type__c != 'Integrated View'),'none','')}"> 
+                                                        <td>
+                                                            <apex:outputLink target="_Blank" value="/sfc/servlet.shepherd/version/download/{!wrpDocUp.objFeedItem.RelatedRecordId}" style="text-decoration:underline;" rendered="{!blnIndividualDownloadLink || wrpDocUp.objDocumentUpload.Type__c == 'Integrated View'}">
+                                                            <!--<apex:outputLink target="_Blank" value="/{!wrpDocUp.objFeedItem.RelatedRecordId}?fa=nv" style="text-decoration:underline;" rendered="{!blnIndividualDownloadLink || wrpDocUp.objDocumentUpload.Type__c == 'Integrated View'}">-->
+                                                                {!wrpDocUp.objFeedItem.ContentFileName}
+                                                            </apex:outputLink>
+                                                            <apex:outputText value="{!wrpDocUp.objFeedItem.ContentFileName}" rendered="{!!blnIndividualDownloadLink && wrpDocUp.objDocumentUpload.Type__c != 'Integrated View'}" id="docName"/> 
+                                                        </td>
+                                                        <td>
+                                                            <apex:outputText value="Y" rendered="{!wrpDocUp.objDocumentUpload.TGF_Internal__c}"/>
+                                                            <apex:outputText value="N" rendered="{!!wrpDocUp.objDocumentUpload.TGF_Internal__c}"/>
+                                                        </td>
+                                                        <td>
+                                                            <apex:outputField value="{!wrpDocUp.objFeedItem.body}" id="docBody"/>
+                                                        </td>
+                                                        <td>
+                                                            <apex:outputField value="{!wrpDocUp.objDocumentUpload.Type__c}"/>
+                                                        </td>
+                                                        <td>
+                                                            <apex:outputField value="{!wrpDocUp.objDocumentUpload.Language__c}"/>
+                                                        </td>
+                                                        <td>
+                                                            <apex:outputField value="{!wrpDocUp.objFeedItem.CreatedDate}"/>
+                                                        </td>
+                                                        <td>
+                                                            <apex:outputField value="{!wrpDocUp.objFeedItem.CreatedBy.Name}"/>
+                                                        </td>
+                                                        
+                                                        <td>
+                                                            <apex:commandLink styleClass="btnStyle TGFbtn-mini TGFbtn-danger" onclick="return openDeletePopup('{!$Component.tstpopup1}')" style="display:{!IF((blnDeleteDocument && (wrpDocUp.objDocumentUpload.Type__c != 'Integrated View')) || $Profile.Name=='System Administrator','','none')}">
+                                                               <i class="icon-trash icon-white">
+                                                               </i> <strong>{!$Label.Delete}</strong>
+                                                            </apex:commandLink>
+                                                            <apex:outputPanel id="tstpopup1" style="display:none;">
+                                                                <apex:outputPanel id="popupBackground1" styleClass="popupBackground"/>
+                                                                <apex:outputPanel id="custPopup1" styleClass="custPopupDelete">
+                                                                    <table width="100%" cellspacing="0" cellpadding="0" border="0">
+                                                                        <tr>
+                                                                            <td colspan="3" align="center" style="background-color: #EDEDED;border: 0px;text-align: center;">
+                                                                                <apex:outputtext style="color:#6590c4; font-size: 13.9pt;font-weight: bold;" value="{!$Label.Are_you_sure}"/>
+                                                                            </td>
+                                                                        </tr>                                                                        
+                                                                        <tr>
+                                                                            <td colspan="3" align="center" style="background-color: #EDEDED;border: 0px;text-align: center;">
+                                                                                <apex:outputtext style="color:#6590c4; font-size: 13.9pt;font-weight: bold;" value="{!$Label.File_Deletion_Warning}"/>
+                                                                            </td>
+                                                                        </tr>
+                                                                        <tr>                                                                            
+                                                                            <td width="47%" align="right" style="background-color: #EDEDED;border: 0px;text-align: right;">
+                                                                                <apex:commandButton styleClass="popupButtonYes" value="{!$Label.Yes}" action="{!DeleteFile}" onclick="DeleteIndex('{!Count}','{!$Component.hdnDeleteIndex}');"/>
+                                                                            </td>
+                                                                            <td width="6%" style="background-color: #EDEDED;border: 0px;"></td>
+                                                                            <td width="47%" align="left" style="background-color: #EDEDED;border: 0px;text-align: left;">
+                                                                                <apex:commandButton styleClass="popupButtonCancel" value="{!$Label.Cancel}" onclick="return closeDeletePopup('{!$Component.tstpopup1}')"/>
+                                                                            </td>
+                                                                        </tr>
+                                                                    </table>
+                                                                </apex:outputPanel>
+                                                            </apex:outputPanel>
+                                                            <apex:variable var="Count" value="{!Count+1}"/>
+                                                        </td>
+                                                    </tr>
+                                                  <apex:variable value="{!i+1}" var="i"/>
+                                                </apex:repeat>
+                                                <tr>
+                                                    <td colspan="7" align="center" style="text-align: center;">
+                                                        <apex:outputLabel id="olNotFound" style="border:1px solid grey;" rendered="{!lstWrpDocumentUpload.size == 0}" value="{!$Label.No_Documents_Uploaded}"></apex:outputLabel>    
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                        </td>                                        
+                                    </tr>
+                                </table>
+                            </div>
+                        </apex:outputPanel>
+                    </td>                    
+                </tr>
+            </table>
+        </div>
+        </div>
+            <script>
+                function closePanel(){
+                    document.getElementById('Infopanel').style.display = 'none';
+                }  
+                function openPopup(popupId){
+                    document.getElementById(popupId).style.display = '';
+                    return false;
+                }
+                function closePopup(popupId){
+                    document.getElementById(popupId).style.display = 'none';
+                    return false;
+                }
+                function openDeletePopup(popupId){
+                    document.getElementById(popupId).style.display = '';
+                    return false;
+                }
+                function closeDeletePopup(popupId){
+                    document.getElementById(popupId).style.display = 'none';
+                    return false;
+                }
+                function DeleteIndex(IndexDelete,hdnId){
+                    document.getElementById(hdnId).value  = IndexDelete;
+                }
+                function uploadAndSaveDec(){
+                    document.getElementById(hdnId).value  = IndexDelete;
+                }
+                function switchMenu(obj,obj1,obj2,hdn,val) 
+                {   
+                    var AllLI = document.getElementsByTagName('li');
+                    for(var i=0;i<AllLI.length;i++){
+                        if(AllLI[i].id == obj){
+                            if(AllLI[i].style.display != 'none'){
+                                AllLI[i].style.display = 'none';
+                            }else{
+                                AllLI[i].style.display = '';
+                            }
+                        }
+                }
+                document.getElementById(hdn).value=val; 
+                
+                var e2 = document.getElementById(obj1);                                       
+                if ( e2.style.display != 'none' ) {
+                    e2.style.display = 'none';
+                }
+                else {
+                    e2.style.display = '';
+                }
+                var e3 = document.getElementById(obj2);                                       
+                if ( e2.style.display != 'none' ) {
+                    e3.style.display = 'none';
+                }
+                else {
+                    e3.style.display = '';
+                }
+            }
+                function uploadfilefinal(){
+                    document.getElementById('divProcessing').style.display = '';
+                    actuploadFile();
+                    return false;
+                }
+                function openoldpopup(popup){
+                    openPopup('page:frm:custPopup2');
+                    closePopup(popup);
+                    return false;
+                }
+        
+            function callsort(param) {              
+                sortinJS(param);
+            }
+    </script>
+        <style>
+            .ProcessingBackground
+            {
+                background-color: black;
+                opacity: 0.50;
+                filter: alpha(opacity = 50);
+                width: 100%;
+                height: 100%;
+                position: fixed;
+                z-index: 9999;
+                top:0;
+                left:0;
+            }
+            .Processing
+            {
+                z-index: 9999;
+                left: 50%;
+                top: 50%;
+                text-align: center;
+                position: fixed;
+            }        
+        </style>
+     
+        <div id="divProcessing" style="display:none;">
+            <div class="ProcessingBackground"></div>
+            <div class="Processing">
+                <apex:image alt="Processing" url="{!$Resource.LoadingCircle}" />
+            </div>
+        </div>  
+        <apex:actionStatus id="Processing" onstart="document.getElementById('divProcessing').style.display = '';" onstop="document.getElementById('divProcessing').style.display = 'none';">                            
+        </apex:actionStatus>
+    </apex:form>            
+</apex:page>

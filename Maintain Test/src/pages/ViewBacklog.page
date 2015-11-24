@@ -1,0 +1,366 @@
+<apex:page controller="ViewBacklog" title="View Backlog" showheader="true" sidebar="false" 
+                           docType="html-5.0" standardStylesheets="false" tabstyle="Plan__tab" id="thePage" >
+
+  <head>
+    <title>View Backlog</title>
+    <apex:includescript value="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" />
+    <apex:includescript value="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8/jquery-ui.js" />
+    <apex:includescript value="https://raw.github.com/cowboy/jquery-bbq/master/jquery.ba-bbq.min.js" />
+    <c:ViewBacklogCSS />
+    <c:ViewBacklogJS projectId="{!selectedProjectId}" id="ProjectId"/>
+  </head>
+  
+  <body>
+    
+    <div class="hidden" id="overlay" />
+    <div class="hidden" id="loading">
+      Updating...
+      <br /><br />
+      <img src="{!URLFOR($Resource.ViewBacklog, '/ViewBacklog/images/ajax-loader.gif')}" />
+    </div>
+    
+    <apex:form id="frmMain">
+    <apex:sectionheader id="sechead" subtitle="Backlog" title="Work Products" />
+
+        <!-- Select options to view backlog for specific project -->
+        
+          <div style="float:left; width:70%; margin: 0px 0px 20px 0px">
+           
+  </div>
+             
+        <div style="float:left; width:70%; margin: 0px 0px 20px 0px">
+         <apex:outputText value="Select a Workstream: "/>
+            <apex:actionRegion >
+            <apex:selectList value="{!selectedProjectId}" size="1" multiselect="false" >
+                <apex:selectOptions value="{!WorkStreamitems}"/>
+                <apex:actionSupport event="onchange"
+                                    action="{!selectProject}" reRender="outputscreen"/>
+            </apex:selectList>
+                </apex:actionRegion>      
+             <br/> <br/>
+          <apex:outputPanel layout="block" id="BusinessProcessPanel" >
+            <apex:outputText value="Select a Business Process: "/>
+            <apex:selectList value="{!selectedbprocessId}" size="1" multiselect="false" disabled="{!selectedProjectId == null}" >
+                <apex:selectOptions value="{!items}"/>
+                <apex:actionSupport event="onchange"
+                                    action="{!selectBusinessprocess}" reRender="outputscreen,ActivityPanel"/>
+            </apex:selectList>
+            </apex:outputPanel>
+            <br/>
+          
+                 <apex:outputPanel layout="block" id="ActivityPanel" >
+            <apex:outputText value="Select a Activity: "/>
+            <apex:selectList value="{!selectedActivityId}" size="1" multiselect="false" disabled="{!selectedbprocessId == null}">
+                <apex:selectOptions value="{!ActivityItems}"/>
+                <apex:actionSupport event="onchange"
+                                    action="{!selectActivity}" reRender="outputscreen"/>
+            </apex:selectList>
+            </apex:outputPanel>
+          
+           <br/>
+            <!--<apex:outputText value="Filter Product Backlog By: "  id="UserStories" />
+            <apex:selectList value="{!selectionFilter}" size="1" multiselect="false" disabled="{!selectedActivityId == null}">
+                <apex:selectOptions value="{!filterByOptions}" />
+                <apex:actionSupport event="onchange" action="{!filterWorkProducts}"   />
+            </apex:selectList>-->
+             
+             <!--<apex:outputText value="Hide previous iterations" />
+            <apex:inputCheckbox value="{!isHidePastIterations}">
+                <apex:actionSupport event="onchange" action="{!hidePastIterations}" />
+            </apex:inputCheckbox>-->
+          <!--  <br/><br/> -->
+            <!--<apex:outputText value="Hide previous releases" />
+            <apex:inputCheckbox value="{!isHidePastReleases}">
+                <apex:actionSupport event="onchange" action="{!hidePastReleases}" />
+            </apex:inputCheckbox>-->
+          <!--  <br/><br/> --->
+           <!--  <apex:param name="isProjectCloseToggle" value="false"/>
+            <apex:outputText value="Hide closed projects" />
+            <apex:inputCheckbox value="{!isHideClosedProjects}">
+                <apex:actionSupport event="onchange" action="{!hideClosedProjects}" />
+            </apex:inputCheckbox>  -->
+        </div>
+
+       <!-- <div id="legend" style="margin-top:130px;margin-left:270px;float:right;">
+          <ul>
+              <li class="No-State">No State</li>
+              <li class="Defined">Defined</li>
+              <li class="In-Progress">In-Progress</li>
+              <li class="Completed">Completed</li>
+              <li class="Accepted">Accepted</li>
+          </ul>
+        </div> -->
+<apex:outputPanel id="outputscreen">
+        <!-- Section on left for product backlog list -->
+        <div class="half wp-container">
+        <div class="section-header">
+        <div id="iterationBacklogContainer" class="estimateCollection">         
+            <span class="left bold large-font med-gray">Product Backlog</span>
+            <span class="bold">&nbsp;</span>
+            
+          <!--  <span class="state-filter-container">
+                <span title="No-State" class=" link filter-heading filter">B</span>
+                <span title="Defined" class=" link filter-heading filter">D</span>
+                <span title="In-Progress" class=" link filter-heading filter">I</span>
+                <span title="Completed" class=" link filter-heading filter">C</span>
+                <span title="Accepted" class=" link filter-heading filter">A</span>
+                <span title="Blocked" class=" stopButton filter-heading filter link">B</span>
+            </span> -->
+            
+          <div class="utilityContainer">
+            <span class="estimateStats">
+               <span class="taskEstimate" >Story Points:</span>
+            </span>
+                <span class="right link show-hide unselectable">Collapse</span>
+                <span class="right lrg-right-marg link unselectable sort">Sort Descending</span>
+                </div> 
+        </div>
+        </div>
+        
+        
+            <ul class="sortable connectedSortable" type="backlog">
+                <apex:repeat value="{!productBacklogList}" var="wp" id="productBklg">
+                    <!-- <li id="{!wp.id}"
+                        rank="{!wp.rank__c}"
+                        name="{!wp.Name}"
+                        onblur="LookupHoverDetail.getHover('{!wp.id}').hide();"
+                        onfocus="LookupHoverDetail.getHover('{!wp.id}', '/{!wp.id}/m?retURL=%2F{!wp.id}&isAjaxRequest=1').show();"
+                        onmouseout="LookupHoverDetail.getHover('{!wp.id}').hide();"
+                        onmouseover="LookupHoverDetail.getHover('{!wp.id}', '/{!wp.id}/m?retURL=%2F{!wp.id}&isAjaxRequest=1').show();"> -->
+                    <li id="{!wp.id}" 
+                    class="{!IF(ISBLANK(wp.State__c), 'No-State', wp.State__c)}{!IF(wp.Blocked__c, ' Blocked', '')}" 
+                    rank="{!wp.rank__c}" 
+                    release="{!wp.ss_release__c}"
+                    estimate="{!wp.plan_estimate__c}"
+                    name="{!wp.Summary__c}"> 
+                        <span class="{!IF(wp.is_defect__c, 'defect left', 'left')}">{!wp.Summary__c}</span>
+                        <span href="/{!wp.id}" class="{!IF(wp.is_defect__c, 'as-link right defect', 'as-link right')}"
+                            onblur="LookupHoverDetail.getHover('{!wp.id}').hide();"
+                            onfocus="LookupHoverDetail.getHover('{!wp.id}', '/{!wp.id}/m?retURL=%2F{!wp.id}&isAjaxRequest=1').show();"
+                            onmouseout="LookupHoverDetail.getHover('{!wp.id}').hide();"
+                            onmouseover="LookupHoverDetail.getHover('{!wp.id}', '/{!wp.id}/m?retURL=%2F{!wp.id}&isAjaxRequest=1').show();">
+                        
+                         <span class="wpStatus">{!IF(wp.Plan_Estimate__c=null, '0', wp.Plan_Estimate__c)} || </span>
+                           <span class="wpStatus" >{!wp.Name} || </span>                          
+                            <span class="wpStatus" >{!wp.State__c} || </span>
+                            
+                        </span>
+                    </li>
+                </apex:repeat>
+            </ul>
+        </div>
+        
+        
+        <!-- Section on right for iteration and release lists -->
+        <div class="half rightside">              
+            <!-- Iteration backlog section -->
+          <div id="iterationBacklogContainer" class="estimateCollection">
+            <div class="backlog-container"><span class="large-font bold med-gray">Sprint Backlog</span>
+           <!-- <span class="state-filter-container">
+              <span title="No-State" class=" link filter-global filter">B</span>
+              <span title="Defined" class=" link filter-global filter">D</span>
+              <span title="In-Progress" class=" link filter-global filter">I</span>
+              <span title="Completed" class=" link filter-global filter">C</span>
+              <span title="Accepted" class=" link filter-global filter">A</span>
+              <span title="Blocked" class=" stopButton filter-global filter link">B</span>
+            </span> -->
+            
+            <span class="estimateStats">
+              <span class="planEstimate" type="parentSummary">Story Points:</span>
+            </span>
+            <span class="right link show-hide unselectable">Collapse All</span></div>
+            <!-- Creating separate sections for each iteration (ordered by start date desc) -->         
+            <apex:repeat value="{!iterationList}" var="iteration" id="iterationList">
+            <div class="{!IF(iteration.State__c='Accepted', 'wp-container-not-sortable', 'wp-container')}">
+            <div class="section-header">
+             <table><a href="/{!iteration.id}" target="_blank"><span class="left bold large-font med-gray">{!iteration.Name}</span></a></table>   
+                <span class="bold">
+                    &nbsp;[
+                    <apex:outputText value="{0,date,MMM dd, yyyy}">
+                        <apex:param value="{!iteration.Start_Date__c}" />
+                    </apex:outputText>
+                    -&nbsp;
+                    <apex:outputText value="{0,date,MMM dd, yyyy}">
+                        <apex:param value="{!iteration.End_Date__c}" />
+                    </apex:outputText>]</span>
+              <!--  <span class="state-filter-container">
+                    <span title="No-State" class=" link filter-heading filter">B</span>
+                    <span title="Defined" class=" link filter-heading filter">D</span>
+                    <span title="In-Progress" class=" link filter-heading filter">I</span>
+                    <span title="Completed" class=" link filter-heading filter">C</span>
+                    <span title="Accepted" class=" link filter-heading filter">A</span>
+                    <span title="Blocked" class=" stopButton filter-heading filter link">B</span>
+                </span> -->
+                
+                <div class="utilityContainer">
+                    <span class="estimateStats">
+                  <!--   <span class="planEstimate">Plan Estimate: {!iteration.Plan_Estimate__c}</span> 
+                     <span class="planVelocity">Planned Velocity: {!IF(iteration.Planned_Velocity__c=null, '0', iteration.Planned_Velocity__c)}</span>
+                         <span class="planVelocity" type="parentSummary1">Story Points: {!IF(iteration.Planned_Velocity__c=null, '0', iteration.Planned_Velocity__c)}</span> &nbsp;&nbsp;-->
+                        <span class="planVelocity" type="parentSummary">Story Points: {!IF(iteration.Planned_Velocity__c=null, '0', iteration.Planned_Velocity__c)}</span> &nbsp;&nbsp;
+                        <span class="planEstimate">Task Estimate: {!iteration.Task_Estimate__c}</span>
+                    </span>
+                    <span class="right link show-hide unselectable">Collapse</span>
+                    <span class="right lrg-right-marg link unselectable sort">Sort Descending</span>
+                </div>
+            </div>          
+            <ul class="{!IF(iteration.State__c='Accepted', 'not-sortable', 'sortable connectedSortable')}" id="{!iteration.id}|{!iteration.Release__c}" type="iteration">
+                <apex:repeat value="{!iterationBacklogList}" var="wp" id="iterationBklg">   
+                    <apex:outputPanel layout="none" rendered="{!IF(wp.Iteration__c=iteration.id, true, false)}">
+                    
+                    <li id="{!wp.id}" 
+                    class="{!IF(ISBLANK(wp.State__c), 'No-State', wp.State__c)}{!IF(wp.Blocked__c, ' Blocked', '')}" 
+                    rank="{!wp.rank__c}" 
+                    release="{!wp.ss_release__c}"
+                    estimate="{!wp.plan_estimate__c}"
+                    name="{!wp.Summary__c}">
+                        <span class="{!IF(wp.is_defect__c, 'defect left', 'left')}">{!wp.Summary__c}</span>
+                        <span href="/{!wp.id}" class="{!IF(wp.is_defect__c, 'as-link right defect', 'as-link right')}"
+                            onblur="LookupHoverDetail.getHover('{!wp.id}').hide();"
+                            onfocus="LookupHoverDetail.getHover('{!wp.id}', '/{!wp.id}/m?retURL=%2F{!wp.id}&isAjaxRequest=1').show();"
+                            onmouseout="LookupHoverDetail.getHover('{!wp.id}').hide();"
+                            onmouseover="LookupHoverDetail.getHover('{!wp.id}', '/{!wp.id}/m?retURL=%2F{!wp.id}&isAjaxRequest=1').show();">
+                          
+                            <span class="wpStatus">{!IF(wp.Plan_Estimate__c=null, '0', wp.Plan_Estimate__c)} || </span>
+                            <span class="wpStatus">{!wp.Name} || </span>
+                            <span class="wpStatus">{!wp.State__c} || </span>                           
+                        </span>
+                    </li> 
+                    </apex:outputPanel> 
+                 </apex:repeat>
+             </ul>
+            </div>
+            </apex:repeat>  
+          </div>
+    <!-- Release Backlog
+        <div id="releaseBacklogContainer" class="estimateCollection">
+            <div class="backlog-container"><span class="large-font bold med-gray">Release Backlog</span></div>
+              <span class="estimateStats">
+              <span class="planEstimate" type="parentSummary">Story Points: </span>
+            </span>
+                       
+            <apex:repeat value="{!releaseList}" var="release" id="releaseList">
+                <div class="wp-container">
+                    <div class="section-header">
+                        <a href="/{!release.id}" target="_blank"><span class="left bold large-font med-gray">{!release.Name}</span></a>
+                        <span class="bold">
+                            &nbsp;[
+                            <apex:outputText value="{0,date,MMM dd, yyyy}">
+                                <apex:param value="{!release.Start_Date__c}" />
+                            </apex:outputText>
+                            -&nbsp;
+                            <apex:outputText value="{0,date,MMM dd, yyyy}">
+                                <apex:param value="{!release.Release_Date__c}" />
+                            </apex:outputText>]
+                        </span>
+                        <span class="state-filter-container">
+                            <span title="No-State" class=" link filter-heading filter">B</span>
+                            <span title="Defined" class=" link filter-heading filter">D</span>
+                            <span title="In-Progress" class=" link filter-heading filter">I</span>
+                            <span title="Completed" class=" link filter-heading filter">C</span>
+                            <span title="Accepted" class=" link filter-heading filter">A</span>
+                            <span title="Blocked" class=" stopButton filter-heading filter link">B</span>
+                        </span>
+                        <div class="utilityContainer">
+                            <span class="estimateStats">
+                                <span class="planEstimate">Story Points: </span>
+                            </span>
+                            <span class="right link show-hide unselectable">Collapse</span>
+                            <span class="right lrg-right-marg link unselectable sort">Sort Descending</span>
+                        </div>
+                    </div>                
+                    <ul class="sortable connectedSortable" id="{!release.id}" type="release">
+                        <apex:repeat value="{!releaseBacklogList}" var="wp" id="releaseBklg">
+                            <apex:outputPanel layout="none" rendered="{!IF(wp.SS_Release__c=release.id, true, false)}">
+                            <li id="{!wp.id}" 
+                            class="{!IF(ISBLANK(wp.State__c), 'No-State', wp.State__c)}{!IF(wp.Blocked__c, ' Blocked', '')}" 
+                            rank="{!wp.rank__c}" 
+                            release="{!wp.ss_release__c}"
+                            estimate="{!wp.plan_estimate__c}"
+                            name="{!wp.Name}">
+                                <span class="{!IF(wp.is_defect__c, 'defect left', 'left')}">{!wp.rank__c}:&nbsp;{!wp.Name}</span>
+                                <span href="/{!wp.id}" class="{!IF(wp.is_defect__c, 'as-link right defect', 'as-link right')}"
+                                    onblur="LookupHoverDetail.getHover('{!wp.id}').hide();"
+                                    onfocus="LookupHoverDetail.getHover('{!wp.id}', '/{!wp.id}/m?retURL=%2F{!wp.id}&isAjaxRequest=1').show();"
+                                    onmouseout="LookupHoverDetail.getHover('{!wp.id}').hide();"
+                                    onmouseover="LookupHoverDetail.getHover('{!wp.id}', '/{!wp.id}/m?retURL=%2F{!wp.id}&isAjaxRequest=1').show();">
+                                  <span class="wpStatus">{!wp.State__c} || </span>
+                                  {!wp.Work_Product_ID__c}
+                                </span>
+                            </li> 
+                            </apex:outputPanel>
+                        </apex:repeat>
+                    </ul>
+                </div>
+            </apex:repeat>
+            </div>   -->
+            </div>
+            </apex:outputPanel>
+    </apex:form>
+    <style>
+      ul li.In
+      {
+        background: #<apex:outputText value="{!myColor['planTabColorScheme'].inProgressStateColor__c}" />;
+      }
+
+        ul li.Completed
+      {
+        background: #<apex:outputText value="{!myColor['planTabColorScheme'].completedStateColor__c}" />;
+      }
+
+        ul li.Accepted
+      {
+        background: #<apex:outputText value="{!myColor['planTabColorScheme'].acceptedStateColor__c}" />;
+      }
+
+         ul li.Defined
+      {
+        background: #<apex:outputText value="{!myColor['planTabColorScheme'].definedStateColor__c}" />;
+      }
+
+      ul li.No-State
+      {
+        background: #<apex:outputText value="{!myColor['planTabColorScheme'].noStateColor__c}" />;
+      }
+      ul li.Draft
+      {
+        background: #<apex:outputText value="{!myColor['planTabColorScheme'].Draft_State_Color__c}" />;
+      }
+      ul li.Blocked
+      {
+        background: #<apex:outputText value="{!myColor['planTabColorScheme'].Blocked_state_color__c}" />;
+      }
+       ul li.Canceled
+      {
+        background: #<apex:outputText value="{!myColor['planTabColorScheme'].Canceled_state_color__c}" />;
+      }
+      ul li.Completed
+      {
+        background: #<apex:outputText value="{!myColor['planTabColorScheme'].completedStateColor__c}" />;
+      }
+      ul li.Production
+      {
+        background: #<apex:outputText value="{!myColor['planTabColorScheme'].Deployed_to_Production_state_color__c}" />;
+      }
+      ul li.deployment
+      {
+        background: #<apex:outputText value="{!myColor['planTabColorScheme'].Ready_for_deployment_state_color__c}" />;
+      }
+      ul li.SIT
+      {
+        background: #<apex:outputText value="{!myColor['planTabColorScheme'].Ready_for_SIT_state_color__c}" />;
+      }
+      ul li.UAT
+      {
+        background: #<apex:outputText value="{!myColor['planTabColorScheme'].Ready_for_UAT_state_color__c}" />;
+      }
+
+          .stopButton
+      {
+        background: url("{!URLFOR($Resource.ViewBacklog, '/ViewBacklog/images/stop-blank.png')}");
+        background-size: 35px, 35px;
+        padding: 7px 11px;
+      }
+    </style>
+  </body>
+</apex:page>

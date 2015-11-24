@@ -1,0 +1,18 @@
+<apex:page standardcontroller="Implementation_Period__c" extensions="subrecipientext"  >
+  <apex:form >
+       <apex:pageblock >
+            <apex:pageBlockButtons >
+                  <apex:commandButton value="Save" action="{!save}"/>
+                  <apex:CommandButton value="Cancel" action="{!cancel}"/>
+            </apex:pageBlockButtons>
+             <apex:pageblockSection >           
+                   <apex:pageBlockTable value="{!wlstsrs}" var="pr">
+                         <apex:column headerValue="">
+                               <apex:inputCheckbox value="{!pr.selected}"/>
+                         </apex:column>
+                         <apex:column headerValue="Principal Recipient" value="{!pr.wrapAcc.Name}"/>
+                   </apex:pageBlockTable>
+             </apex:pageblockSection>
+       </apex:pageblock>
+ </apex:form>
+</apex:page>

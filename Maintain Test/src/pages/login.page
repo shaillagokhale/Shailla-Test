@@ -1,0 +1,41 @@
+<apex:page showHeader="false" sidebar="false" standardStylesheets="false" id="pg">
+<apex:form id="frm">
+<div align="center">
+ <img src="{!$Resource.tgflogo}" align="center"/>
+     <h3 align="center" style="font-family:Verdana;color:#C80000">New Funding Model Portal</h3>
+     <table align="center"><tr><td>
+         <apex:outputLabel style="font-weight:bold;font-family:Verdana;">Username</apex:outputLabel>
+     </td><td>
+         <apex:inputText id="user"/>
+     </td>
+     </tr>
+     <tr>
+     <td>
+         <apex:outputLabel style="font-weight:bold;font-family:Verdana;">Password</apex:outputLabel>
+     </td><td>
+         <apex:inputSecret id="pass"/>
+     </td>
+     </tr>
+     <tr>
+     <td colspan="2" align="center">     
+         <apex:commandButton onclick="gotoSalesforce();return false;" value="Login"/>
+     </td>
+     </tr>
+     </table>
+     <p><a href="https://login.salesforce.com/secur/forgotpassword.jsp?">Forgot your password?</a></p>
+     </div>
+ </apex:form>
+ <script>
+ window.onload = function() {
+    document.getElementById('pg:frm:user').focus();
+ }
+ function gotoSalesforce() {
+   var user = document.getElementById('pg:frm:user').value;
+   var pass = document.getElementById('pg:frm:pass').value;
+  
+   if(user != "" && pass != "") {
+     window.location.href = "https://login.salesforce.com/?un="+encodeURIComponent(user)+"&pw="+encodeURIComponent(pass);
+   }
+ }
+ </script>
+</apex:page>

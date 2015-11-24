@@ -1,0 +1,2376 @@
+<!--*******************************************************************************
+* Concept Note Program Split Page
+----------------------------------------------------------------------------------
+*History
+*Version       Date       DETAIL FEATURES
+  1.1         12/05/2014   Added validation for sign-off check boxes  
+  1.2         26/05/2014   Added Additional Funding Euro field, re-ordered CNs to match allocation letter
+  1.3         17/07/2015   Moved sign-off from columns to GF Review box
+********************************************************************************-->
+<apex:page id="Page" controller="CNProgramSplit" sidebar="false">
+
+   <apex:stylesheet value="{!URLFOR($Resource.GoalsJs, 'assets/css/bootstrap.css')}"/>
+   <apex:stylesheet value="{!URLFOR($Resource.GoalsJs, 'assets/css/bootstrap-responsive.css')}"/>       
+    <script type="text/javascript">
+    <apex:includeScript id="a" value="https://www.google.com/jsapi" />
+    <apex:includeScript value="{!$Resource.jquery142}" />
+    <apex:includeScript value="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"/>      
+        
+        function setFocusOnLoad() {}
+                
+        function deleteRow(attachmentId) {
+         var errMsg = "{!$Label.Are_you_sure}";
+         var r=confirm(errMsg);
+         if (r==true) {
+             ValidateCurrencyFormat();
+           removeRow(attachmentId);
+         }
+         else {
+            return false;
+         }
+    }
+    function validateSubmit(psRange,psComments){  
+        var psRange = "{!programSplit.Outside_Range__c}";
+        var psComments = document.getElementById("$Component.frm.tblGFComments.GFComments");
+        if(psRange == 'Issue' && psComments == null){
+            alert('{!$Label.Validate_Concept_Note}');
+        return false;
+        }
+        else{
+            ValidateCurrencyFormat();
+            actSetAgreedSplit();
+            return false;
+        }
+    }    
+    </script>
+    
+    <style>
+    .h3 {
+        font-size:24px;
+        line-height: 40px;
+    }
+    h3 {
+        font-size:24px;
+        line-height: 20px;
+    }
+    table {
+        font-size:12px;
+        table-layout: fixed;
+    }
+    td{
+        word-wrap: normal !important;
+    } 
+    td .middle{
+     vertical-align:middle;
+       }
+    tr. header{
+     color:red;
+    
+    }
+    .newHeader{
+        background-color: #d9edf7;
+        border-color: #bce8f1;
+        color: #3a87ad;
+    }
+    table.curvedEdges_expand
+    { 
+        background-color:#ffffff;
+        border-right:1px solid #A6A6A6;
+        border-bottom:1px solid #A6A6A6; 
+        border:1px solid #A6A6A6;
+        -webkit-border-radius:3px;
+        -moz-border-radius:3px;
+        -ms-border-radius:3px;
+        -o-border-radius:3px;
+        border-radius:3px;
+    }
+    table.curvedEdges_collapse
+    { 
+        background-color: #ffffff;
+        border-right:1px solid #A6A6A6;
+        border-bottom:1px solid #A6A6A6; 
+        border:1px solid #A6A6A6;
+        -webkit-border-radius:3px;
+        -moz-border-radius:3px;
+        -ms-border-radius:3px;
+        -o-border-radius:3px;
+        border-radius:3px;
+    }
+    .arrow-expand 
+    {
+        width: 0; 
+        height: 0; 
+        border-left: 5px solid transparent;
+        border-right: 5px solid transparent;
+        border-top: 5px solid black; 
+    }
+    .custPopup{
+        background-color: #ededed;
+        border-width: 0px;
+        border-radius:10px;
+        border-style: solid;
+        z-index: 9997;
+        left: 35%;
+        margin-top:-60px;
+        padding:20px;
+        position: absolute;
+        width:420px;
+        height:350px;
+    }
+    .popupButtonYes{
+        background-color: #49C739 !important;
+        background-image: none !important;
+        color: white !important;
+        font-size: 12.9pt !important;
+        font-weight: bold !important;
+        height: 30px !important;;
+        width: 90px !important;;
+    }
+    .popupButtonCancel{
+        background-color: #d82516 !important;
+        background-image: none !important;
+        color: white !important;
+        font-size: 12.9pt !important;
+        font-weight: bold !important;
+        height: 30px !important;;
+        width: 90px !important;;
+    }
+    .custPopupDelete{
+        background-color: #ededed;
+        border-width: 0px;
+        border-radius:10px;
+        border-style: solid;
+        z-index: 9999;
+        left: 50%;
+        margin-top:-60px;
+        padding:10px;
+        position: absolute;
+        width:300px;
+        height:130px;
+    } 
+    .popupBackground{
+        background-color:black;
+        opacity: 0.50;
+        filter: alpha(opacity = 20);
+        position: fixed;
+        width: 100%;
+        height: 100%;
+        z-index: 9990;
+        top: 0;
+        left: 0;
+    }
+    .arrow-collapse 
+    {
+        width: 0; 
+        height: 0; 
+        border-top: 5px solid transparent;
+        border-bottom: 5px solid transparent;
+        border-left: 5px solid black;
+    }
+    .buttonStyle3{
+        background-color: #5281bd;
+        background-image: linear-gradient(to bottom, #5281bd, #5281bd);
+        background-repeat: repeat-x;
+        border-color: rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.25);
+        color: #FFFFFF;
+        text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
+    }
+    .btnStyle {
+        -moz-border-bottom-colors: none;
+        -moz-border-left-colors: none;
+        -moz-border-right-colors: none;
+        -moz-border-top-colors: none;
+        text-decoration:none !important;;
+        color:white !important;
+        border-image: none;
+        border-style: solid;
+        border-width: 1px;
+        box-shadow: 0 1px 0 rgba(255, 255, 255, 0.2) inset, 0 1px 2px rgba(0, 0, 0, 0.05);
+        cursor: pointer;
+        display: inline-block;
+        line-height: 20px;
+        margin-bottom: 0;
+        text-align: center;
+        vertical-align: middle;
+    }   
+    .helpTextAdjustment{ 
+        padding:10px;
+        background: #FFF4DB; 
+        border: 4px solid #c2e1f5; 
+        z-index: 97;   
+        position: absolute; 
+        left:30%;
+        left:45px;
+        top: 211px;
+        width:400px;
+    } 
+    .countryselect{
+        font-size:16px;
+        color:black;
+    }
+    .link{
+        color:#2E7BBB;
+        text-decoration:underline;
+    }
+    .h4 {
+        font-size:18px;
+        line-height:18px;
+        font-weight:bold;
+    }
+    .dateFormat{
+       visibility:hidden;
+    }
+    .inputS{
+       width:75%;
+    }
+    body table .table-striped1 tbody > tr:nth-child(2n+3) > td
+    {
+        background-color:#f9f9f9 !important;
+    }
+    body table .table-striped1 tbody > tr:nth-child(2n+2) > td:last-child
+    {
+        background-color:#f9f9f9 !important;
+    }
+    body table .table-striped1 tbody > tr:nth-child(2n+2) > td:nth-last-child(2)
+    {
+        background-color:#f9f9f9 !important;
+    }
+    body table .table-striped1 tbody > tr:nth-child(2n+3) > td:last-child
+    {
+        background-color:#f1f1f1 !important;
+    }
+    body table .table-striped1 tbody > tr:nth-child(2n+3) > td:nth-last-child(2)
+    {
+        background-color:#f1f1f1 !important;
+    }
+    .TGFbtn-mini {
+        padding: 0 10px;
+    }
+    .ProcessingBackground
+    {
+        background-color: black !important;
+        opacity: 0.50 !important;
+        filter: alpha(opacity = 50) !important;
+        width: 100% !important;
+        height: 100% !important;
+        position: fixed !important;
+        z-index: 9999 !important;
+        top:0 !important;
+        left:0 !important;
+    }
+    .Processing
+    {
+        z-index: 9999 !important;
+        left: 50% !important;
+        top: 50% !important;
+        text-align: center !important;
+        position: fixed !important;
+    }
+        
+    </style>
+    <script>
+     <!-- TCS changes for sign_off validation begins -->
+    function CheckAll(){                    
+        var inputs = document.getElementsByTagName('input');
+        var icount = 0;
+        var temp;               
+      
+        if ( {!blnGFInternal} && ({!!escalatedReview} || {!programSplit.RPS_Requested__c})){ 
+            for(var x = 0; x < inputs.length; x++) {
+                if(inputs[x].type == 'checkbox') {              
+                    temp = inputs[x].id;                
+                    if(temp.indexOf("RMHoD") != -1 || temp.indexOf("TPA") != -1)
+                    continue;
+                    if(inputs[x].checked)
+                    continue;               
+                    icount++;               
+                }
+            }
+            if(icount) {     
+                alert('{!$Label.Program_Split_FPN_Not_Checked}');
+                return false;
+            }
+            else {
+                actSetAgreedSplit();           
+            }
+        }
+        else {      
+            var user = ''; 
+            user = '{!$User.Id}';
+            var result1 = 0;        
+            CNProgramSplit.fetchPermissionSet(user, result1, function(result, event){
+                if( result == 1) {
+                    for(var x = 0; x < inputs.length; x++) {
+                        if(inputs[x].type == 'checkbox') {              
+                        temp = inputs[x].id;
+                        if(temp.indexOf("RMHoD") != -1) {                
+                            if(!inputs[x].checked){
+                                icount++;
+                                break;      
+                            }                                                                       
+                        }  
+                        }   
+                    }        
+                if(icount) {      
+                    alert('{!$Label.Program_Split_RMHoD_Not_Checked}');
+                    return false;
+                }
+                else {
+                    actSetAgreedSplit();         
+                }
+            }
+            if( result == 2) {        
+                for(var x = 0; x < inputs.length; x++) {
+                    if(inputs[x].type == 'checkbox') {              
+                    temp = inputs[x].id;
+                    if(temp.indexOf("TPA") != -1) {
+                        if(!inputs[x].checked){                                
+                        icount++;
+                        break;
+                        }                
+                    }               
+                }
+            }
+            if(icount) {     
+                alert('{!$Label.Program_Split_TPA_Not_Checked}');
+                return false;
+            }
+            else {
+                actSetAgreedSplit();         
+            }
+            }});
+        }   
+    }
+    <!-- TCS changes for sign_off validation ends -->
+    </script>
+<apex:pageMessages ></apex:pageMessages>
+   
+    <apex:outputPanel >
+        <br/>
+    </apex:outputPanel>
+    
+<apex:outputPanel rendered="{!blnDisplay}">
+<h3 style="padding-left:5px;">
+
+    {!$Label.Program_Split} 
+    <!-- For the conditional country name translation comment the line below or vice versa -->
+    {!programSplit.CCM__r.Country__r.Name}
+    <!-- For the conditional country name translation uncomment the line below or vice versa  -->
+    <!--{!IF(strLanguage == 'FRENCH',programSplit.CCM__r.Country__r.French_Name__c,IF(strLanguage == 'RUSSIAN',programSplit.CCM__r.Country__r.Russian_Name__c,IF(strLanguage == 'SPANISH' ,programSplit.CCM__r.Country__r.Spanish_Name__c ,programSplit.CCM__r.Country__r.Name)))} -->
+</h3>
+<span class="pull-right">
+        <img src="/img/func_icons/util/info16.png" style="padding-bottom:5px"/>
+        <a href="{!if(blnExternalPro==true,'/GM','')}/apex/CN_Guidance_New?Id={!strGuidanceId}&lang={!strLanguage}" target="_blank" class="link h4">{!$Label.See_Help}<!--See Help--></a>
+</span>
+    <apex:outputPanel >
+        <br/><br/>
+    </apex:outputPanel>
+
+<apex:form id="frm">
+    
+    <div id="divProcessing" style="display:none;">
+        <div class="ProcessingBackground"></div>
+        <div class="Processing">
+            <apex:image alt="Processing" url="{!$Resource.LoadingCircle}" />
+        </div>
+    </div>         
+    <apex:actionStatus id="Processing" onstart="document.getElementById('divProcessing').style.display = '';" onstop="document.getElementById('divProcessing').style.display = 'none';">                            
+    </apex:actionStatus>
+    <apex:actionFunction action="{!removeRow}" name="removeRow"
+                status="status" rerender="attachList">
+                <apex:param name="firstParam" assignTo="{!attachmentIdToDelete}"
+                    value="" />
+    </apex:actionFunction>
+    <apex:actionFunction action="{!submitSignoffFPM}" name="actSubmitSignoffFPM" status="Processing"/>
+    <apex:actionFunction action="{!submitSignoffRM_HoD}" name="actSubmitSignoffRM_HoD" status="Processing"/>
+    <apex:actionFunction action="{!submitSignoffTAP}" name="actSubmitSignoffTAP" status="Processing"/>
+    <apex:actionFunction action="{!save}" name="actSaveProgramSplit" status="Processing"/>
+    <apex:actionFunction action="{!uploadDocument}" name="actuploadFile"/>
+    <apex:actionFunction action="{!uploadDocumentCCM}" name="actuploadFileCCM"/>
+    <apex:actionFunction action="{!RequestRPS}" name="RequestRPS"/>
+    <apex:actionFunction action="{!UpdateRationalProposedSplit}" name="UpdateRationalProposedSplit"/>
+    <apex:actionFunction action="{!UpdateRationalRequestSplit}" name="UpdateRationalRequestSplit"/>
+    <apex:actionFunction action="{!UpdateRationalRevisedSplit}" name="UpdateRationalRevisedSplit"/>
+    <apex:actionFunction action="{!CancelRationaleforRequesting}" name="CancelRationaleforRequesting"/> 
+    <!-- apex:actionFunction action="{!setAgreedSplit}" name="actSetAgreedSplit"/ -->
+    <apex:actionFunction action="{!UpdateGFComments}" name="UpdateGFComments"/>
+    <apex:actionFunction action="{!CancelGlobalFundComments}" name="CancelGlobalFundComments"/>
+    <apex:actionFunction action="{!CancelRationaleforProposed}" name="CancelRationaleforProposed"/>
+    <apex:actionFunction action="{!CancelRationaleforRevised}" name="CancelRationaleforRevised"/>
+    <apex:variable var="varIsEscalated" value="{!$Label.Not_Escalated}"/>
+    <apex:variable var="varIsIssue" value="{!$Label.No_Issue}"/>
+    <apex:variable var="varGFSignoff" value="{!$Label.Yes}"/>
+    <apex:variable var="varGFSignoffRMHoD" value="{!$Label.Yes}"/>
+    <apex:variable var="varGFSignoffTPA" value="{!$Label.Yes}"/>
+    <apex:variable var="varCommIndSplit" value="{!0}"/>
+    <apex:variable var="varNewSplit" value="{!0}"/>    
+    <apex:variable var="varExistingSigned" value="{!0}"/>
+    <apex:variable var="varExistingSplit" value="{!0}"/>
+    <apex:variable var="varAgreedSplit" value="{!0}"/>
+    
+    <table cellspacing="0" cellpadding="0" border="0" id="tblStat" class="list">
+      <tr>
+        <td style="border:0;">
+          <div class="alert alert-info" style="font-size:14px;color:black"><b>{!$Label.Status}: {!programSplit.Status__c}</b></div>
+        </td>
+      </tr>
+      <!--<tr>
+        <td style="border:0; display:{!if(blnGFInternal,'','none')}">
+          <div class="alert alert-info" style="font-size:14px;color:white;background-color:#F9A021"><b>{!$Label.Global_Fund_Review}: {!if(escalatedReview,$Label.Elevated_Review,$Label.Simple_Review)}</b></div>
+        </td>
+      </tr>  -->
+    </table>
+    
+    <apex:outputPanel rendered="{!blnGFInternal}">
+        <span >
+            <div class="alert alert-info" style="background-color:white;border-width:4px;max-width:775px">
+                <table>
+                    <tr>
+                        <apex:outputLabel value="{!$Label.Global_Fund_Review}: {!IF(escalatedReview,$Label.Elevated_Review,$Label.Simple_Review)}" style="color:black;font-size:15px;font-weight:bold"/>
+                    </tr>
+                    <!-- FPM SIGNOFF BUTTONS -->
+                    <tr style="text-align:center;font-size:12.5px;display:{!IF(escalatedReview,'none','')}">
+                        <td width="10%">
+                            {!$Label.Program_Split_FPM}
+                        </td>
+                        <td width="20%">
+                            <apex:commandlink onclick="return SubmitSignoffConfirmFPM();" style="height:25px;padding-top:3px;font-size: 12.5px"  styleClass="TGFbtn TGFbtn-mini TGFbtn-success tenright" value="{!$Label.Submit_Signoff}"  id="buttonSubmitFPM"  rendered="{!AND(!programSplit.Sign_Off_FPM__c,blnSubmitSignOff,OR(AND(programSplit.OPS_Submitted__c,!programSplit.RPS_Requested__c), programSplit.RPS_Submitted__c),!programSplit.Agreed__c)}"/>
+                            <apex:outputText value="{!$Label.Sign_Off_Complete}" rendered="{!programSplit.Sign_Off_FPM__c}"/>
+                            <apex:outputText value="{!$Label.Awaiting_country_submission}" rendered="{!AND(OR(!programSplit.OPS_Submitted__c,AND(programSplit.RPS_Requested__c,!programSplit.RPS_Submitted__c)),!programSplit.Agreed__c)}"/>
+                        </td>
+                        <td width="20%" style="display:{!IF(programSplit.RPS_Requested__c || !programSplit.OPS_Submitted__c,'none','')}">
+                            <span id="spanReqRevSplit" style="display:none;" >{!programSplit.Show_Revision_Request_Comments__c}</span>
+                            <span id="spanReqRevSplitRational" style="display:none;" >{!if(strLanguage=='FRENCH',programSplit.Global_Fund_Revision_Request_Comments_Fr__c,if(strLanguage=='SPANISH',programSplit.Global_Fund_Revision_Request_Comments_Es__c,if(strLanguage=='RUSSIAN',programSplit.Global_Fund_Revision_Request_Comments_Ru__c,programSplit.Global_Fund_Revision_Request_Comments__c)))}</span>
+                            <apex:commandlink onclick="return ValidateCurrencyFormatReqRevSplit();" action="{!RequestRPS}" style="height:25px;padding-top:3px;font-size: 12.5px"  styleClass="TGFbtn TGFbtn-mini TGFbtn-danger tenright" value="{!$Label.Request_Revised_Split}" rendered="{!AND(blnReqRevisedSplit, programSplit.OPS_Submitted__c,!programSplit.RPS_Requested__c, !programSplit.Agreed__c, NOT($Profile.Name=='Technical Hub'))}"/> 
+                        </td>
+                        <td width="25%" style="display:{!IF(AND(programSplit.OPS_Submitted__c,!escalatedReview, !programSplit.Agreed__c),'','none')}">
+                            <apex:commandlink onclick="ValidateCurrencyFormat();" style="height:25px;padding-top:3px;font-size: 12.5px" styleClass="TGFbtn TGFbtn-mini TGFbtn-warning" value="{!$Label.Send_Escalated_Review}" action="{!EscalateReview}" rendered="{!blnSndElevatedReview}"/>
+                        </td>
+                        <td width="35%" style="display:{!IF(programSplit.Sign_Off_FPM__c,'','none')}">
+                            <apex:outputField value="{!programSplit.Sign_Off_By_FPM__r.Name}" rendered="{!programSplit.Sign_Off_FPM__c}"/>
+                        </td>
+                        <td width="15%">
+                            <apex:outputField value="{!programSplit.Sign_Off_Date_FPM__c}" rendered="{!programSplit.Sign_Off_FPM__c}"/>
+                        </td>
+                    </tr>
+                    <!-- REGIONAL MANAGER SIGNOFF BUTTONS -->
+                    <tr style="text-align:center;font-size:12.5px;display:{!IF(escalatedReview,'','none')}">
+                        <td width="10%">
+                            {!$Label.Program_Split_RM_HoD}
+                        </td>
+                        <td width="20%">
+                            <apex:commandlink onclick="return SubmitSignoffConfirmRM_HoD();" action="{!submitSignoffRM_HoD}" style="height:25px;padding-top:3px;font-size: 12.5px" styleClass="TGFbtn TGFbtn-mini TGFbtn-success tenright" value="{!$Label.Submit_Signoff}"  id="buttonSubmitRMHoD"  rendered="{!AND(!programSplit.Sign_Off_RM_HoD__c,blnSubmitSignOff,OR(AND(programSplit.OPS_Submitted__c,!programSplit.RPS_Requested__c), programSplit.RPS_Submitted__c),!programSplit.Agreed__c)}"/>
+                            <apex:outputText value="{!$Label.Sign_Off_Complete}" rendered="{!programSplit.Sign_Off_RM_HoD__c}"/>
+                            <apex:outputText value="{!$Label.Awaiting_country_submission}" rendered="{!AND(OR(!programSplit.OPS_Submitted__c,AND(programSplit.RPS_Requested__c,!programSplit.RPS_Submitted__c)),!programSplit.Agreed__c)}"/> 
+                        </td>
+                        <td width="20%" style="display:{!IF(programSplit.RPS_Requested__c || !programSplit.OPS_Submitted__c,'none','')}">
+                            <span id="spanReqRevSplit" style="display:none;" >{!programSplit.Show_Revision_Request_Comments__c}</span>
+                            <span id="spanReqRevSplitRational" style="display:none;" >{!if(strLanguage=='FRENCH',programSplit.Global_Fund_Revision_Request_Comments_Fr__c,if(strLanguage=='SPANISH',programSplit.Global_Fund_Revision_Request_Comments_Es__c,if(strLanguage=='RUSSIAN',programSplit.Global_Fund_Revision_Request_Comments_Ru__c,programSplit.Global_Fund_Revision_Request_Comments__c)))}</span>
+                            <apex:commandlink onclick="return ValidateCurrencyFormatReqRevSplit();" style="height:25px;padding-top:3px;font-size: 12.5px"  styleClass="TGFbtn TGFbtn-mini TGFbtn-danger tenright" value="{!$Label.Request_Revised_Split}" action="{!RequestRPS}" rendered="{!AND(blnReqRevisedSplit,!programSplit.Sign_Off_RM_HoD__c, programSplit.OPS_Submitted__c,!programSplit.RPS_Requested__c, !programSplit.Agreed__c, NOT($Profile.Name=='Technical Hub'))}"/>   
+                        </td>
+                        <td width="35%">
+                            <apex:outputField value="{!programSplit.Sign_Off_By_RM_HoD__r.Name}" rendered="{!programSplit.Sign_Off_RM_HoD__c}"/>
+                        </td>
+                        <td width="15%">
+                            <apex:outputField value="{!programSplit.Sign_Off_Date_RM_HoD__c}" rendered="{!programSplit.Sign_Off_RM_HoD__c}"/>
+                        </td>
+                    </tr>
+                    <!-- TAP SIGNOFF BUTTONS -->
+                    <tr style="text-align:center;font-size:12.5px;display:{!IF(escalatedReview,'','none')}">
+                        <td width="10%">
+                            {!$Label.Program_Split_TAP}
+                        </td>
+                        <td width="20%">
+                            <apex:commandlink onclick="return SubmitSignoffConfirmTAP();" action="{!submitSignoffTAP}" style="height:25px;padding-top:3px;font-size: 12.5px" styleClass="TGFbtn TGFbtn-mini TGFbtn-success tenright" value="{!$Label.Submit_Signoff}"  id="buttonSubmitTAP"  rendered="{!AND(!programSplit.Sign_Off_TAP__c,blnSubmitSignOff,OR(AND(programSplit.OPS_Submitted__c,!programSplit.RPS_Requested__c), programSplit.RPS_Submitted__c),!programSplit.Agreed__c)}"/>
+                            <apex:outputText value="{!$Label.Sign_Off_Complete}" rendered="{!programSplit.Sign_Off_TAP__c}"/>
+                            <apex:outputText value="{!$Label.Awaiting_country_submission}" rendered="{!AND(OR(!programSplit.OPS_Submitted__c,AND(programSplit.RPS_Requested__c,!programSplit.RPS_Submitted__c)),!programSplit.Agreed__c)}"/>
+                        </td>
+                        <td width="20%" style="display:{!IF(programSplit.RPS_Requested__c || !programSplit.OPS_Submitted__c,'none','')}">
+                        <span id="spanReqRevSplit" style="display:none;" >{!programSplit.Show_Revision_Request_Comments__c}</span>
+                            <span id="spanReqRevSplitRational" style="display:none;" >{!if(strLanguage=='FRENCH',programSplit.Global_Fund_Revision_Request_Comments_Fr__c,if(strLanguage=='SPANISH',programSplit.Global_Fund_Revision_Request_Comments_Es__c,if(strLanguage=='RUSSIAN',programSplit.Global_Fund_Revision_Request_Comments_Ru__c,programSplit.Global_Fund_Revision_Request_Comments__c)))}</span>
+                            <apex:commandlink onclick="ValidateCurrencyFormat();" style="height:25px;padding-top:3px;font-size: 12.5px"  styleClass="TGFbtn TGFbtn-mini TGFbtn-danger tenright" value="{!$Label.Request_Revised_Split}" action="{!RequestRPS}" rendered="{!AND(blnReqRevisedSplit,!programSplit.Sign_Off_TAP__c, programSplit.OPS_Submitted__c,!programSplit.RPS_Requested__c, !programSplit.Agreed__c, NOT($Profile.Name=='Technical Hub'))}"/> 
+                        </td>
+                        <td width="35%">
+                            <apex:outputField value="{!programSplit.Sign_Off_By_TAP__r.Name}" rendered="{!programSplit.Sign_Off_TAP__c}"/>
+                        </td>
+                        <td width="15%">
+                            <apex:outputField value="{!programSplit.Sign_Off_Date_TAP__c}" rendered="{!programSplit.Sign_Off_TAP__c}"/>
+                        </td>
+                    </tr>
+            
+                </table>
+            </div>
+        </span>
+    </apex:outputPanel>
+    
+    
+    <!-- TCS changes for sign_off validation begins -->
+    <apex:actionFunction id="setAgreedSplit" reRender="innertable, table" action="{!setAgreedSplit}" name="actSetAgreedSplit"/>                    
+    <!-- TCS changes for sign_off validation ends -->
+    <apex:panelGrid columns="9" cellPadding="5%" id="table">
+        <apex:actionFunction action="{!SubmitProposedSplit}" name="actSubmitProposedSplit" id="actSubmitProposedSplit">
+        </apex:actionFunction>
+        <!--  TCS 12/09/2014 Removed if(NOT(CONTAINS($Profile.Name,'CM Read'))&& NOT(CONTAINS($Profile.Name,'Officer')) && NOT($Profile.Name=='Technical Hub'),true,false) from rendering condition -->
+        <apex:commandlink value="{!$Label.Quick_Save}" style="height:25px;padding-top:3px;font-size: 12.5px" styleClass="TGFbtn TGFbtn-mini TGFbtn-success tenright" onclick="ValidateCurrencyFormat();" action="{!QuickSave}" rendered="{!blnQuickSave}"/> 
+        <!--  TCS 12/09/2014 Removed if(NOT(CONTAINS($Profile.Name,'CM Read'))&& NOT(CONTAINS($Profile.Name,'Officer')) && NOT($Profile.Name=='Technical Hub'),true,false)from rendering condition -->
+        <apex:commandlink value="{!$Label.Save_Return}" style="height:25px;padding-top:3px;font-size: 12.5px" styleClass="TGFbtn TGFbtn-mini TGFbtn-success tenright" onclick="ValidateCurrencyFormat();" action="{!SaveClose}" rendered="{!blnSaveReturn}"/>
+        <apex:commandlink value="{!$Label.Cancel}" style="height:25px;padding-top:3px;font-size: 12.5px" styleClass="TGFbtn TGFbtn-mini TGFbtn-danger tenright" onclick="ValidateCurrencyFormat(); return confirm('{!$Label.Are_you_sure} {!$Label.Lose_Changes_Warning}');" action="{!Cancel}"/>
+    
+        <td style="width: 50px"/>
+            <apex:commandlink onclick="ValidateCurrencyFormat();" style="height:25px;padding-top:3px;font-size: 12.5px" styleClass="TGFbtn TGFbtn-mini TGFbtn-warning" value="{!$Label.Save_Change_View}" action="{!ChangeView}" rendered="{!AND(blnSaveChangeView,!programSplit.OPS_Submitted__c)}"/>
+            <!--<apex:commandlink onclick="ValidateCurrencyFormat();" style="height:25px;padding-top:3px;font-size: 12.5px" styleClass="TGFbtn TGFbtn-mini TGFbtn-warning" value="{!$Label.Send_Escalated_Review}" action="{!EscalateReview}" rendered="{!AND(blnGFINternal,programSplit.OPS_Submitted__c,!escalatedReview, !programSplit.Agreed__c)}"/>-->
+            <apex:commandlink value="{!$Label.Submit_Proposed_Split}" style="height:25px;padding-top:3px;font-size: 12.5px" styleClass="TGFbtn TGFbtn-mini TGFbtn-warning"  onclick="SubmitSign();return false;" rendered="{!AND(!blnGFInternal, OR(!programSplit.OPS_Submitted__c, AND(programSplit.RPS_Requested__c, !programSplit.RPS_Submitted__c)),blnSubPrgSplit)}" />
+            <!--rendered="{!AND(!blnGFInternal, OR(!programSplit.OPS_Submitted__c, AND(programSplit.RPS_Requested__c, !programSplit.RPS_Submitted__c)))}"-->
+            <!-- rendered="{!AND(!blnGFInternal, OR(!programSplit.OPS_Submitted__c, AND(programSplit.RPS_Requested__c, !programSplit.RPS_Submitted__c)))}" action="{!SubmitProposedSplit}" -->
+            <!--<apex:commandlink onclick="ValidateCurrencyFormat();" style="height:25px;padding-top:3px;font-size: 12.5px"  styleClass="TGFbtn TGFbtn-mini TGFbtn-warning" value="{!$Label.Request_Revised_Split}" action="{!RequestRPS}" rendered="{!AND(blnGFInternal, programSplit.OPS_Submitted__c,!programSplit.RPS_Requested__c, !programSplit.Agreed__c, NOT($Profile.Name=='Technical Hub'))}"/> -->
+            <!-- TCS changes for sign_off validation begins -->
+           <!-- <apex:commandlink onclick="ValidateCurrencyFormat(); CheckAll();" style="height:25px;padding-top:3px;font-size: 12.5px" styleClass="TGFbtn TGFbtn-mini TGFbtn-warning" reRender="xyz" value="{!$Label.Submit_Signoff}"  id="buttonSubmit"  rendered="{!AND(blnGFInternal,OR(AND(programSplit.OPS_Submitted__c,!programSplit.RPS_Requested__c), programSplit.RPS_Submitted__c),!programSplit.Agreed__c)}"/> -->
+            <!-- TCS changes for sign_off validation ends -->
+            <!-- action="{!setAgreedSplit}"  rendered="{!AND(blnGFInternal,OR(AND(programSplit.OPS_Submitted__c,!programSplit.RPS_Requested__c), programSplit.RPS_Submitted__c),!programSplit.Agreed__c)}"-->
+            <apex:commandlink onclick="ValidateCurrencyFormat();" style="height:25px;padding-top:3px;font-size: 12.5px" styleClass="TGFbtn TGFbtn-mini TGFbtn-warning" value="{!$Label.Reject_Revised_Split}" action="{!RejectRevisedSplit}" rendered="false" id="buttonReject" /> <!--rendered="{!AND(blnGFInternal,programSplit.RPS_Submitted__c,!programSplit.Agreed__c)}"-->
+    
+    </apex:panelGrid>  
+<br/>  
+
+<!--<apex:outputPanel >
+    <span class="pull-right">
+        <a href="{!if(CONTAINS($Profile.Name,'PR')||CONTAINS($Profile.Name,'LFA')||CONTAINS($Profile.Name,'CM')||CONTAINS($Profile.Name,'CCM'),'/GM','')}/apex/CN_Guidance_New?Id={!strGuidanceId}&lang={!strLanguage}" target="_blank" class="link">{!$Label.See_Help}</a>
+    </span>
+</apex:outputPanel>-->    
+    
+<div style="margin-bottom:5px; font-weight:bold">
+    <apex:outputPanel style="cursor:pointer !important;" onMouseOver="onMouseOverHelpTextShow('{!$Component.ophelpTextFormula}','{!$Component.txthelpTextformula}');" onMouseOut="onMouseOutHelpTextHide('{!$Component.ophelpTextFormula}');">                      
+        <u>{!$Label.Communicated_Allocated_Split}:</u>&nbsp;
+    </apex:outputPanel>
+    {!programSplit.CurrencyIsoCode}&nbsp;
+    <apex:outputText value="{0, number,###,###,##0}"><apex:param value="{!intTotalallocation}" /></apex:outputText>
+</div>
+          
+<apex:outputpanel styleClass="helpTextAdjustment" id="ophelpTextFormula" style="display:none;margin-top: 28px;">
+    <apex:outputText id="txthelpTextformula" style="font-weight:normal !important;color:#000000 !important;" >
+        {!$Label.WTP}
+    </apex:outputtext>
+</apex:outputpanel>   
+
+
+
+<!-- HEADER ROW -->
+<apex:outputpanel id="innertable">
+<table cellspacing="0" cellpadding="0" border="0" id="tblPS" width="100%" class="table table-striped1">
+<!-- <tr class="headerRow" style="background-color: #FF6C00;"> -->
+
+<tr class="alert alert-info" style="font-weight:bold;border:0px">
+   <!--<td style="text-align: center; width: 60px" rowspan="2"></td>--> <!--{!$Label.Component}-->
+   <td style="text-align: center; width: 70px" rowspan="2">{!$Label.Component}</td> 
+   <td style="text-align: center;" colspan="2">{!$Label.Existing}</td>
+   <td style="text-align: center;" rowspan="2">{!$Label.Additional}</td>
+   <td style="text-align: center; width: 100px" rowspan="2">{!$Label.Communicated_Allocated_Split}<br/>{!$Label.January_2014}<!--Communicated<br/>Allocated Split<br/>(from allocation letter)--></td>
+   <td style="text-align: center;" rowspan="2">{!$Label.Proportion_Allocation}</td>   
+   <td style="text-align: center;" rowspan="2">{!$Label.Original_Proposed_Split}<!--Original <br/>Proposed <br/>Split--></td>
+   <td style="text-align: center; display:{!IF(AND(OR(programSplit.OPS_Submitted__c,!blnGFInternal),!programSplit.Agreed__c),'','none')}" rowspan="2">{!$Label.Proportion_of_Proposed_Split}</td>
+   <td style="text-align: center; display: {!IF(AND(blnGFInternal,escalatedReview),'','none')}" rowspan="2">{!$Label.Elevated_Review}<!--Escalated <br/>Review--></td>
+   <td style="text-align: center; display:{!IF(OR(AND(!blnGFInternal, programSplit.RPS_Requested__c), AND(blnGFInternal, programSplit.RPS_Requested__c)),'','none')}" rowspan="2">{!$Label.Revised_Proposed_Split}<!--Revised<br/> Proposed<br/> Split--></td>
+   <td style="text-align: center; display:{!IF(AND(OR(AND(!blnGFInternal, programSplit.RPS_Requested__c), AND(blnGFInternal, programSplit.RPS_Submitted__c)),!programSplit.Agreed__c),'','none')}" rowspan="2">{!$Label.Proportion_of_Revised_Split}</td>
+   <td style="text-align: center; display:{!IF(AND(programSplit.RPS_Submitted__c,blnGFInternal),'','none')}" rowspan="2">{!$Label.Outside_Range}<!--Outside<br/>Range--></td>    
+   <!--<td style="text-align: center; display:{!IF(AND(blnGFInternal,!escalatedReview),'','none')}" rowspan="2">{!$Label.FPM_Sign_Off}</td>
+   <td style="text-align: center; display:{!IF(AND(blnGFInternal,escalatedReview),'','none')}" rowspan="2">{!$Label.RM_HoD_Sign_Off}</td>
+   <td style="text-align: center; display:{!IF(AND(blnGFInternal,escalatedReview),'','none')}" rowspan="2">{!$Label.TPA_Sign_Off}</td> -->
+   <td style="text-align: center; display:{!IF(programSplit.Agreed__c,'','none')}; width: 130px;background-color:#B6DDF0;" rowspan="2">{!$Label.Agreed_Program_Split}</td>
+   <td style="text-align: center; display:{!IF(programSplit.Agreed__c,'','none')}; width: 90px;background-color:#B6DDF0;" rowspan="2">{!$Label.Proportion_of_Agreed_Split}</td>
+   
+</tr>
+<tr class="alert alert-info" style="font-weight:bold;border:0px;">
+    <td style="text-align: center;background-color:#D9EDF7!important;border:0;">{!$Label.Signed} <!--Signed--></td>
+    <td style="text-align: center;background-color:#D9EDF7!important;border:0;">{!$label.Unsigned} <!--Unsigned--></td>
+</tr>
+
+<!--***************************-->
+<!--        DATA ROWS          -->
+<!--***************************-->
+<tr>
+    
+ <!--   
+    <apex:variable var="varIsEscalated" value="Not Escalated"/>
+    <apex:variable var="varGFSignoff" value="Yes"/>
+    <apex:variable var="varCommIndSplit" value="{!0}"/>
+    <apex:variable var="varNewSplit" value="{!0}"/>
+    <apex:variable var="varExistingSplit" value="{!0}"/>
+    <apex:variable var="varAgreedSplit" value="{!0}"/> -->
+    <!-- <apex:variable var="varOrgPrpSplit" value="{!0}"/> -->
+    
+    <apex:variable var="indexCN" value="{!0}"/>
+    <apex:repeat id="rptCN" value="{!lstWrapConceptNotes}" var="cn">    
+        <tr style="text-align: center; vertical-align: middle;">
+            <!--<td style="text-align: center; width: 60px;vertical-align:middle;">
+                <img src="{!if(CN.objCN.Component__c=='Tuberculosis',$Resource.TB,if(CN.objCN.Component__c=='HIV/AIDS',$Resource.HIV,if(CN.objCN.Component__c=='Malaria',$Resource.Malaria,if(CN.objCN.Component__c=='Health Systems Strengthening',$Resource.Other,if(CN.objCN.Component__c == 'HIV/TB', $Resource.HIVTB,'')))))}"/>
+            </td>-->
+            <td style="vertical-align:middle;text-align:center;font-weight:bold">
+              <apex:outputField value="{!CN.objCN.Component__c}"/>
+            </td>
+            <td style="text-align: center;vertical-align:middle;">
+                <!--<apex:outputpanel rendered="{!if(cn.objCN.CurrencyIsoCode=='USD',true,false)}">
+                    <apex:outputfield value="{!cn.objCN.Signed_Undisbursed_Allocation_Date_USD__c}"/>
+                </apex:outputpanel>
+                <apex:outputpanel rendered="{!if(cn.objCN.CurrencyIsoCode=='USD',false,true)}">
+                    <apex:outputfield value="{!cn.objCN.Signed_Undisbursed_Allocation_Date_EUR__c}"/>
+                </apex:outputpanel>-->
+                {!cn.objCN.CurrencyIsoCode}&nbsp;
+                <apex:outputText value="{0,number,###,###,###}">
+                    <apex:param value="{!IF(cn.objCN.CurrencyIsoCode=='USD',cn.objCN.Signed_Undisbursed_Allocation_Date_USD__c,cn.objCN.Signed_Undisbursed_Allocation_Date_EUR__c)}"/>
+                </apex:outputText>
+                <apex:variable var="varExistingSigned" value="{!if(cn.objCN.Signed_Undisbursed_Allocation_Date_USD__c != null && cn.objCN.CurrencyIsoCode=='USD',varExistingSigned + cn.objCN.Signed_Undisbursed_Allocation_Date_USD__c,IF(cn.objCN.Signed_Undisbursed_Allocation_Date_EUR__c != null && cn.objCN.CurrencyIsoCode=='EUR',varExistingSigned + cn.objCN.Signed_Undisbursed_Allocation_Date_EUR__c, varExistingSigned))}"/>
+            </td>
+            <td style="text-align: center;vertical-align:middle;">
+            {!cn.objCN.CurrencyIsoCode}&nbsp;
+                <apex:outputText value="{0,number,###,###,###}">
+                    <apex:param value="{!cn.objCN.Unsigned__c}"/>
+                </apex:outputText>
+                <apex:variable var="varExistingSplit" value="{!if(cn.objCN.Unsigned__c != null,varExistingSplit + cn.objCN.Unsigned__c,varExistingSplit )}"/>
+            </td>
+            <td style="text-align: center;vertical-align:middle;">
+            {!cn.objCN.CurrencyIsoCode}&nbsp;
+                <apex:outputText value="{0,number,###,###,###}">
+                    <apex:param value="{!IF(cn.objCN.CurrencyIsoCode=='USD',cn.objCN.Additional_Funding_Number__c,cn.objCN.Additional_Funding_EUR__c)}"/>
+                </apex:outputText>
+                <apex:variable var="varNewSplit" value="{!if(cn.objCN.Additional_Funding_Number__c!= null && cn.objCN.CurrencyIsoCode =='USD',varNewSplit + cn.objCN.Additional_Funding_Number__c,IF(cn.objCN.Additional_Funding_EUR__c!= null && cn.objCN.CurrencyIsoCode =='EUR',varNewSplit + cn.objCN.Additional_Funding_EUR__c,varNewSplit))}"/> 
+            </td>           
+            <td style="text-align: center;vertical-align:middle;">
+            {!cn.objCN.CurrencyIsoCode}&nbsp;
+                <apex:outputText value="{0,number,###,###,###}">
+                    <apex:param value="{!IF(cn.objCN.CurrencyIsoCode=='USD',cn.objCN.Communicated_Allocation_USD__c,cn.objCN.Communicated_Allocation_EUR__c)}"/>
+                </apex:outputText>
+                <apex:variable var="varCommIndSplit" value="{!if(cn.objCN.Communicated_Allocation_USD__c != null && cn.objCN.CurrencyIsoCode=='USD',varCommIndSplit+ cn.objCN.Communicated_Allocation_USD__c, IF(cn.objCN.Communicated_Allocation_EUR__c != null && cn.objCN.CurrencyIsoCode=='EUR',varCommIndSplit+ cn.objCN.Communicated_Allocation_EUR__c, varCommIndSplit))}"/>
+                
+            </td>                        
+            <td style="text-align: center;vertical-align:middle;">
+          <!--  <apex:outputText value="{!cn.objCN.Proportion_of_Allocation__c}%" rendered="{!not(isnull(cn.objCN.Proportion_of_Allocation__c))}"/>--->
+                <apex:outputText value="{0,number,###,###,###}" rendered="{!not(isnull(cn.objCN.Proportion_of_Allocation__c))}">
+                 <apex:param value="{!cn.objCN.Proportion_of_Allocation__c}"/> 
+                </apex:outputText>  {!If(!not(isnull(cn.objCN.Proportion_of_Allocation__c)),'','%')}
+            </td>           
+            <td style="text-align: center;vertical-align:middle;">
+               <apex:outputText value="{0,number,###,###,###}" rendered="{!programSplit.OPS_Submitted__c}">
+               {!cn.objCN.CurrencyIsoCode}&nbsp;
+                    <apex:param value="{!cn.objCN.Original_Proposed_Split__c}"/>
+                </apex:outputText>
+                <apex:outputText value="{!$Label.Not_yet_submitted}" rendered="{!AND(blnGFInternal,!programSplit.OPS_Submitted__c)}"/>
+                <apex:inputField rendered="{!AND(!blnGFInternal,!programSplit.OPS_Submitted__c)}" value="{!cn.objCN.Original_Proposed_Split__c}" id="inputOPS"  onchange="RetriveTotalPropSplit();"   style="text-align: center; width:55%;"/><!-- rendered="{!!blnGFInternal}" -->
+                <!--  rendered="{!AND(!blnGFInternal,!programSplit.OPS_Submitted__c)}" -->
+                <!-- rendered="{!AND(!blnGFInternal,!programSplit.OPS_Submitted__c)}" -->
+                <!--<apex:variable var="varOrgPrpSplit" value="{!if(cn.objCN.Original_Proposed_Split__c!= null,varOrgPrpSplit + cn.objCN.Original_Proposed_Split__c,varOrgPrpSplit )}"/>-->
+            </td>
+            <td style="text-align: center;vertical-align:middle; display:{!IF(AND(OR(programSplit.OPS_Submitted__c,!blnGFInternal),!programSplit.Agreed__c),'','none')}">
+                <apex:outputField value="{!cn.objCN.Proportion_of_Proposed_Split__c}" id="opOPS"/>
+            </td>
+            <td style="display:{!IF(AND(blnGFInternal,escalatedReview),'','none')};text-align: center;vertical-align:middle;">
+                <apex:outputLabel value="{!cn.objCN.Escalated_Review__c}" style="font-size:12px"/> <!-- Added labels in the Fromula  -->
+                <apex:variable var="varIsEscalated" value="{!if(cn.objCN.Escalated_Review__c=='Yes','Escalated',varIsEscalated)}"/>
+            </td>
+                
+            <td style="display:{!IF(OR(AND(!blnGFInternal, programSplit.RPS_Requested__c),AND(blnGFInternal, programSplit.RPS_Requested__c)),'','none')};text-align: center;vertical-align:middle;" >
+               <!-- style="display:{!IF(OR(AND(!blnGFInternal, programSplit.RPS_Requested__c),AND(blnGFInternal, programSplit.RPS_Requested__c)),'','none')}" -->                
+                <apex:outputText value="{0,number,###,###,###}" rendered="{!programSplit.RPS_Submitted__c}">
+                <!-- rendered="{!programSplit.RPS_Submitted__c}" -->
+                {!cn.objCN.CurrencyIsoCode}&nbsp;
+                    <apex:param value="{!cn.objCN.Revised_Proposed_Split__c}"/>
+                </apex:outputText>
+                <apex:outputText value="{!$Label.Not_yet_submitted}" rendered="{!AND(blnGFInternal,!programSplit.RPS_Submitted__c)}"/> {!blnGFInternal}
+                <apex:inputField rendered="{!AND(!blnGFInternal,!programSplit.RPS_Submitted__c)}" value="{!cn.objCN.Revised_Proposed_Split__c}" id="inputRPS"  onchange=" RetriveTotalRevPropSplit();" style="text-align: center; width:55%;" />
+                <!-- rendered="{!AND(!blnGFInternal,!programSplit.RPS_Submitted__c)}" -->
+                <!-- rendered="{!AND(!blnGFInternal,!programSplit.RPS_Submitted__c)}" -->
+            </td>
+            <td style="display:{!IF(AND(OR(AND(!blnGFInternal, programSplit.RPS_Requested__c),AND(blnGFInternal, programSplit.RPS_Submitted__c)),!programSplit.Agreed__c),'','none')};text-align: center;vertical-align:middle;">
+                <apex:outputField value="{!cn.objCN.Proportion_of_Revised_Split__c}" rendered="{!programSplit.RPS_Requested__c}" id="opRPS"/>
+            </td>
+            <td style="display:{!IF(AND(programSplit.RPS_Submitted__c,blnGFInternal),'','none')};text-align: center;vertical-align:middle;">
+                <apex:outputLabel value="{!cn.objCN.Revised_Split_Range__c}" style="font-size:12px"/> <!-- Added Labels in the Formula -->
+            </td>
+
+        <!--<td style="display:{!IF(AND(blnGFInternal,!escalatedReview),'','none')};text-align: center;vertical-align:middle;">
+                <apex:inputField value="{!cn.objCN.GF_Program_Split_Signoff__c}" id="inpSignCheck" onchange="RetriveGFSignOff();" rendered="{!AND(!programSplit.Agreed__c,OR(AND(programSplit.OPS_Submitted__c,!programSplit.RPS_Requested__c),programSplit.RPS_Submitted__c))}"/>
+                <apex:outputField value="{!cn.objCN.GF_Program_Split_Signoff__c}" id="inpSignCheckReadOnly" rendered="{!OR(programSplit.Agreed__c, OR(!programSplit.OPS_Submitted__c,AND(programSplit.RPS_Requested__c,!programSplit.RPS_Submitted__c)))}"/>
+                 <apex:variable var="varGFSignoff" value="{!if(cn.objCN.GF_Program_Split_Signoff__c==false,'',varGFSignoff)}"/>
+            </td>
+
+            <td style="display:{!IF(AND(blnGFInternal,escalatedReview),'','none')};text-align: center;vertical-align:middle;">
+                <apex:inputField value="{!cn.objCN.GF_Program_Split_Signoff_RM_HoD__c}" id="inpSignCheckRMHoD" onchange="RetriveGFSignOffRMHoD();" rendered="{!AND(!programSplit.Agreed__c,OR(AND(programSplit.OPS_Submitted__c,!programSplit.RPS_Requested__c),programSplit.RPS_Submitted__c))}"/> 
+                 <apex:outputField value="{!cn.objCN.GF_Program_Split_Signoff_RM_HoD__c}" id="inpSignCheckRMHoDReadOnly" rendered="{!OR(programSplit.Agreed__c, OR(!programSplit.OPS_Submitted__c,AND(programSplit.RPS_Requested__c,!programSplit.RPS_Submitted__c)))}"/>
+                 <apex:variable var="varGFSignoffRMHoD" value="{!if(cn.objCN.GF_Program_Split_Signoff__c==false,'',varGFSignoffRMHoD)}"/>
+            </td>
+
+            <td style="display:{!IF(AND(blnGFInternal,escalatedReview),'','none')};text-align: center;vertical-align:middle;">
+                <apex:inputField value="{!cn.objCN.GF_Program_Split_Signoff_TPA__c}" id="inpSignCheckTPA" onchange="RetriveGFSignOffTPA();" rendered="{!AND(!programSplit.Agreed__c,OR(AND(programSplit.OPS_Submitted__c,!programSplit.RPS_Requested__c),programSplit.RPS_Submitted__c))}"/> 
+                 <apex:outputField value="{!cn.objCN.GF_Program_Split_Signoff_TPA__c}" id="inpSignCheckTPAReadOnly" rendered="{!OR(programSplit.Agreed__c, OR(!programSplit.OPS_Submitted__c,AND(programSplit.RPS_Requested__c,!programSplit.RPS_Submitted__c)))}"/>
+                 <apex:variable var="varGFSignoffTPA" value="{!if(cn.objCN.GF_Program_Split_Signoff__c==false,'',varGFSignoffTPA)}"/>
+            </td> -->
+            
+            <td style="text-align: center; display:{!IF(programSplit.Agreed__c,'','none')}; vertical-align:middle;">            
+                <apex:outputText value="{0,number,###,###,###}" rendered="{!programSplit.Agreed__c}">
+                    {!cn.objCN.CurrencyIsoCode}&nbsp;
+                    <apex:param value="{!IF(cn.objCN.CurrencyIsoCode=='USD',cn.objCN.Agreed_Split_USD__c,cn.objCN.Agreed_Split_EUR__c)}"/>
+                </apex:outputText>
+                <!-- apex:variable var="varAgreedSplit" value="{!if(cn.objCN.Agreed_Split_USD__c!= null && cn.objCN.CurrencyIsoCode=='USD', varAgreedSplit + cn.objCN.Agreed_Split_USD__c,IF(cn.objCN.Agreed_Split_EUR__c!= null && cn.objCN.CurrencyIsoCode=='EUR', varAgreedSplit + cn.objCN.Agreed_Split_EUR__c, varAgreedSplit))}"/ -->                                
+            </td>
+            <td style="text-align: center; display:{!IF(programSplit.Agreed__c,'','none')}; vertical-align:middle;">            
+                <apex:outputField value="{!cn.objCN.Proportion_of_Agreed_Split__c}"/>                                
+            </td>
+            <apex:variable var="indexCN" value="{!indexCN+1}"/>      
+        </tr>
+    </apex:repeat>
+    
+    <!--***************************-->
+    <!--         TOTAL ROW         -->
+    <!--***************************-->
+
+    <tr style="text-align: center;">
+        <!--<td style="text-align: center;background-color: #D3D3D3 !important;"></td>-->
+        <td style="text-align: center;vertical-align:middle;background-color: #D3D3D3 !important;">
+            <apex:outputText value="{!$Label.Total}" id="totalIndic" style="font-weight:bold"/>
+        </td>
+        <td style="background-color: #D3D3D3 !important;text-align: center;vertical-align:middle;">
+        {!programSplit.CurrencyIsoCode}&nbsp;
+            <apex:outputText value="{0,number,###,###,###}" id="totalExistingSigned">
+                <apex:param value="{!varExistingSigned}"/>
+            </apex:outputText>
+        </td>
+        <td style="background-color: #D3D3D3 !important;text-align: center;vertical-align:middle;">
+        {!programSplit.CurrencyIsoCode}&nbsp;
+            <apex:outputText value="{0,number,###,###,###}" id="totalExistingSplit">
+                <apex:param value="{!varExistingSplit}"/>
+            </apex:outputText>
+        </td>
+        <td style="background-color: #D3D3D3 !important;text-align: center;vertical-align:middle;">
+        {!programSplit.CurrencyIsoCode}&nbsp;
+            <apex:outputText value="{0,number,###,###,###}" id="totalNewSplit">
+                <apex:param value="{!varNewSplit}"/>
+            </apex:outputText>
+        </td>
+        <td style="background-color: #D3D3D3 !important;text-align: center;vertical-align:middle;">
+        {!programSplit.CurrencyIsoCode}&nbsp;
+            <apex:outputText value="{0,number,###,###,###}" id="totalCommIndSplit">
+                <apex:param value="{!varCommIndSplit}"/>
+            </apex:outputText>
+        </td>
+        <td style="background-color: #D3D3D3 !important;text-align: center;vertical-align:middle;">
+            <apex:outputText value="100%" id="totalProportion"/>
+        </td>
+        <td style="background-color: #D3D3D3 !important;text-align: center;vertical-align:middle;">
+      <!-- <apex:outputText value="{!programSplit.CurrencyIsoCode} " rendered="{!OR(!blnGFInternal, AND(blnGFInternal,programSplit.OPS_Submitted__c))}"/> -->
+            <apex:inputHidden value="{!intTotalOPS}" id="inHTotalOPS"/>
+            <apex:outputText value="{0,number,###,###,###}" id="totalOPS" rendered="{!OR(!blnGFInternal, AND(blnGFInternal,programSplit.OPS_Submitted__c))}">
+            <!-- rendered="{!OR(!blnGFInternal, AND(blnGFInternal,programSplit.OPS_Submitted__c))}" -->
+            {!programSplit.CurrencyIsoCode}&nbsp;
+                <apex:param value="{!intTotalOPS}"/>
+            </apex:outputText>
+            <apex:outputText value="{!$Label.Not_yet_submitted}" rendered="{!AND(blnGFInternal,!programSplit.OPS_Submitted__c)}"/>
+        </td>
+        <td style="background-color: #D3D3D3 !important;text-align: center;vertical-align:middle; display:{!IF(AND(OR(programSplit.OPS_Submitted__c,!blnGFInternal),!programSplit.Agreed__c),'','none')}">
+          100%
+        </td>
+
+        <td style="display:{!IF(AND(blnGFInternal,escalatedReview),'','none')};background-color: #D3D3D3 !important;text-align: center;vertical-align:middle;">
+             <apex:outputText value="{!programSplit.Escalated_Review__c}" id="totalEscalated"/>
+        </td>
+
+
+        <td style="display:{!IF(programSplit.RPS_Requested__c,'','none')};background-color: #D3D3D3 !important;text-align: center;vertical-align:middle;">
+        <!-- <apex:outputText value="{!programSplit.CurrencyIsoCode} " rendered="{!OR(!blnGFInternal, AND(blnGFInternal,programSplit.RPS_Submitted__c))}"/> -->
+            <apex:outputText value="{0,number,###,###,###}" id="totalRPS"   rendered="{!OR(!blnGFInternal, AND(blnGFInternal,programSplit.RPS_Submitted__c))}">
+            <!--  rendered="{!OR(!blnGFInternal, AND(blnGFInternal,programSplit.RPS_Submitted__c))}"-->
+            {!programSplit.CurrencyIsoCode}&nbsp;
+                <apex:param value="{!intTotalRPS}"/>
+            </apex:outputText>
+            <apex:outputText value="{!$Label.Not_yet_submitted}" rendered="{!AND(blnGFInternal,!programSplit.RPS_Submitted__c)}"/>
+        </td>
+        <td style="display:{!IF(AND(OR(AND(!blnGFInternal, programSplit.RPS_Requested__c),AND(blnGFInternal, programSplit.RPS_Submitted__c)),!programSplit.Agreed__c),'','none')} ;background-color: #D3D3D3 !important;text-align: center;vertical-align:middle;">
+            100%
+        </td>
+        
+        <td style="display:{!IF(AND(programSplit.RPS_Submitted__c,blnGFInternal),'','none')};background-color: #D3D3D3 !important;text-align: center;vertical-align:middle;">
+             <apex:outputText value="{!programSplit.Outside_Range__c}" id="totalRevisedRange"/>
+        </td>
+
+        <!--<td style="display:{!IF(AND(blnGFInternal,!escalatedReview),'','none')};background-color: #D3D3D3 !important;text-align: center;vertical-align:middle;">
+            <apex:outputText value="-" id="totalGFsignoff" rendered="{!!programSplit.Agreed__c}"/>
+            <apex:outputText value="{!FPMSignOff}" id="totalGFsignoff_onlyagreed" rendered="{!programSplit.Agreed__c}"/>
+        </td>
+
+        <td style="display:{!IF(AND(blnGFInternal,escalatedReview),'','none')};background-color: #D3D3D3 !important;text-align: center;vertical-align:middle;">
+            <apex:outputText value="{!RMSignOff}" id="totalGFsignoffRMHoD" />             
+        </td>
+
+        <td style="display:{!IF(AND(blnGFInternal,escalatedReview),'','none')};background-color: #D3D3D3 !important;text-align: center;vertical-align:middle;">
+            <apex:outputText value="{!TPASignOff}" id="totalGFsignoffTPA" />                       
+        </td> -->
+
+        <td style="display:{!IF(programSplit.Agreed__c,'','none')}; background-color: #A6A6A6 !important;text-align: center;vertical-align:middle;">
+        <!-- apex:variable var="varAgreedSplit" value="{!finalTotalAllocation}" / -->
+        {!programSplit.CurrencyIsoCode}&nbsp;
+            <apex:outputText value="{0,number,###,###,###}" id="totalAgreed">
+                <apex:param value="{!finalTotalAllocation}"/>
+            </apex:outputText>
+        </td>  
+        <td style="display:{!IF(programSplit.Agreed__c,'','none')}; background-color: #A6A6A6 !important;text-align: center;vertical-align:middle;">
+           100%
+        </td>       
+    </tr>
+
+</tr>
+</table>
+</apex:outputpanel>
+<!-- TGF RICH-TEXT INPUT AREA -->
+
+<apex:outputPanel ><br/></apex:outputPanel>
+
+<table cellspacing="0" cellpadding="4" border="0" id="tblGFComments" width="100%" class="list" style="display:{!IF(blnGFInternal,'','none')}">
+<!--<tr class="headerRow" style="background-color: #FF6C00;">-->
+<tr class="alert alert-info" style="font-weight:bold">
+    <apex:outputPanel rendered="{!blnGFInternal}">
+        <td style="border:0px !important;width:2%;" class="headingCollapse">
+            <span id="page:frm:plusimage" style="">
+                <table onclick="switchMenu('GFCommentSection','page:frm:minusimage','page:frm:plusimage','true')" class="curvedEdges_expand">
+                    <tbody>
+                        <tr>
+                            <td valign="middle" align="center" style="border-width:0px;height:7px;width:6px;padding:4px;">
+                                <div class="arrow-expand ">
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </span>
+            <span style="display: none;" id="page:frm:minusimage">
+                <table onclick="switchMenu('GFCommentSection','page:frm:plusimage','page:frm:minusimage','false')" class="curvedEdges_collapse">
+                    <tbody>
+                        <tr>
+                            <td valign="middle" align="center" style="border-width:0px;height:7px;width:6px;padding:4px;">
+                                <div class="arrow-collapse ">
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </span>
+        </td>
+        <td colspan="2" style="width:98%;font-size:14px;">
+            {!$Label.GF_Internal_Review_Comments}
+        </td>
+    </apex:outputPanel>    
+</tr>
+<tr id="GFCommentSection">
+    <apex:outputPanel rendered="{!blnGFInternal}">
+        <td colspan="3" style="border:0px;">
+            <table>
+                <tr id="GFInternalComments">
+                    <td style="width:95%;border:0px;display:{!if(blnEditGFInternal,'none','')}">
+                        <!--<apex:inputField value="{!programSplit.Global_Fund_Internal_Review_Comments__c}" rendered="{!blnGFInternal}" id="GFComments"/>-->
+                        <apex:outputField value="{!programSplit.Global_Fund_Internal_Review_Comments__c}" rendered="{!blnGFInternal}" id="GFCommentsRO" style="border:0px;"/>
+                    </td>
+                    <apex:outputPanel rendered="{!!blnEditGFInternal}">
+                        <td style="width:5%;border:0px;padding-left:8px;">
+                            <a class="TGFbtn TGFbtn-mini TGFbtn-success" style="width:37px;" href="#" onclick = " return openEditGFInternalComment();">
+                                <strong>{!$Label.Edit}</strong>
+                            </a>
+                        </td>
+                    </apex:outputPanel>
+                    <style>
+                        #GFInternalComments td {
+                            border:0px !important;
+                        }
+                    </style>
+                    <script>
+                        function openEditGFInternalComment() {
+                            document.getElementById('GFInternalComments').style.display = 'none';
+                            document.getElementById('IpGFInternalComments').style.display = '';
+                            return false;
+                        }
+                        function CloseEditGFInternalComment() {
+                            //CancelGlobalFundComments();
+                            document.getElementById('GFInternalComments').style.display = '';
+                            document.getElementById('IpGFInternalComments').style.display = 'none';
+                            return false;
+                        }
+                    </script>
+                </tr>
+                <tr id="IpGFInternalComments" style="display:{!if(blnEditGFInternal,'','none')};">
+                    <td style="width:95%;border:0px;">
+                        <span id="spanGFInternalComments" style="display:none;">{!programSplit.Global_Fund_Internal_Review_Comments__c}</span>
+                        <apex:inputField value="{!programSplit.Global_Fund_Internal_Review_Comments__c}" rendered="{!blnGFInternal}" id="GFComments"/>
+                        <!-- <apex:outputField value="{!programSplit.Global_Fund_Internal_Review_Comments__c}" rendered="{!AND(blnGFInternal,blnReadOnly)}" id="GFCommentsRO"/> -->
+                    </td>
+                    <apex:outputPanel >
+                        <td style="width:5%;border:0px;">
+                            <a class="TGFbtn TGFbtn-mini TGFbtn-success" style="width:37px;margin-bottom:8px;" onclick="UpdateGFComments();" href="#">
+                                <strong>{!$Label.Save}</strong>
+                            </a><br/>
+                            <a class="TGFbtn TGFbtn-mini TGFbtn-danger" href="#" onclick="return CloseEditGFInternalComment();"> 
+                                <strong>{!$Label.Cancel}</strong>
+                            </a>
+                        </td>
+                    </apex:outputPanel>
+                </tr>
+                 <!--TCS 19/9/2014 Commenting from line 907 to 1014 due to incomplete functionality -->
+                <tr>
+                    <apex:outputPanel rendered="{!blnGFInternal}">
+                        <td style="border:0px !important;padding-top:10px;">
+                            <span style="font-size:16px;font-weight:bold;font-family:Arial;padding-right:70px;">{!$Label.Internal_Documents}</span>
+                            <a class="btnStyle TGFbtn-mini buttonStyle3" href="#" onclick="return openPopup('{!$Component.tstPopup2}','true','1');" style="display:{!IF(blnUploadGFInternal==true,'','none')}">
+                                <i><img width="20px" height="20px" src="{!if(blnExternalPro==true,'/GM','')}/resource/1398926632000/Upload1"/></i>
+                                <strong>{!$Label.Upload_Document}</strong>  
+                            </a>
+                        </td>
+                    </apex:outputPanel>
+                </tr>
+                <tr>
+                    <apex:inputHidden value="{!DeleteIndex}" id="hdnDeleteIndex"/>
+                    <td colspan="2" style="border:0px;">
+                        <table class="table table-striped" width="100%" cellspacing="0" cellpadding="0" border="0">
+                            <apex:variable value="{!0}" var="Count"/>                                                
+                            <tr>                                                        
+                                <th style="width:20%">
+                                   <apex:outputText value="{!$Label.File_Name}" /> 
+                                </th>
+                                <th style="width:15%">
+                                     <apex:outputText value="{!$Label.Description}" />
+                                </th>
+                                <th style="width:15%">
+                                    <apex:outputText value="{!$Label.Type}"/>
+                                </th>
+                                <th style="width:15%">
+                                     <apex:outputText value="{!$Label.Language}" />
+                                </th>
+                                <th style="width:15%">
+                                     <apex:outputText value="{!$Label.Created_Date}"/> 
+                                </th>
+                                <th style="width:10%">
+                                     <apex:outputText value="{!$Label.Created_By}"/> 
+                                </th>
+                                
+                                <th style="width:10%">
+                                    
+                                </th>                                                    
+                            </tr>
+                            <apex:repeat id="rpt" value="{!lstWrpDocumentUpload}" var="wrpDocUp">                                                  
+                                <tr> <!-- tr style="display:{!if(wrpDocUp.objDocumentUpload.TGF_Internal__c == true,'','none')}"-->
+                                     <td style="width:20%">
+                                        <apex:outputLink target="_Blank" value="/{!wrpDocUp.objFeedItem.RelatedRecordId}?fa=nv" style="text-decoration:underline;" rendered="{!blnDownloadLinkGF}">
+                                            {!wrpDocUp.objFeedItem.ContentFileName}
+                                        </apex:outputLink>
+                                        <apex:outputText value="{!wrpDocUp.objFeedItem.ContentFileName}" rendered="{!!blnDownloadLinkGF}" id="docName"/> 
+                                    </td>
+                                    <td style="width:15%">
+                                        <apex:outputField value="{!wrpDocUp.objFeedItem.body}" id="docBody"/>
+                                    </td>
+                                    <td style="width:15%">
+                                        <apex:outputField value="{!wrpDocUp.objDocumentUpload.Type__c}"/>
+                                    </td>
+                                    <td style="width:15%">
+                                        <apex:outputField value="{!wrpDocUp.objDocumentUpload.Language__c}"/>
+                                    </td>
+                                    <td style="width:15%">
+                                        <apex:outputField value="{!wrpDocUp.objFeedItem.CreatedDate}"/>
+                                    </td>
+                                    <td style="width:10%">
+                                        <apex:outputField value="{!wrpDocUp.objFeedItem.CreatedBy.Name}"/>
+                                    </td>
+                                    
+                                    <td style="width:10%">
+                                        <apex:commandLink styleClass="btnStyle TGFbtn-mini TGFbtn-danger" onclick="return openDeletePopup('{!$Component.tstpopup1}')" style="display:{!IF((wrpDocUp.objDocumentUpload.Type__c != 'Integrated View') && blnDownloadLinkGF,'','none')}">
+                                           <i class="icon-trash icon-white">
+                                           </i> <strong>{!$Label.Delete}</strong>
+                                        </apex:commandLink>
+                                        <apex:outputPanel id="tstpopup1" style="display:none;">
+                                            <apex:outputPanel id="popupBackground1" styleClass="popupBackground"/>
+                                            <apex:outputPanel id="custPopup1" styleClass="custPopupDelete">
+                                                <table width="100%" cellspacing="0" cellpadding="0" border="0">
+                                                    <tr>
+                                                        <td colspan="3" align="center" style="background-color: #EDEDED;border: 0px;text-align: center;">
+                                                            <apex:outputtext style="color:#6590c4; font-size: 13.9pt;font-weight: bold;" value="{!$Label.Are_you_sure}"/>
+                                                        </td>
+                                                    </tr>                                                                        
+                                                    <tr>
+                                                        <td colspan="3" align="center" style="background-color: #EDEDED;border: 0px;text-align: center;">
+                                                            <apex:outputtext style="color:#6590c4; font-size: 13.9pt;font-weight: bold;" value="{!$Label.File_Deletion_Warning}"/>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>                                                                            
+                                                        <td width="47%" align="right" style="background-color: #EDEDED;border: 0px;text-align: right;">
+                                                            <apex:commandButton styleClass="popupButtonYes" value="{!$Label.Yes}" action="{!DeleteFile}" onclick="DeleteIndex('{!Count}','{!$Component.hdnDeleteIndex}');"/>
+                                                        </td>
+                                                        <td width="6%" style="background-color: #EDEDED;border: 0px;"></td>
+                                                        <td width="47%" align="left" style="background-color: #EDEDED;border: 0px;text-align: left;">
+                                                            <apex:commandButton styleClass="popupButtonCancel" value="{!$Label.Cancel}" onclick="return closeDeletePopup('{!$Component.tstpopup1}')"/>
+                                                        </td>
+                                                    </tr>
+                                                </table>
+                                            </apex:outputPanel>
+                                        </apex:outputPanel>
+                                        <apex:variable var="Count" value="{!Count+1}"/>
+                                    </td>
+                                </tr> 
+                            </apex:repeat>
+                            <tr>
+                                <td colspan="7" align="center" style="text-align: center;">
+                                    <apex:outputLabel id="olNotFound" style="border:1px solid grey;" rendered="{!lstWrpDocumentUpload.size == 0}" value="{!$Label.No_Documents_Uploaded}"></apex:outputLabel>    
+                                </td>
+                            </tr>
+                        </table>
+                    </td>                                        
+                </tr>
+            </table>
+        </td>
+    </apex:outputPanel>
+</tr>  
+</table>
+
+<apex:outputPanel ><br/></apex:outputPanel>
+
+<table cellspacing="0" cellpadding="4" border="0" id="tblPS" width="100%" class="" >
+    <!--<tr class="headerRow" style="background-color: #FF6C00;">-->
+    <tr class="alert alert-info" style="font-weight:bold">
+        <apex:outputPanel rendered="{!if(blnRPSRequest,true,false)}">
+            <td style="border:0px !important;width:2%;background-color:#F89406" class="headingCollapse">
+                <span id="page:frm:plusimageSplit" style="">
+                    <table onclick="switchMenu('GFRationalRequestSplit','page:frm:minusimageSplit','page:frm:plusimageSplit','true')" class="curvedEdges_expand">
+                        <tbody>
+                            <tr>
+                                <td valign="middle" align="center" style="border-width:0px;height:7px;width:6px;padding:4px;">
+                                    <div class="arrow-expand ">
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </span>
+                <span style="display: none;" id="page:frm:minusimageSplit">
+                    <table onclick="switchMenu('GFRationalRequestSplit','page:frm:plusimageSplit','page:frm:minusimageSplit','false')" class="curvedEdges_collapse">
+                        <tbody>
+                            <tr>
+                                <td valign="middle" align="center" style="border-width:0px;height:7px;width:6px;padding:4px;">
+                                    <div class="arrow-collapse ">
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </span>
+            </td>
+            <td colspan="2" style="width:98%;font-size:14px;background-color:#F89406">
+                <span>{!$Label.Rational_for_Requesting_Revised_Split}</span>
+                <span style="display:{!if(!blnGFInternal,'none','')}">{!$Label.Externally_Visible}</span>
+            </td>
+        </apex:outputPanel>    
+    </tr>
+    <tr id="GFRationalRequestSplit">
+        <apex:outputPanel rendered="{!if(blnRPSRequest,true,false)}"> 
+            <td colspan="3" style="border:0px;">
+                <table width="100%">
+                <!--Commented for Program Split User Story
+                    <tr id="trGFRevisionReq" style="display:{!if(blnEditGFRevisionReq,'none','')}">-->
+                    <tr id="trGFRevisionReq" style="display:{!if(blnEditCCMRevised,'none','')}">
+                        <td style="width:{!if(!blnRPSRequest,'95%','100%')};border:0px;">
+                            <!--Commented for Program Split User Story
+                            <apex:outputPanel rendered="{!if(strLanguage=='FRENCH',true,false)}" styleClass="getname">
+                                <apex:outputField value="{!programSplit.Global_Fund_Revision_Request_Comments_Fr__c}" />
+                            </apex:outputPanel>
+                            <apex:outputPanel rendered="{!if(strLanguage=='SPANISH',true,false)}" styleClass="getname" >
+                                <apex:outputField value="{!programSplit.Global_Fund_Revision_Request_Comments_Es__c}"  />
+                            </apex:outputPanel>
+                            <apex:outputPanel rendered="{!if(strLanguage=='RUSSIAN',true,false)}" styleClass="getname" >
+                                <apex:outputField value="{!programSplit.Global_Fund_Revision_Request_Comments_Ru__c}"  />
+                            </apex:outputPanel>
+                            <apex:outputPanel rendered="{!if(strLanguage=='ENGLISH' || strLanguage=='',true,false)}" styleClass="getname">
+                                <apex:outputField value="{!programSplit.Global_Fund_Revision_Request_Comments__c}" />
+                            </apex:outputPanel>-->
+                            <apex:outputPanel rendered="{!if(strLanguage=='FRENCH',true,false)}" styleClass="getname">
+                                <apex:outputField value="{!programSplit.Rationale_for_Revised_Split_French__c}" />
+                            </apex:outputPanel>
+                            <apex:outputPanel rendered="{!if(strLanguage=='SPANISH',true,false)}" styleClass="getname" >
+                                <apex:outputField value="{!programSplit.Rationale_for_Revised_Split_Spanish__c}"  />
+                            </apex:outputPanel>
+                            <apex:outputPanel rendered="{!if(strLanguage=='RUSSIAN',true,false)}" styleClass="getname" >
+                                <apex:outputField value="{!programSplit.Rationale_for_Revised_Split_Russian__c}"  />
+                            </apex:outputPanel>
+                            <apex:outputPanel rendered="{!if(strLanguage=='ENGLISH' || strLanguage=='',true,false)}" styleClass="getname">
+                                <apex:outputField value="{!programSplit.Rationale_for_Revised_Split__c}" />
+                            </apex:outputPanel>
+                            <!--<apex:outputText value="{!if(strLanguage=='FRENCH',programSplit.Rationale_for_Revised_Split_French__c,if(strLanguage=='SPANISH',programSplit.Rationale_for_Revised_Split_Spanish__c,if(strLanguage=='RUSSIAN',programSplit.Rationale_for_Revised_Split_Russian__c,programSplit.Rationale_for_Revised_Split__c)))}" rendered="{!blnGFInternal}" id="GFRationalComments"/>-->
+                            <!-- {!if(strLanguage=='FRENCH',programSplit.Global_Fund_Revision_Request_Comments_Fr__c,if(strLanguage=='SPANISH',programSplit.Global_Fund_Revision_Request_Comments_Es__c,if(strLanguage=='RUSSIAN',programSplit.Global_Fund_Revision_Request_Comments_Ru__c,programSplit.Global_Fund_Revision_Request_Comments__c)))}-->
+                            <!-- <apex:outputField value="{!programSplit.Global_Fund_Internal_Review_Comments__c}" rendered="{!AND(blnGFInternal,blnReadOnly)}" id="GFCommentsRO"/> -->
+                        </td>
+                        <!--<apex:outputPanel rendered="{!!blnRPSRequest && !blnEditGFRevisionReq}">-->
+                        <!--Commented for Program Split User Story
+                        <apex:outputPanel rendered="{!blnGFReqRevSplit}">-->
+                        <apex:outputPanel rendered="{!blnCCMRevised}">
+                        
+                            <td style="width:5%;border:0px;padding-left:8px;">
+                                <a class="TGFbtn TGFbtn-mini TGFbtn-success" style="width:37px;" href="#" onclick = " return openEditGFRevisionComment();">
+                                    <strong>{!$Label.Edit}</strong>
+                                </a>
+                            </td>
+                        </apex:outputPanel>
+                        <script>
+                            var GetOldValue ;
+                            function openEditGFRevisionComment() {
+                                document.getElementById('trGFRevisionReq').style.display = 'none';
+                                document.getElementById('trGFRevisionReqEdit').style.display = '';
+                                return false;
+                            }
+                            function CloseEditGFRevisionComment() {
+                                //CancelRationaleforRequesting();
+                                document.getElementById('trGFRevisionReq').style.display = '';
+                                document.getElementById('trGFRevisionReqEdit').style.display = 'none';
+                                return false;
+                            }
+                        </script>
+                    </tr>
+                    <!--Commented for Program Split User Story
+                    <tr id="trGFRevisionReqEdit" style="display:{!if(blnEditGFRevisionReq,'','none')};">-->
+                    <tr id="trGFRevisionReqEdit" style="display:{!if(blnCCMRevised && blnEditCCMRevised,'','none')};">
+                    <!--Commented for Program Split User Story
+                        <td style="width:95%;border:0px;">
+                            <apex:outputPanel rendered="{!if(strLanguage=='FRENCH',true,false)}" styleClass="setValue">
+                                <apex:inputField value="{!programSplit.Global_Fund_Revision_Request_Comments_Fr__c}" />
+                            </apex:outputPanel>
+                            <apex:outputPanel rendered="{!if(strLanguage=='SPANISH',true,false)}" styleClass="setValue">
+                                <apex:inputField value="{!programSplit.Global_Fund_Revision_Request_Comments_Es__c}"  />
+                            </apex:outputPanel>
+                            <apex:outputPanel rendered="{!if(strLanguage=='RUSSIAN',true,false)}" styleClass="setValue">
+                                <apex:inputField value="{!programSplit.Global_Fund_Revision_Request_Comments_Ru__c}" />
+                            </apex:outputPanel>
+                            <apex:outputPanel rendered="{!if(strLanguage=='ENGLISH' || strLanguage=='',true,false)}" styleClass="setValue">
+                                <apex:inputField value="{!programSplit.Global_Fund_Revision_Request_Comments__c}" />
+                            </apex:outputPanel>
+                        </td>-->
+                        <td style="width:95%;border:0px;">
+                            <apex:outputPanel rendered="{!if(strLanguage=='FRENCH',true,false)}" styleClass="setValue">
+                                <apex:inputField value="{!programSplit.Rationale_for_Revised_Split_French__c}" id="inpRevisedProfrn" />
+                            </apex:outputPanel>
+                            <apex:outputPanel rendered="{!if(strLanguage=='SPANISH',true,false)}" styleClass="setValue">
+                                <apex:inputField value="{!programSplit.Rationale_for_Revised_Split_Spanish__c}" id="inpRevisedProspn" />
+                            </apex:outputPanel>
+                            <apex:outputPanel rendered="{!if(strLanguage=='RUSSIAN',true,false)}" styleClass="setValue">
+                                <apex:inputField value="{!programSplit.Rationale_for_Revised_Split_Russian__c}" id="inpRevisedProRus"/>
+                            </apex:outputPanel>
+                            <apex:outputPanel rendered="{!if(strLanguage=='ENGLISH' || strLanguage=='',true,false)}" styleClass="setValue">
+                                <apex:inputField value="{!programSplit.Rationale_for_Revised_Split__c}" id="inpRevisedPro"/>
+                            </apex:outputPanel>
+                            </td>
+                        <apex:outputPanel >
+                            <td style="width:5%;border:0px;padding-left:8px;">
+                                <a class="TGFbtn TGFbtn-mini TGFbtn-success" style="width:37px;margin-bottom:8px;" onclick="UpdateRationalRequestSplit();" href="#">
+                                    <strong>{!$Label.Save}</strong>
+                                </a><br/>
+                                <a class="TGFbtn TGFbtn-mini TGFbtn-danger" href="#" onclick="return CloseEditGFRevisionComment();"> 
+                                    <strong>{!$Label.Cancel}</strong>
+                                </a>
+                            </td>
+                        </apex:outputPanel>
+                    </tr>
+                </table>
+            </td>
+        </apex:outputPanel>
+    </tr>
+</table>
+
+<!-- EXTERNAL RICH-TEXT INPUT AREA -->
+
+<apex:outputPanel ><br/></apex:outputPanel>
+
+<table cellspacing="0" cellpadding="4" border="0" id="tblPS" width="100%" class="" >
+    <!--<tr class="headerRow" style="background-color: #FF6C00;">-->
+    <tr class="alert alert-info" style="font-weight:bold">
+        <apex:outputPanel rendered="{!blnGFInternal}">
+            <td style="border:0px !important;width:2%;" class="headingCollapse">
+                <span id="page:frm:plusimageCCM" style="">
+                    <table onclick="switchMenu('GFCCMCommentSection','page:frm:minusimageCCM','page:frm:plusimageCCM','true')" class="curvedEdges_expand">
+                        <tbody>
+                            <tr>
+                                <td valign="middle" align="center" style="border-width:0px;height:7px;width:6px;padding:4px;">
+                                    <div class="arrow-expand ">
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </span>
+                <span style="display: none;" id="page:frm:minusimageCCM">
+                    <table onclick="switchMenu('GFCCMCommentSection','page:frm:plusimageCCM','page:frm:minusimageCCM','false')" class="curvedEdges_collapse">
+                        <tbody>
+                            <tr>
+                                <td valign="middle" align="center" style="border-width:0px;height:7px;width:6px;padding:4px;">
+                                    <div class="arrow-collapse ">
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </span>
+            </td>
+            <td colspan="2" style="width:98%;font-size:14px;">
+                {!$Label.CCM_Rational_Documentation}
+            </td>
+        </apex:outputPanel>    
+    </tr>
+    <tr id="GFCCMCommentSection">
+        <apex:outputPanel rendered="{!blnGFInternal}">
+            <td colspan="3" style="border:0px;">
+                <table class="table table-striped">
+                    <tr class="" style="font-weight: bold">
+                        <td width="80%" style="text-align:center;display:{!IF(blnGFInternal,'','none')};">{!$Label.Provide_Split_Rationale}</td>  
+                        <td width="20%" style="text-align:center;display:{!IF(blnGFInternal,'','none')};">{!$Label.CCM_Endorsement}</td>   
+                    </tr>
+                    <tr>
+                        <td>
+                            <table>
+                                <apex:outputPanel rendered="{!blnOPSSubmitted}"> 
+                                    <tr>
+                                        <td style="background-color:white;border-top:0px;">
+                                            <b>{!$Label.Rational_for_Proposed_Split}</b>
+                                           <!--  <apex:outputPanel rendered="{!OR(blnReadOnly,blnGFInternal,programSplit.Agreed__c,programSplit.RPS_Submitted__c,AND(programSplit.OPS_Submitted__c,!programSplit.RPS_Requested__c))}"> -->
+                                                 <apex:outputPanel rendered="{!OR(blnRationalCCM,blnGFInternal,programSplit.Agreed__c,programSplit.RPS_Submitted__c,AND(programSplit.OPS_Submitted__c,!programSplit.RPS_Requested__c))}">
+                                                <apex:outputPanel rendered="{!if(strLanguage=='FRENCH',true,false)}">
+                                                    <apex:outputField value="{!programSplit.Rationale_for_Proposed_Split_French__c}" />
+                                                </apex:outputPanel>
+                                                <apex:outputPanel rendered="{!if(strLanguage=='SPANISH',true,false)}">
+                                                    <apex:outputField value="{!programSplit.Rationale_for_Proposed_Split_Spanish__c}" />
+                                                </apex:outputPanel>
+                                                <apex:outputPanel rendered="{!if(strLanguage=='RUSSIAN',true,false)}">
+                                                    <apex:outputField value="{!programSplit.Rationale_for_Proposed_Split_Russian__c}" />
+                                                </apex:outputPanel>
+                                                <apex:outputPanel rendered="{!if(strLanguage=='ENGLISH' || strLanguage=='',true,false)}">
+                                                    <apex:outputField value="{!programSplit.Rationale_for_Proposed_Split__c}" />
+                                                </apex:outputPanel>
+                                            </apex:outputPanel>
+                                        </td>
+                                    </tr>
+                                </apex:outputPanel>
+                                <apex:outputPanel rendered="{!blnRPSSubmitted}"> 
+                                    <tr>
+                                        <td style="background-color:white;border-top:0px;">
+                                            <b>{!$Label.Rational_for_Revised_Split}</b>
+                                            <apex:outputPanel rendered="{!OR(blnRationalCCM,blnGFInternal,programSplit.Agreed__c,programSplit.RPS_Submitted__c,AND(programSplit.OPS_Submitted__c,!programSplit.RPS_Requested__c))}">
+                                                <apex:outputPanel rendered="{!if(strLanguage=='FRENCH',true,false)}">
+                                                    <apex:outputField value="{!programSplit.Rationale_for_Revised_Split_French__c}" />
+                                                </apex:outputPanel>
+                                                <apex:outputPanel rendered="{!if(strLanguage=='SPANISH',true,false)}">
+                                                    <apex:outputField value="{!programSplit.Rationale_for_Revised_Split_Spanish__c}"   />
+                                                </apex:outputPanel>
+                                                <apex:outputPanel rendered="{!if(strLanguage=='RUSSIAN',true,false)}">
+                                                    <apex:outputField value="{!programSplit.Rationale_for_Revised_Split_Russian__c}"  />
+                                                </apex:outputPanel>
+                                                <apex:outputPanel rendered="{!if(strLanguage=='ENGLISH' || strLanguage=='',true,false)}">
+                                                    <apex:outputField value="{!programSplit.Rationale_for_Revised_Split__c}"/>
+                                                </apex:outputPanel>
+                                            </apex:outputPanel>
+                                        </td>
+                                    </tr>
+                                </apex:outputPanel>
+                            </table>
+                            <!--<apex:inputField id="inpRational" value="{!programSplit.Rationale_for_Proposed_Split__c}" rendered="{!AND(!blnReadOnly,!blnGFInternal,!programSplit.Agreed__c,AND(OR(!programSplit.OPS_Submitted__c, AND(programSplit.RPS_Requested__c,!programSplit.RPS_Submitted__c))))}"/>-->
+                            <!--<apex:outputField id="optRational" value="{!programSplit.Rationale_for_Proposed_Split__c}" rendered="{!OR(blnReadOnly,blnGFInternal,programSplit.Agreed__c,programSplit.RPS_Submitted__c,AND(programSplit.OPS_Submitted__c,!programSplit.RPS_Requested__c))}"/>-->
+                        </td>
+                        <td style="vertical-align: middle; text-align:center; {!IF(blnGFInternal,'','display:none')}">
+                            <apex:inputField value="{!programSplit.Evidence_of_CCM_Endorsement__c}" rendered="{!blnCCMEndorsement}"/>
+                            <apex:OutputField value="{!programSplit.Evidence_of_CCM_Endorsement__c}" rendered="{!!blnCCMEndorsement}"/>
+                        </td>
+                    </tr>
+                    <!--TCS 19/9/2014 Commenting from line 1235 to 1314 due to incomplete functionality -->
+                   <tr>
+                        <apex:outputPanel rendered="{!blnGFInternal}">
+                            <td style="border:0px !important;padding-top:10px;background-color:white;">
+                                <span style="font-size:16px;;font-weight:bold;font-family:Arial;padding-right:95px;">{!$Label.CCM_Documents}</span>
+                                <a class="btnStyle TGFbtn-mini buttonStyle3" href="#" onclick="return openPopup('{!$Component.tstPopup2}','false','2');" style="display:{!IF(blnUploadCCMView==true,'','none')}">
+                                    <i><img width="20px" height="20px" src="{!if(blnExternalPro==true,'/GM','')}/resource/1398926632000/Upload1"/></i>
+                                    <strong>{!$Label.Upload_Document}</strong>
+                                </a>
+                            </td>
+                        </apex:outputPanel>
+                    </tr>
+                    <tr>
+                        <td colspan="2">
+                            <table class="table table-striped" width="100%" cellspacing="0" cellpadding="0" border="0">
+                                <apex:variable value="{!0}" var="Count"/>                                                
+                                <tr>                                                        
+                                    <th style="width:20%">
+                                       <apex:outputText value="{!$Label.File_Name}" /> <!--- File Name--->
+                                    </th>
+                                    <th style="width:15%">
+                                         <apex:outputText value="{!$Label.Description}" />
+                                    </th>
+                                    <th style="width:15%">
+                                        <apex:outputText value="{!$Label.Type}" />
+                                    </th>
+                                    <th style="width:15%">
+                                         <apex:outputText value="{!$Label.Language}" />
+                                    </th>
+                                    <th style="width:15%">
+                                         <apex:outputText value="{!$Label.Created_Date}"/> <!--Created Date--->
+                                    </th>
+                                      <th style="width:15%">
+                                         <apex:outputText value="{!$Label.Created_By}"/> 
+                                    </th>
+                                    
+                                    <th>
+                                        
+                                    </th>                                                    
+                                </tr>
+                                <apex:repeat id="rptCCM" value="{!lstWrpDocumentUploadCCM}" var="wrpDocUp">                                                  
+                                    <tr> <!-- tr style="display:{!if(wrpDocUp.objDocumentUpload.TGF_Internal__c == true,'','none')}"-->
+                                         <td style="width:20%">
+                                            <apex:outputLink target="_Blank" value="/{!wrpDocUp.objFeedItem.RelatedRecordId}?fa=nv" style="text-decoration:underline;" rendered="{!blnGFInternal}">
+                                                {!wrpDocUp.objFeedItem.ContentFileName}
+                                            </apex:outputLink>
+                                            <apex:outputText value="{!wrpDocUp.objFeedItem.ContentFileName}" rendered="{!!blnGFInternal}" id="docName"/> 
+                                        </td>
+                                        <td style="width:15%">
+                                            <apex:outputField value="{!wrpDocUp.objFeedItem.body}" id="docBody"/>
+                                        </td>
+                                        <td style="width:15%">
+                                            <apex:outputField value="{!wrpDocUp.objDocumentUpload.Type__c}"/>
+                                        </td>
+                                        <td style="width:15%">
+                                            <apex:outputField value="{!wrpDocUp.objDocumentUpload.Language__c}"/>
+                                        </td>
+                                        <td style="width:15%">
+                                            <apex:outputField value="{!wrpDocUp.objFeedItem.CreatedDate}"/>
+                                        </td>
+                                        <td style="width:15%">
+                                            <apex:outputField value="{!wrpDocUp.objFeedItem.CreatedBy.Name}"/>
+                                        </td>
+                                        
+                                        <td style="width:15%">
+                                            <apex:variable var="Count" value="{!Count+1}"/>
+                                        </td>
+                                    </tr>
+                                </apex:repeat>
+                                <tr>
+                                    <td colspan="7" align="center" style="text-align: center;">
+                                        <apex:outputLabel id="olNotFoundCCM" style="border:1px solid grey;" rendered="{!lstWrpDocumentUploadCCM.size == 0}" value="{!$Label.No_Documents_Uploaded}"></apex:outputLabel>    
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>                                        
+                    </tr> 
+                </table>
+            </td>
+        </apex:outputPanel>
+    </tr>  
+</table>
+
+<apex:outputPanel ><br/></apex:outputPanel>
+
+<table id="tblPS" width="100%" cellspacing="0" cellpadding="4" border="0" >
+<!--<tr class="headerRow" style="background-color: #FF6C00;">-->
+    <tr style="font-weight: bold">
+        <apex:outputPanel rendered="{!if(!blnGFInternal,true,false)}">
+            <td style="border:0px !important;width:2%;background-color:#F9F9F9"></td>
+            <td style="background-color:#F9F9F9;text-align:center;display:{!IF(!blnGFInternal,'','none')};" colspan="2">{!$Label.Provide_Split_Rationale}<br/>
+                            {!$Label.Program_Split_Instructions}</td>
+        </apex:outputPanel>         
+    </tr>
+    <tr class="alert alert-info" style="font-weight:bold">
+        <apex:outputPanel rendered="{!if(!blnGFInternal,true,false)}">
+            <td style="border:0px !important;width:2%;" class="headingCollapse">
+                <span id="page:frm:plusimageCCMRational" style="">
+                    <table onclick="switchMenu('GFCommentSectionRational','page:frm:minusimageCCMRational','page:frm:plusimageCCMRational','true')" class="curvedEdges_expand">
+                        <tbody>
+                            <tr>
+                                <td valign="middle" align="center" style="border-width:0px;height:7px;width:6px;padding:4px;">
+                                    <div class="arrow-expand ">
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </span>
+                <span style="display: none;" id="page:frm:minusimageCCMRational">
+                    <table onclick="switchMenu('GFCommentSectionRational','page:frm:plusimageCCMRational','page:frm:minusimageCCMRational','false')" class="curvedEdges_collapse">
+                        <tbody>
+                            <tr>
+                                <td valign="middle" align="center" style="border-width:0px;height:7px;width:6px;padding:4px;">
+                                    <div class="arrow-collapse ">
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </span>
+            </td>
+            <td colspan="2" style="width:98%;font-size:14px;">
+                {!$Label.Rational_for_Proposed_Split}
+            </td>
+        </apex:outputPanel>    
+    </tr>
+    <tr id="GFCommentSectionRational">
+        <apex:outputPanel rendered="{!if(!blnGFInternal,true,false)}">
+            <td colspan="3" style="border:0px;">
+                <table width="100%">
+                    <tr id="PsRationalforProposedSplit" style="display:{!if(blnEditCCMOriginal,'none','')}">
+                        <td style="width:{!if(!blnOPSSubmitted,'95%','100%')};border:0px;">
+                            <apex:outputPanel rendered="{!if(strLanguage=='FRENCH',true,false)}">
+                                <apex:outputField value="{!programSplit.Rationale_for_Proposed_Split_French__c}" id="opRationalF"/>
+                            </apex:outputPanel>
+                            <apex:outputPanel rendered="{!if(strLanguage=='SPANISH',true,false)}">
+                                <apex:outputField value="{!programSplit.Rationale_for_Proposed_Split_Spanish__c}" id="opRationalS"/>
+                            </apex:outputPanel>
+                            <apex:outputPanel rendered="{!if(strLanguage=='RUSSIAN',true,false)}">
+                                <apex:outputField value="{!programSplit.Rationale_for_Proposed_Split_Russian__c}" id="opRationalR"/>
+                            </apex:outputPanel>
+                            <apex:outputPanel rendered="{!if(strLanguage=='ENGLISH' || strLanguage=='',true,false)}" >
+                                <apex:outputField value="{!programSplit.Rationale_for_Proposed_Split__c}" id="opRational"/>
+                            </apex:outputPanel>
+                        </td>
+                        <apex:outputPanel rendered="{!!blnOPSSubmitted && !blnEditCCMOriginal}">
+                        <!--<apex:outputPanel rendered="{(!!(blnRationaleProposed && blnOPSSubmitted) || (!(blnRationaleProposed && blnOPSSubmitted && blnRPSRequest) && !!(blnRationaleProposed && blnRPSRequest && blnOPSSubmitted && blnRPSSubmitted)) )}">-->
+                            <td style="width:5%;border:0px;padding-left:8px;">
+                                <a class="TGFbtn TGFbtn-mini TGFbtn-success" style="width:37px;" href="#" onclick = " return openEditRationalforProposed();">
+                                    <strong>{!$Label.Edit}</strong>
+                                </a>
+                            </td>
+                        </apex:outputPanel>
+                        <script>
+                            function openEditRationalforProposed() {
+                                document.getElementById('PsRationalforProposedSplit').style.display = 'none';
+                                document.getElementById('IPPsRationalforProposedSplit').style.display = '';
+                                return false;
+                            }
+                            function CloseEditRationalforProposed() {
+                                //CancelRationaleforProposed();
+                                document.getElementById('PsRationalforProposedSplit').style.display = '';
+                                document.getElementById('IPPsRationalforProposedSplit').style.display = 'none';
+                                return false;
+                            }
+                        </script>
+                    </tr>
+                    <tr id="IPPsRationalforProposedSplit" style= "display:{!if(blnEditCCMOriginal,'','none')};">
+                        <td style="width:95%;border:0px;">
+                            <apex:outputPanel rendered="{!if(strLanguage=='FRENCH',true,false)}">
+                                <apex:inputField value="{!programSplit.Rationale_for_Proposed_Split_French__c}" id="inpRationalF" />
+                            </apex:outputPanel>
+                            <apex:outputPanel rendered="{!if(strLanguage=='SPANISH',true,false)}">
+                                <apex:inputField value="{!programSplit.Rationale_for_Proposed_Split_Spanish__c}" id="inpRationalS" />
+                            </apex:outputPanel>
+                            <apex:outputPanel rendered="{!if(strLanguage=='RUSSIAN',true,false)}">
+                                <apex:inputField value="{!programSplit.Rationale_for_Proposed_Split_Russian__c}" id="inpRationalR" />
+                            </apex:outputPanel>
+                            <apex:outputPanel rendered="{!if(strLanguage=='ENGLISH' || strLanguage=='',true,false)}">
+                                <apex:inputField value="{!programSplit.Rationale_for_Proposed_Split__c}" id="inpRational"/>
+                            </apex:outputPanel>
+                        </td>
+                        <apex:outputPanel >
+                            <td style="width:5%;border:0px;padding-left:8px;">
+                                <a class="TGFbtn TGFbtn-mini TGFbtn-success" style="width:37px;margin-bottom:8px;" onclick="UpdateRationalProposedSplit();" href="#">
+                                    <strong>{!$Label.Save}</strong>
+                                </a><br/>
+                                <a class="TGFbtn TGFbtn-mini TGFbtn-danger" href="#" onclick="return CloseEditRationalforProposed();"> 
+                                    <strong>{!$Label.Cancel}</strong>
+                                </a>
+                            </td>
+                        </apex:outputPanel>
+                    </tr>
+                </table>
+            </td>
+        </apex:outputPanel>
+    </tr>
+</table>
+
+<apex:outputPanel ><br/></apex:outputPanel>
+
+<table cellspacing="0" cellpadding="4" border="0" id="tblPS" width="100%" class="" >
+    <!--<tr class="headerRow" style="background-color: #FF6C00;">-->
+    <tr class="alert alert-info" style="font-weight:bold">
+        <apex:outputPanel rendered="{!if(blnShowRevisionComment,true,if(blnRPSRequest,true,false))}">
+            <td style="border:0px !important;width:2%;" class="headingCollapse">
+                <span id="page:frm:plusimageRevisedSplit" style="">
+                    <table onclick="switchMenu('GFRationalRevisedSplit','page:frm:minusimageRevisedSplit','page:frm:plusimageRevisedSplit','true')" class="curvedEdges_expand">
+                        <tbody>
+                            <tr>
+                                <td valign="middle" align="center" style="border-width:0px;height:7px;width:6px;padding:4px;">
+                                    <div class="arrow-expand ">
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </span>
+                <span style="display: none;" id="page:frm:minusimageRevisedSplit">
+                    <table onclick="switchMenu('GFRationalRevisedSplit','page:frm:plusimageRevisedSplit','page:frm:minusimageRevisedSplit','false')" class="curvedEdges_collapse">
+                        <tbody>
+                            <tr>
+                                <td valign="middle" align="center" style="border-width:0px;height:7px;width:6px;padding:4px;">
+                                    <div class="arrow-collapse ">
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </span>
+            </td>
+            <td colspan="2" style="width:98%;font-size:14px;">
+                {!$Label.Rational_for_Revised_Split}
+            </td>
+        </apex:outputPanel>    
+    </tr>
+    <tr id="GFRationalRevisedSplit">
+        <apex:outputPanel rendered="{!if(blnShowRevisionComment,true,if(blnRPSRequest,true,false))}">
+            <td colspan="3" style="border:0px;">
+                <table width="100%">
+                    <!--Commented for Program Split User Story
+                    <tr id="trGFRevisionReqRev" style="display:{!if(blnEditCCMRevised,'none','')}">-->
+                    <tr id="trGFRevisionReqRev" style="display:{!if(blnEditGFRevisionReq,'none','')}">
+                        <td style="width:{!if(!blnRPSSubmitted,'95%','100%')};border:0px;">
+
+                            <!--Commented for Program Split User Story
+                            <apex:outputPanel rendered="{!if(strLanguage=='FRENCH',true,false)}">
+                                <apex:outputField value="{!programSplit.Rationale_for_Revised_Split_French__c}" id="opRevisedF" />
+                            </apex:outputPanel>
+                            <apex:outputPanel rendered="{!if(strLanguage=='SPANISH',true,false)}">
+                                <apex:outputField value="{!programSplit.Rationale_for_Revised_Split_Spanish__c}" id="opRevisedS"  />
+                            </apex:outputPanel>
+                            <apex:outputPanel rendered="{!if(strLanguage=='RUSSIAN',true,false)}">
+                                <apex:outputField value="{!programSplit.Rationale_for_Revised_Split_Russian__c}" id="opRevisedR" />
+                            </apex:outputPanel>
+                            <apex:outputPanel rendered="{!if(strLanguage=='ENGLISH' || strLanguage=='',true,false)}">
+                                <apex:outputField value="{!programSplit.Rationale_for_Revised_Split__c}" id="opRevised"/>
+                            </apex:outputPanel>-->
+                            <apex:outputPanel rendered="{!if(strLanguage=='FRENCH',true,false)}">
+                                <apex:outputField value="{!programSplit.Global_Fund_Revision_Request_Comments_Fr__c}" id="opRevisedF" />
+                            </apex:outputPanel>
+                            <apex:outputPanel rendered="{!if(strLanguage=='SPANISH',true,false)}">
+                                <apex:outputField value="{!programSplit.Global_Fund_Revision_Request_Comments_Es__c}" id="opRevisedS"  />
+                            </apex:outputPanel>
+                            <apex:outputPanel rendered="{!if(strLanguage=='RUSSIAN',true,false)}">
+                                <apex:outputField value="{!programSplit.Global_Fund_Revision_Request_Comments_Ru__c}" id="opRevisedR" />
+                            </apex:outputPanel>
+                            <apex:outputPanel rendered="{!if(strLanguage=='ENGLISH' || strLanguage=='',true,false)}">
+                                <apex:outputField value="{!programSplit.Global_Fund_Revision_Request_Comments__c}" id="opRevised"/>
+                            </apex:outputPanel>
+                            
+                            <!--<apex:outputText value="{!if(strLanguage=='FRENCH',programSplit.Rationale_for_Revised_Split_French__c,if(strLanguage=='SPANISH',programSplit.Rationale_for_Revised_Split_Spanish__c,if(strLanguage=='RUSSIAN',programSplit.Rationale_for_Revised_Split_Russian__c,programSplit.Rationale_for_Revised_Split__c)))}" />-->
+                            <!-- {!if(strLanguage=='FRENCH',programSplit.Global_Fund_Revision_Request_Comments_Fr__c,if(strLanguage=='SPANISH',programSplit.Global_Fund_Revision_Request_Comments_Es__c,if(strLanguage=='RUSSIAN',programSplit.Global_Fund_Revision_Request_Comments_Ru__c,programSplit.Global_Fund_Revision_Request_Comments__c)))}-->
+                            <!-- <apex:outputField value="{!programSplit.Global_Fund_Internal_Review_Comments__c}" rendered="{!AND(blnGFInternal,blnReadOnly)}" id="GFCommentsRO"/> -->
+                        </td>
+                        <!--<apex:outputPanel rendered="{!!blnRPSSubmitted && !blnEditCCMRevised }">-->
+                        <apex:outputPanel rendered="{!blnGFReqRevSplit}">
+                            <td style="width:5%;border:0px;padding-left:8px;">
+                                <a class="TGFbtn TGFbtn-mini TGFbtn-success" style="width:37px;" href="#" onclick = " return openEditCCMRevisionComment();">
+                                    <strong>{!$Label.Edit}</strong>
+                                </a>
+                            </td>
+                        </apex:outputPanel>
+                        <script>
+                            function openEditCCMRevisionComment() {
+                                document.getElementById('trGFRevisionReqRev').style.display = 'none';
+                                document.getElementById('trGFRevisionReqRevEdit').style.display = '';
+                                return false;
+                            }
+                            function CloseEditCCMRevisionComment() {
+                                //CancelRationaleforRevised();
+                                document.getElementById('trGFRevisionReqRev').style.display = '';
+                                document.getElementById('trGFRevisionReqRevEdit').style.display = 'none';
+                                return false;
+                            }
+                        </script>
+                    </tr>
+                    <!--Commented for Program Split User Story
+                    <tr id="trGFRevisionReqRevEdit" style="display:{!if(blnGFInternal && blnEditCCMRevised,'','none')};">-->
+                       <tr id="trGFRevisionReqRevEdit" style="display:{!if(blnGFInternal && blnEditGFRevisionReq,'','none')};">
+                    
+                        <!--Commented for Program Split User Story
+                        <td style="width:95%;border:0px;">
+                            <apex:outputPanel rendered="{!if(strLanguage=='FRENCH',true,false)}">
+                                <apex:inputField value="{!programSplit.Rationale_for_Revised_Split_French__c}" id="inpRevisedF"/>
+                            </apex:outputPanel>
+                            <apex:outputPanel rendered="{!if(strLanguage=='SPANISH',true,false)}">
+                                <apex:inputField value="{!programSplit.Rationale_for_Revised_Split_Spanish__c}" id="inpRevisedS"  />
+                            </apex:outputPanel>
+                            <apex:outputPanel rendered="{!if(strLanguage=='RUSSIAN',true,false)}">
+                                <apex:inputField value="{!programSplit.Rationale_for_Revised_Split_Russian__c}" id="inpRevisedR" />
+                            </apex:outputPanel>
+                            <apex:outputPanel rendered="{!if(strLanguage=='ENGLISH' || strLanguage=='',true,false)}">
+                                <apex:inputField value="{!programSplit.Rationale_for_Revised_Split__c}" id="inpRevised"/>
+                            </apex:outputPanel>
+                        </td>-->
+                        <td style="width:95%;border:0px;">
+                            <apex:outputPanel rendered="{!if(strLanguage=='FRENCH',true,false)}">
+                                <apex:inputField value="{!programSplit.Global_Fund_Revision_Request_Comments_Fr__c}" id="inpRevisedF"/>
+                            </apex:outputPanel>
+                            <apex:outputPanel rendered="{!if(strLanguage=='SPANISH',true,false)}">
+                                <apex:inputField value="{!programSplit.Global_Fund_Revision_Request_Comments_Es__c}" id="inpRevisedS"  />
+                            </apex:outputPanel>
+                            <apex:outputPanel rendered="{!if(strLanguage=='RUSSIAN',true,false)}">
+                                <apex:inputField value="{!programSplit.Global_Fund_Revision_Request_Comments_Ru__c}" id="inpRevisedR" />
+                            </apex:outputPanel>
+                            <apex:outputPanel rendered="{!if(strLanguage=='ENGLISH' || strLanguage=='',true,false)}">
+                                <apex:inputField value="{!programSplit.Global_Fund_Revision_Request_Comments__c}" id="inpRevised"/>
+                            </apex:outputPanel>
+                        </td>
+                        <apex:outputPanel >
+                            <td style="width:5%;border:0px;padding-left:8px;">
+                                <a class="TGFbtn TGFbtn-mini TGFbtn-success" style="width:37px;margin-bottom:8px;" onclick="UpdateRationalRevisedSplit();" href="#">
+                                    <strong>{!$Label.Save}</strong>
+                                </a><br/>
+                                <a class="TGFbtn TGFbtn-mini TGFbtn-danger" href="#" onclick="return CloseEditCCMRevisionComment();"> 
+                                    <strong>{!$Label.Cancel}</strong>
+                                </a>
+                            </td>
+                        </apex:outputPanel>
+                    </tr>
+                </table>
+            </td>
+        </apex:outputPanel>
+    </tr>
+</table>
+
+<apex:outputPanel ><br/></apex:outputPanel>
+
+<table cellspacing="0" cellpadding="4" border="0" id="tblPS" width="100%" class="" >
+    <!--<tr class="headerRow" style="background-color: #FF6C00;">-->
+     <tr>
+        <apex:outputPanel rendered="{!if(!blnGFInternal,true,false)}">
+            <td style="border:0px !important;padding-top:10px;background-color:white;">
+                <span style="font-size:16px;;font-weight:bold;font-family:Arial;padding-right:95px;">{!$Label.Uploaded_Documents}</span>
+                <a class="btnStyle TGFbtn-mini buttonStyle3" href="#" onclick="return openPopup('{!$Component.tstPopup2}','false','3');" style="display:{!IF(blnUploadCCMView==true,'','none')}">
+                    <i><img width="20px" height="20px" src="{!if(blnExternalPro==true,'/GM','')}/resource/1398926632000/Upload1"/></i>
+                    <strong>{!$Label.Upload_Document}</strong>
+                </a>
+            </td>
+        </apex:outputPanel>
+    </tr>
+    <tr>
+        <apex:inputHidden value="{!DeleteIndexCCM}" id="hdnDeleteIndexCCM"/>
+        <apex:outputPanel rendered="{!if(!blnGFInternal,true,false)}">
+            <td colspan="2" style="padding-top:10px;border:0px;">
+                <table class="table table-striped" width="100%" cellspacing="0" cellpadding="0" border="0">
+                    <apex:variable value="{!0}" var="Count"/>                                                
+                    <tr>                                                        
+                        <th style="width:20%">
+                           <apex:outputText value="{!$Label.File_Name}" /> <!--- File Name--->
+                       </th>
+                        <th style="width:15%">
+                             <apex:outputText value="{!$Label.Description}" />
+                        </th>
+                        <th style="width:15%">
+                            <apex:outputText value="{!$Label.Type}" />
+                        </th>
+                        <th style="width:15%">
+                             <apex:outputText value="{!$Label.Language}" />
+                        </th>
+                        <th style="width:15%">
+                             <apex:outputText value="{!$Label.Created_Date}"/> <!--Created Date--->
+                         </th>
+                        <th style="width:10%">
+                             <apex:outputText value="{!$Label.Created_By}"/> 
+                        </th>
+                        
+                        <th style="width:10%">
+                            
+                        </th>                                                    
+                    </tr>
+                    <apex:repeat id="rptCCM1" value="{!lstWrpDocumentUploadCCM}" var="wrpDocUp">                                                  
+                        <tr> <!-- tr style="display:{!if(wrpDocUp.objDocumentUpload.TGF_Internal__c == true,'','none')}"-->
+                             <td style="width:20%">
+                                <apex:outputLink target="_Blank" value="/{!wrpDocUp.objFeedItem.RelatedRecordId}?fa=nv" style="text-decoration:underline;" rendered="{!blnDownloadLinkGF}">
+                                    {!wrpDocUp.objFeedItem.ContentFileName}
+                                </apex:outputLink>
+                                <apex:outputText value="{!wrpDocUp.objFeedItem.ContentFileName}" rendered="{!!blnDownloadLinkGF}" id="docName"/> 
+                            </td>
+                            <td style="width:15%">
+                                <apex:outputField value="{!wrpDocUp.objFeedItem.body}" id="docBody"/>
+                            </td>
+                            <td style="width:15%">
+                                <apex:outputField value="{!wrpDocUp.objDocumentUpload.Type__c}"/>
+                            </td>
+                            <td style="width:15%">
+                                <apex:outputField value="{!wrpDocUp.objDocumentUpload.Language__c}"/>
+                            </td>
+                            <td style="width:15%">
+                                <apex:outputField value="{!wrpDocUp.objFeedItem.CreatedDate}"/>
+                            </td>
+                            <td style="width:10%">
+                                <apex:outputField value="{!wrpDocUp.objFeedItem.CreatedBy.Name}"/>
+                            </td>
+                            
+                            <td style="width:10%">
+                                <apex:commandLink styleClass="btnStyle TGFbtn-mini TGFbtn-danger" onclick="return openDeletePopup('{!$Component.tstpopupCCM1}')" style="display:{!IF((wrpDocUp.objDocumentUpload.Type__c != 'Integrated View') && blnDeleteCCMDoc,'','none')}">
+                                   <i class="icon-trash icon-white">
+                                   </i> <strong>{!$Label.Delete}</strong>
+                                </apex:commandLink>
+                                <apex:outputPanel id="tstpopupCCM1" style="display:none;">
+                                    <apex:outputPanel id="popupBackgroundCCM1" styleClass="popupBackground"/>
+                                    <apex:outputPanel id="custPopupCCM1" styleClass="custPopupDelete">
+                                        <table width="100%" cellspacing="0" cellpadding="0" border="0">
+                                            <tr>
+                                                <td colspan="3" align="center" style="background-color: #EDEDED;border: 0px;text-align: center;">
+                                                    <apex:outputtext style="color:#6590c4; font-size: 13.9pt;font-weight: bold;" value="{!$Label.Are_you_sure}"/>
+                                                </td>
+                                            </tr>                                                                        
+                                            <tr>
+                                                <td colspan="3" align="center" style="background-color: #EDEDED;border: 0px;text-align: center;">
+                                                    <apex:outputtext style="color:#6590c4; font-size: 13.9pt;font-weight: bold;" value="{!$Label.File_Deletion_Warning}"/>
+                                                </td>
+                                            </tr>
+                                            <tr>                                                                            
+                                                <td width="47%" align="right" style="background-color: #EDEDED;border: 0px;text-align: right;">
+                                                    <apex:commandButton styleClass="popupButtonYes" value="{!$Label.Yes}" action="{!DeleteFileCCM}" onclick="DeleteIndex('{!Count}','{!$Component.hdnDeleteIndexCCM}');"/>
+                                                </td>
+                                                <td width="6%" style="background-color: #EDEDED;border: 0px;"></td>
+                                                <td width="47%" align="left" style="background-color: #EDEDED;border: 0px;text-align: left;">
+                                                    <apex:commandButton styleClass="popupButtonCancel" value="{!$Label.Cancel}" onclick="return closeDeletePopup('{!$Component.tstpopupCCM1}')"/>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </apex:outputPanel>
+                                </apex:outputPanel>
+                                <apex:variable var="Count" value="{!Count+1}"/>
+                            </td>
+                        </tr>
+                    </apex:repeat>
+                    <tr>
+                        <td colspan="7" align="center" style="text-align: center;">
+                            <apex:outputLabel id="olNotFoundCCM1" style="border:1px solid grey;" rendered="{!lstWrpDocumentUploadCCM.size == 0}" value="{!$Label.No_Documents_Uploaded}"></apex:outputLabel>    
+                        </td>
+                    </tr> 
+                </table>
+            </td> 
+         </apex:outputPanel>                                       
+    </tr> 
+</table>
+
+ <apex:outputPanel id="tstPopup2" style="display:none;">
+    <apex:outputPanel id="popupBackground2" styleClass="popupBackground"/>
+    <apex:outputPanel id="custPopup2" styleClass="custPopup">
+        <table width="100%" cellspacing="0" cellpadding="0" border="0" >
+            <tr>
+                <td align="left">
+                   <apex:outputLabel id="olType" value="{!$Label.Select_Type}:"></apex:outputLabel>
+                </td>
+                <td>
+                    <apex:inputField style="display:none;" id="ifArea" value="{!objDocumentUpload.Process_Area__c}" />
+                    <apex:inputField id="ifType" value="{!objDocumentUpload.Type__c}" />
+                </td>
+            </tr>
+            <tr>
+                <td align="left">
+                    <apex:outputLabel id="olLanguage" value="{!$Label.Select_Language}: "></apex:outputLabel>
+                </td>
+                <td>                                                                
+                    <apex:inputField id="ifLanguage" value="{!objDocumentUpload.Language__c}" />
+                    <apex:inputHidden id="ifTGFInternal" value="{!blnTGFInternal}"/>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <apex:outputlabel id="oSection" value="{!$Label.Select} {!$Label.Section}"/>                                                                
+                </td>
+                <td>
+                    <apex:inputfield id="iSection" value="{!objDocumentUpload.Section__c}"/>
+                </td>
+            </tr>
+            <tr>                                                            
+                <td colspan="2" align="left">
+                    <apex:inputFile id="ipFile" value="{!objFeedItem.ContentData}" filename="{!objFeedItem.ContentFileName}" />
+                </td>                                                            
+            </tr>
+            <tr>
+                <td style="color:#D00000;font-weight:bold;" colspan="2" align="left">
+                   {!$Label.Max_File_Size} <!--- Maximum file size is 10 MB.--->
+                 </td>
+            </tr>
+            <tr>
+                
+                <td style="height:17px;" colspan="2" align="left">
+                </td>
+            </tr>
+            <tr>
+                
+                <td style="font-weight:bold;" colspan="2" align="left">
+                    {!$Label.Description}
+                </td>
+            </tr>
+            <tr>
+                
+                <td style="font-weight:bold;" colspan="2" align="left">
+                    <apex:inputTextArea value="{!objFeedItem.body}" id="ifDescription" styleclass="countable1" style="resize:none;width:250px;height:80px;length:250px"/>
+                </td>
+            </tr>
+            <tr>
+               <td align="center" colspan="2">
+                    <br></br>                                                                
+                    <apex:commandLink styleClass="TGFbtn TGFbtn-mini TGFbtn-success" onclick="return ValidateUploadFile('{!$Component.ipFile}','{!$Component.ifType}','{!$Component.ifDescription}','{!$Component.ifTGFInternal}','{!$Component.ifTGFInternal}');">
+                        <strong>{!$Label.Upload}</strong>
+                    </apex:commandLink>&nbsp;&nbsp;
+                    <apex:commandLink styleClass="TGFbtn TGFbtn-mini TGFbtn-danger" onclick="return closePopup('{!$Component.tstPopup2}');">
+                        <strong>{!$Label.Cancel}</strong>
+                    </apex:commandLink>
+               </td>
+            </tr>  
+        </table>
+    </apex:outputPanel><!-- -->
+    <script>
+        function ValidateUploadFile(fileid,Type,Description,ifTGFInternal) {
+            var TGFInternal = document.getElementById(ifTGFInternal).value;
+            if(document.getElementById(fileid).value == ''){ 
+                alert('{!$Label.Select_File}.');
+                return false;
+            } else {
+                if(document.getElementById(Type).value == ''){
+                    alert('{!$Label.Specify_File_Type}.');
+                    return false;
+                } else {
+                    if(document.getElementById(Description).value == ''){
+                        alert('{!$Label.Specify_Description}.');
+                        return false;
+                    } else {    
+                        document.getElementById('divProcessing').style.display = '';
+                        if(TGFInternal == 'true')
+                            actuploadFile();
+                        if(TGFInternal == 'false')
+                            actuploadFileCCM();
+                        return false;
+                    }
+                }
+            }
+        }
+    </script>
+</apex:outputPanel>
+                            
+<apex:outputPanel style="display:none;">
+    <apex:pageblock title="{!$Label.Notes_Attachments}" id="attachList">
+        <apex:pageblockButtons location="top">
+           <apex:commandButton onclick="ValidateCurrencyFormat();" value="{!$Label.Upload_File}" action="{!UploadFile}" rendered="{!NOT(CONTAINS($Profile.Name,'Read-Only'))}"/>
+        </apex:pageblockButtons>
+        <apex:pageblockTable value="{!lstAttachment}" var="a" columnsWidth="70px, 400px, 200px, 200px">
+            <apex:column headerValue="" width="10%">
+                <apex:commandLink rerender="attachList" style="color:blue;"
+                    status="status" onclick="deleteRow('{!a.Id}');return false;">
+                    <i class="icon-trash icon-black" style="margin-left: 10px; {!IF(AND(!blnGFInternal,!programSplit.Agreed__c),'','display:none;')}"/>
+                </apex:commandLink>
+            </apex:column>
+            <apex:column headerValue="{!$Label.Title}" width="50%">
+                   <a href="/{!a.Id}" class="link" target="_blank" style="{!IF(blnGFInternal,'','display:none')}">{!a.Name}</a>
+                   <apex:outputLabel value="{!a.Name}" rendered="{!!blnGFInternal}"/>
+                </apex:column> 
+            <apex:column headerValue="{!$Label.Last_Modified}" width="20%"
+                value="{!a.lastModifiedDate}" />
+            <apex:column headerValue="{!$Label.Created_By}" value="{!a.CreatedById}" width="20%"/>
+        </apex:pageblockTable>
+    </apex:pageblock>
+</apex:outputPanel>
+<!--{!programSplit.Rationale_for_Proposed_Split__c}-->
+
+<script>
+    function openPopup(popupId,TGFInternalvalue,Value){
+        document.getElementById('Page:frm:ifTGFInternal').value = TGFInternalvalue;
+        if(Value == '1')
+            document.getElementById('Page:frm:custPopup2').style.marginTop='-810px';
+        if(Value == '2')
+            document.getElementById('Page:frm:custPopup2').style.marginTop='-410px';
+        if(Value == '3')
+            document.getElementById('Page:frm:custPopup2').style.marginTop='-350px'; 
+             
+        document.getElementById(popupId).style.display = '';
+        return false;
+    }
+    function closePopup(popupId){
+        document.getElementById(popupId).style.display = 'none';
+        return false;
+    }
+    function openDeletePopup(popupId){
+        document.getElementById(popupId).style.display = '';
+        return false;
+    }
+    function DeleteIndex(IndexDelete,hdnId){
+        document.getElementById(hdnId).value  = IndexDelete;
+    }
+    function RemoveComma(CostValue){
+        var ReComma = new RegExp("\\,","g");
+        var ReQuate = new RegExp("\\'","g");
+        CostValue = CostValue.replace(ReComma,"");
+        CostValue = CostValue.replace(ReQuate,"");
+        CostValue = CostValue.replace(",.",".");
+        CostValue = CostValue.replace("'.",".");
+        return CostValue;
+    }
+    function ValidateCurrencyFormatReqRevSplit() {
+        var RevReqComments = document.getElementById('spanReqRevSplit').innerHTML;
+        var spanReqRevSplitRational = document.getElementById('spanReqRevSplitRational').innerHTML;
+        //Commented for Program Split User Story
+        if(RevReqComments == 'false') {
+            alert('{!$Label.Revision_Request_Comments}');
+            //return false;
+        } 
+        else
+        if(spanReqRevSplitRational == '') {
+            alert('{!$Label.Revision_Request_Comments}');
+            return false;
+        }
+
+            
+        var e = document.getElementsByTagName('input');
+        for(var i=0;i<e.length;i++){
+            var txtBox = e[i];
+            if(txtBox.type == 'text'){
+                if(txtBox.value != null && txtBox.value!=''){
+                    var RemoveCommaValue = RemoveComma(txtBox.value);
+                    txtBox.value = RemoveCommaValue;
+                }
+            }
+        }
+        return true;
+    }
+    function ValidateCurrencyFormat(){
+        var e = document.getElementsByTagName('input');
+        for(var i=0;i<e.length;i++){
+            var txtBox = e[i];
+            if(txtBox.type == 'text'){
+                if(txtBox.value != null && txtBox.value!=''){
+                    var RemoveCommaValue = RemoveComma(txtBox.value);
+                    txtBox.value = RemoveCommaValue;
+                }
+            }
+        }
+    }
+    function addCommas(nStr){
+        nStr = Math.round(nStr*100)/100;
+        nStr += '';
+        x = nStr.split('.');
+        x1 = x[0];
+        x2 = x.length > 1 ? '.' + x[1] : '';
+        var rgx = /(\d+)(\d{3})/;
+        while (rgx.test(x1)) {
+            x1 = x1.replace(rgx, '$1' + ',' + '$2');
+        }
+        return x1 + x2;
+    }
+    
+    function RetriveTotalPropSplit(){
+        var ReQuate = new RegExp("\\'","g");
+        var ReComma = new RegExp("\\,","g");
+        
+        var size={!conceptNotes.size};
+        var TotalPropSplit = 0;
+        
+        for(var i=0;i<size;i++){
+            var objinputOPS = document.getElementById("Page:frm:rptCN:"+i+":inputOPS");
+            var RemoveCommaValue = 0;
+            if(objinputOPS != null && objinputOPS.value!=''){
+                RemoveCommaValue = RemoveComma(objinputOPS.value);
+            }
+            if(objinputOPS != null && objinputOPS.value!='' && isNaN(RemoveCommaValue)==false){
+                TotalPropSplit += parseFloat(RemoveCommaValue);  
+                //document.getElementById("Page:frm:totalOPS").innerHTML=TotalPropSplit;
+            }
+        }
+        
+        if(TotalPropSplit > 0){
+            document.getElementById("Page:frm:inHTotalOPS").value = TotalPropSplit; 
+            document.getElementById("Page:frm:totalOPS").innerHTML=addCommas(TotalPropSplit); 
+        }else{
+            document.getElementById("Page:frm:inHTotalOPS").value ='';
+            document.getElementById("Page:frm:totalOPS").innerHTML='';
+        }
+        var Total = document.getElementById('Page:frm:totalOPS').innerHTML;
+        if(Total != null) {
+            Total = Total.replace(ReComma,"");
+        } 
+        for(var i=0;i<size;i++){  
+            var valueOPS = document.getElementById("Page:frm:rptCN:"+i+":inputOPS").value;
+            if(valueOPS != null && valueOPS.value!=''){
+                valueOPS = valueOPS.replace(ReQuate,"");
+            }
+            if(Total != 0) {
+                if(valueOPS != null && valueOPS.value!='' && isNaN(valueOPS)==false){
+                    var getvalue = parseFloat((valueOPS/Total)*100);
+                    if(getvalue != null)
+                        getvalue = getvalue.toFixed(1) + ' %';
+                    document.getElementById("Page:frm:rptCN:"+i+":opOPS").innerHTML = getvalue;
+                }
+            }
+        }
+    }
+   
+    function RetriveTotalRevPropSplit(){
+        var ReQuate = new RegExp("\\'","g");
+        var ReComma = new RegExp("\\,","g");
+        
+        var size={!conceptNotes.size};
+        var TotalRevPropSplit = 0;
+        //alert('intTotalAllocation:'+{!intTotalAllocation});
+        for(var i=0;i<size;i++){
+            var objinputRPS = document.getElementById("Page:frm:rptCN:"+i+":inputRPS");
+            var RemoveCommaValue = 0;
+            if(objinputRPS != null && objinputRPS.value != ''){
+                RemoveCommaValue = RemoveComma(objinputRPS.value);
+            }
+            
+            if(objinputRPS != null && objinputRPS.value!='' && isNaN(RemoveCommaValue)==false){
+                TotalRevPropSplit += parseFloat(RemoveCommaValue);
+            }
+        }
+        
+        if(TotalRevPropSplit > 0){
+            document.getElementById("Page:frm:totalRPS").innerHTML=addCommas(TotalRevPropSplit) ; 
+        }else{
+            document.getElementById("Page:frm:totalRPS").innerHTML='';
+        }
+        var Total = document.getElementById('Page:frm:totalRPS').innerHTML;
+        if(Total != null) {
+            Total = Total.replace(ReComma,"");
+        }
+        for(var i=0;i<size;i++){
+            var valueRPS = document.getElementById('Page:frm:rptCN:'+i+':inputRPS').value;    
+            if(valueRPS != null && valueRPS.value!=''){
+                valueRPS = valueRPS.replace(ReQuate,"");
+            }
+            if(Total!= 0) {
+                if(valueRPS != null && valueRPS.value!='' && isNaN(valueRPS)==false){
+                    var getvalue = parseFloat((valueRPS/Total)*100);
+                    if(getvalue != null)
+                        getvalue = getvalue.toFixed(1) + ' %';
+                    document.getElementById("Page:frm:rptCN:"+i+":opRPS").innerHTML = getvalue;
+                }
+            }
+        }
+    }
+    
+    function RetriveGFSignOff(){        
+       var size={!conceptNotes.size};
+        var GFSignOff = 'Yes';
+        for(var i=0;i<size;i++){
+            
+            var objinpSignCheck = document.getElementById("Page:frm:rptCN:"+i+":inpSignCheck");
+            if(objinpSignCheck!=null && objinpSignCheck.checked == false ){
+                GFSignOff = '-';  
+            } 
+        }
+        document.getElementById("Page:frm:totalGFsignoff").innerHTML = GFSignOff ;
+    }
+
+    function RetriveGFSignOffRMHoD(){
+         var size={!conceptNotes.size};
+        var GFSignOff = 'Yes';
+        for(var i=0;i<size;i++){
+            
+            var objinpSignCheck = document.getElementById("Page:frm:rptCN:"+i+":inpSignCheckRMHoD");
+            if(objinpSignCheck!=null && objinpSignCheck.checked == false ){
+                GFSignOff = '-';  
+            } 
+        }
+        document.getElementById("Page:frm:totalGFsignoffRMHoD").innerHTML = GFSignOff ;
+    }
+    function RetriveGFSignOffTPA(){
+          var size={!conceptNotes.size};
+        var GFSignOff = 'Yes';
+        for(var i=0;i<size;i++){
+            
+            var objinpSignCheck = document.getElementById("Page:frm:rptCN:"+i+":inpSignCheckTPA");
+            if(objinpSignCheck!=null && objinpSignCheck.checked == false ){
+                GFSignOff = '-';  
+            } 
+        }
+        document.getElementById("Page:frm:totalGFsignoffTPA").innerHTML = GFSignOff ;
+    }
+    function onMouseOverHelpTextShow(PopupPanelId,HelpTextValue){
+        if(HelpTextValue.innerHTML != ''){
+            document.getElementById(PopupPanelId).style.display = ''; 
+        }
+    }
+    function onMouseOutHelpTextHide(PopupPanelId){        
+      document.getElementById(PopupPanelId).style.display = 'none';        
+    }  
+    
+    function SubmitSignoffConfirmFPM(){
+        var iFrame = '';
+        //iFrame = document.getElementById('cke_Page:frm:GFComments:textAreaDelegate_Global_Fund_Internal_Review_Comments__c');
+        //var oDoc = iFrame.contentDocument;
+        //var strText = oDoc.body.innerHTML;
+        var cke_editor_instance_GFCommentsRO =  $("textarea[id*='GFComments']").attr("id");
+        //var strText = document.getElementById('Page:frm:GFCommentsROPage:frm:GFCommentsRO_00Ng0000000jzhQ_div').innerHTML;
+        var strText = document.getElementById(cke_editor_instance_GFCommentsRO).value;
+        var len;
+        var strc = "<br>";
+        while(strText.indexOf(strc)!=-1){
+            strText = strText.replace('<br>','');
+        }
+        strText = strText.replace(/&nbsp[;]/g,'');
+        strText = strText.replace(/<[^>]+>/g,' ');
+        if(strText.trim() != '') {
+            var conf = confirm('{!$Label.Program_Split_Sign_Off_Confirmation}');
+            if(conf == true){           
+                actSubmitSignoffFPM();
+                return false;
+            }else{
+                return false;
+            }
+        } else {
+            alert('{!$Label.GF_Comments_Blank}');
+            return false;
+        }
+    }
+    function SubmitSignoffConfirmRM_HoD(){
+        var iFrame = '';
+        //iFrame = document.getElementById('cke_Page:frm:GFComments:textAreaDelegate_Global_Fund_Internal_Review_Comments__c');
+        //var oDoc = iFrame.contentDocument;
+        //var strText = oDoc.body.innerHTML;
+        var cke_editor_instance_GFCommentsRO =  $("textarea[id*='GFComments']").attr("id");
+        //var strText = document.getElementById('Page:frm:GFCommentsROPage:frm:GFCommentsRO_00Ng0000000jzhQ_div').innerHTML;
+        var strText = document.getElementById(cke_editor_instance_GFCommentsRO).value;
+        var len;
+        var strc = "<br>";
+        while(strText.indexOf(strc)!=-1){
+            strText = strText.replace('<br>','');
+        }
+        strText = strText.replace(/&nbsp[;]/g,'');
+        strText = strText.replace(/<[^>]+>/g,' ');
+        if(strText.trim() != '') {
+            var conf = confirm('{!$Label.Program_Split_Sign_Off_Confirmation}');
+            if(conf == true){           
+                actSubmitSignoffRM_HoD();
+                return false;
+            }else{
+                return false;
+            }
+        } else {
+            alert('{!$Label.GF_Comments_Blank}');
+            return false;
+        }
+    }
+    function SubmitSignoffConfirmTAP(){
+        var iFrame = '';
+        //iFrame = document.getElementById('cke_Page:frm:GFComments:textAreaDelegate_Global_Fund_Internal_Review_Comments__c');
+        //var oDoc = iFrame.contentDocument;
+        //var strText = oDoc.body.innerHTML;
+        var cke_editor_instance_GFCommentsRO =  $("textarea[id*='GFComments']").attr("id");
+        //var strText = document.getElementById('Page:frm:GFCommentsROPage:frm:GFCommentsRO_00Ng0000000jzhQ_div').innerHTML;
+        var strText = document.getElementById(cke_editor_instance_GFCommentsRO).value;
+        var len;
+        var strc = "<br>";
+        while(strText.indexOf(strc)!=-1){
+            strText = strText.replace('<br>','');
+        }
+        strText = strText.replace(/&nbsp[;]/g,'');
+        strText = strText.replace(/<[^>]+>/g,' ');
+        if(strText.trim() != '') {
+            var conf = confirm('{!$Label.Program_Split_Sign_Off_Confirmation}');
+            if(conf == true){           
+                actSubmitSignoffTAP();
+                return false;
+            }else{
+                return false;
+            }
+        } else {
+            alert('{!$Label.GF_Comments_Blank}');
+            return false;
+        }
+    }
+    
+    function SubmitSign(){  
+        var lstExternalDocs = '{!lstWrpDocumentUploadCCM.size}';
+        if(lstExternalDocs > 0 ) {
+            var getLanguage = '{!strLanguage}';
+            var iFrame = '';
+            var iFrameR = '';
+            var getValue = '';
+            var getValueR = '';
+            if(getLanguage == 'FRENCH') {
+                var cke_editor_instance_inpRationalF =  $("textarea[id*='inpRationalF']").attr("id");
+                alert('Frn'+cke_editor_instance_inpRationalF)
+                //getValue = document.getElementById('Page:frm:opRationalFPage:frm:opRationalF_00Ng0000000kVy4_div').innerHTML;
+                getValue  = document.getElementById(cke_editor_instance_inpRationalF).value;
+            } else if(getLanguage == 'RUSSIAN'){
+                var cke_editor_instance_inpRationalR =  $("textarea[id*='inpRationalR']").attr("id");
+                                alert('Rus'+cke_editor_instance_inpRationalR)
+                //getValue = document.getElementById('Page:frm:opRationalRPage:frm:opRationalR_00Ng0000000kVyE_div').innerHTML;
+                getValue  = document.getElementById(cke_editor_instance_inpRationalR).value;
+                //iFrame = document.getElementById('cke_Page:frm:inpRationalR:textAreaDelegate_Rationale_for_Proposed_Split_Russian__c_frame');
+            } else if(getLanguage == 'SPANISH') {
+                var cke_editor_instance_inpRationalS =  $("textarea[id*='inpRationalS']").attr("id");
+                //getValue = document.getElementById('Page:frm:opRationalSPage:frm:opRationalS_00Ng0000000kVy9_div').innerHTML;
+                getValue  = document.getElementById(cke_editor_instance_inpRationalS).value;
+                //iFrame = document.getElementById('cke_Page:frm:inpRationalS:textAreaDelegate_Rationale_for_Proposed_Split_Spanish__c_frame');
+            } else {
+                //getValue = document.getElementById('Page:frm:opRationalPage:frm:opRational_00Ng0000000jtFa_div').innerHTML;
+                var cke_editor_instance_inpRational =  $("textarea[id*='inpRational']").attr("id");
+                //var strText = document.getElementById('Page:frm:GFCommentsROPage:frm:GFCommentsRO_00Ng0000000jzhQ_div').innerHTML;
+                getValue  = document.getElementById(cke_editor_instance_inpRational).value;
+                //iFrame = document.getElementById('cke_Page:frm:inpRational:textAreaDelegate_Rationale_for_Proposed_Split__c_frame');
+            }
+            
+            //var oDoc = iFrame.contentDocument;
+            
+            var len ;
+            //var strText = oDoc.body.innerHTML;
+            var strText = getValue ;
+            var strc = "<br>";
+            while(strText.indexOf(strc)!=-1){
+                strText = strText.replace('<br>','');
+            }
+            strText = strText.replace(/&nbsp[;]/g,'');
+            strText = strText.replace(/<[^>]+>/g,' ');
+            
+            
+            len = strText.length;
+            var varTotalallocation = {!intTotalallocation};
+            varTotalallocation = Math.round(varTotalallocation);
+            
+            var OPSsubmitted = '{!programSplit.OPS_Submitted__c}';
+            var RPSsubmitted = '{!programSplit.RPS_Submitted__c}';
+            
+            var totalOPS = RemoveComma(document.getElementById('Page:frm:totalOPS').innerHTML);
+            var totalRPS = RemoveComma(document.getElementById('Page:frm:totalRPS').innerHTML);
+            if(OPSsubmitted == 'false'){
+                if(strText.trim() != '') {
+                    if( totalOPS == varTotalallocation ){
+                        ValidateCurrencyFormat();
+                        actSubmitProposedSplit();
+                    }else if(totalOPS != varTotalallocation){ 
+                        alert('{!$Label.Program_Split_Proposed_Must_Equal_Allocation}');
+                        return false;
+                    }else if(totalOPS < varTotalallocation){
+                        if(len == 0){
+                            alert('{!$Label.Program_Split_Split_Below_Allocation}');
+                            return false;
+                        }else {  
+                            ValidateCurrencyFormat();  
+                            actSubmitProposedSplit();
+                        } 
+                    } 
+                } else {
+                    alert('{!$Label.Rational_Proposed_Blank}');
+                    return false; 
+                } 
+            }        
+            else if(RPSsubmitted == 'false'){
+                if(getLanguage == 'FRENCH') {
+                //var cke_editor_instance_inpRevisedF =  $("textarea[id*='inpRevisedF']").attr("id");
+                var cke_editor_instance_inpRevisedF =  $("textarea[id*='inpRevisedProfrn']").attr("id");
+                    //getValueR = document.getElementById('Page:frm:opRevisedFPage:frm:opRevisedF_00Ng0000000l5b1_div').innerHTML;
+                    getValueR  = document.getElementById(cke_editor_instance_inpRevisedF).value;
+                    //iFrameR = document.getElementById('Page:frm:inpRevisedF:textAreaDelegate_Rationale_for_Revised_Split_French__c_frame');
+                } else if(getLanguage == 'RUSSIAN'){
+                    //var cke_editor_instance_inpRevisedR =  $("textarea[id*='inpRevisedR']").attr("id");
+                    var cke_editor_instance_inpRevisedR =  $("textarea[id*='inpRevisedProRus']").attr("id");
+                    //getValueR = document.getElementById('Page:frm:opRevisedRPage:frm:opRevisedR_00Ng0000000l5b6_div').innerHTML;
+                    getValueR  = document.getElementById(cke_editor_instance_inpRevisedR).value;
+                    //iFrameR = document.getElementById('Page:frm:inpRevisedR:textAreaDelegate_Rationale_for_Revised_Split_Russian__c_frame');
+                } else if(getLanguage == 'SPANISH') {
+                //var cke_editor_instance_inpRevisedS =  $("textarea[id*='inpRevisedS']").attr("id");
+                var cke_editor_instance_inpRevisedS =  $("textarea[id*='inpRevisedProspn']").attr("id");
+                    //getValueR = document.getElementById('Page:frm:opRevisedSPage:frm:opRevisedS_00Ng0000000l5bB_div').innerHTML;
+                    getValueR  = document.getElementById(cke_editor_instance_inpRevisedS).value;
+                    //iFrameR = document.getElementById('Page:frm:inpRevisedS:textAreaDelegate_Rationale_for_Revised_Split_Spanish__c_frame');
+                } else {
+                //var cke_editor_instance_inpRevised =  $("textarea[id*='inpRevised']").attr("id");
+                var cke_editor_instance_inpRevised =  $("textarea[id*='inpRevisedPro']").attr("id");
+                    //getValueR = document.getElementById('Page:frm:opRevisedPage:frm:opRevised_00Ng0000000l5aw_div').innerHTML;
+                    getValueR  = document.getElementById(cke_editor_instance_inpRevised).value;
+                    //iFrameR = document.getElementById('Page:frm:inpRevised:textAreaDelegate_Rationale_for_Revised_Split__c_frame');
+                }
+                //var oDocR = iFrameR.contentDocument;
+                //var strTextR = oDocR.body.innerHTML;
+                var strTextR = getValueR ;
+                var strc = "<br>";
+                while(strTextR.indexOf(strc)!=-1){
+                    strTextR = strTextR.replace('<br>','');
+                }
+                strTextR = strTextR.replace(/&nbsp[;]/g,'');
+                strTextR = strTextR.replace(/<[^>]+>/g,' '); 
+                if(strTextR.trim() != '') {
+                   if(totalRPS  == varTotalallocation){
+                       ValidateCurrencyFormat();
+                       actSubmitProposedSplit();
+                   } else if( totalRPS  != varTotalallocation ){
+                        alert('{!$Label.Program_Split_Proposed_Must_Equal_Allocation}');
+                        return false;
+                    
+                    }else if(totalRPS < varTotalallocation){
+                        if(len == 0 ){
+                            alert('{!$Label.Program_Split_Split_Below_Allocation}');
+                            return false;
+                        }else {
+                            ValidateCurrencyFormat();
+                            actSubmitProposedSplit();
+                        }
+                    }
+                } else {
+                    alert('{!$Label.Rational_Revised_Blank}');
+                    return false;
+                }                 
+            } 
+        } else {
+            alert('{!$Label.External_Documents_List}');
+            return false;
+        } 
+        
+        return false;  
+    }
+    
+    function switchMenu(obj,obj1,obj2,val) 
+    {
+        //document.getElementById(hdn).value = val; 
+        var AllTr = document.getElementsByTagName("tr");
+        for(var i=0;i<AllTr.length;i++){
+            //alert(AllTr[i].id);
+            if(AllTr[i].id == obj){
+                if ( AllTr[i].style.display != 'none' ) {
+                    AllTr[i].style.display = 'none';
+                }
+                else {
+                    AllTr[i].style.display = '';
+                }
+            }
+        }
+        
+        var e2 = document.getElementById(obj1);                                       
+        if ( e2.style.display != 'none' ) {
+        e2.style.display = 'none';
+        }
+        else {
+        e2.style.display = '';
+        }
+         var e3 = document.getElementById(obj2);                                       
+        if ( e2.style.display != 'none' ) {
+        e3.style.display = 'none';
+        }
+        else {
+        e3.style.display = '';
+        }
+    }  
+</script>
+<!-- <script>
+    var nodes = document.getElementsByTagName('input');
+    for(var i = 0; i < nodes.length; i++)
+    {
+        if(nodes[i].type == "text" && nodes[i].id != 'phSearchInput' && nodes[i].id != 'Page:frm:iSection' && nodes[i].id != 'Page:frm:ifDescription'){
+            //nodes[i].disabled = {!blnReadOnly};
+            nodes[i].disabled = {!blnGFInternal};
+        }
+    }
+    var nodesTextArea = document.getElementsByTagName('textarea');
+    for(var i = 0; i < nodesTextArea.length; i++)
+    {            
+        nodesTextArea[i].disabled = {!blnGFInternal};            
+    }
+    var nodesSelect = document.getElementsByTagName('select');
+    for(var i = 0; i < nodesSelect.length; i++)
+    {            
+        if(nodes[i].id != 'Page:frm:ifLanguage' && nodes[i].id != 'Page:frm:ifType') {
+            nodesSelect[i].disabled = {!!blnGFInternal};            
+        }
+    }
+</script> -->     
+</apex:form>
+
+</apex:outputPanel>
+<apex:outputPanel rendered="{!!blnDisplay}">
+    <h3>
+     {!$Label.Program_Split}
+    </h3>
+    <br/><br/>
+    {!$Label.Program_Split_Not_Exist}
+    <br/><br/>
+</apex:outputPanel>
+  
+</apex:page>

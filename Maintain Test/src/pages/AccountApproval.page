@@ -1,0 +1,351 @@
+<apex:page controller="AccountApprovalController" sidebar="false" showHeader="false" tabStyle="Account">
+
+<style>
+    .bPageBlock .pbHeader
+        {
+            background-color:#0033FF;
+        }
+    .bPageBlock .pbBody
+        {
+            background-color:#F8F8F8;
+        }
+
+    .middle{
+    vertical-align:left;
+    background-color:#F8F8F8;
+    color:black;
+    }
+    body .pbBody table.list tr.headerRow td, body .pbBody table.list tr.headerRow th {
+            background: #007fcc;
+        }
+  .grant-dialog {
+  
+    }
+    
+    .ui-widget.success-dialog {
+    font-family: Verdana,Arial,sans-serif;
+    font-size: 1.0em;
+}
+
+.ui-widget-content.success-dialog {
+    background: #FFF;
+    border: 1px solid #FFF;
+    color: #222222;
+}
+
+.ui-dialog.success-dialog {
+    left: 0;
+    outline: 0 none;
+    padding: 0 !important;
+    position: absolute;
+    top: 0;
+}
+
+.ui-dialog.success-dialog .ui-dialog-content {
+    background: none repeat scroll 0 0 transparent;
+    border: 0 none;
+    overflow: auto;
+    position: relative;
+    padding: 5 !important;
+    margin: 0;
+}
+
+.ui-dialog.success-dialog .ui-widget-header {
+    background: #FFF;
+    border: 0;
+    color: #fff;
+    font-weight: normal;
+}
+.ui-widget-content.ui-dialog
+{
+   border: 4px solid #007fcc;
+}
+.ui-dialog.success-dialog .ui-dialog-titlebar {
+    padding: 0.1em .5em;
+    position: relative;
+    font-size: 1em;
+}
+</style>
+
+<script>
+function reDirectToAccount() {
+   window.opener.location.href = "/{!$CurrentPage.parameters.accId}";
+   window.top.close();
+}
+</script>
+    <apex:form id="frm">
+        <apex:sectionHeader title="Pending Approvals"/>
+        <apex:pageMessages id="pageMessages" escape="false" />
+        <apex:pageblock rendered="{!lstAccountApprovals.size == 0 && FO && !acc.Locked__c}">
+            <i>No requests pending</i>
+        </apex:pageblock>
+        <apex:pageblock rendered="{!!FO}">
+            <i>You are not authorized to approve or reject this record.</i>
+        </apex:pageblock>
+        <apex:pageblock rendered="{!lstAccountApprovals.size > 0 && FO && vendorExists && !acc.Locked__c}">
+            <apex:pageblockButtons location="bottom">
+                <apex:commandButton value="Approve" oncomplete="reDirectToAccount();" action="{!approve}"  status="status"/>
+                <apex:commandButton value="Reject" oncomplete="reDirectToAccount();" action="{!reject}" status="status"/>
+            </apex:pageblockButtons>
+        <apex:pageblockSection >
+        <!-- <apex:inputField value="{!currentApprovalRequest.Comments__c}" style="width:400px;height:150px;"/> -->
+              
+           <apex:outputField value="{!acc.Name}"/>                     
+           <apex:outputField value="{!acc.PR_Validity_Period_Start_Date__c}"/>          
+           <apex:outputField value="{!acc.Full_Legal__c}"/>            
+           <apex:outputField value="{!acc.PR_Validity_Period_End_Date__c}"/>
+           <apex:outputField value="{!acc.Legal_Abbreviation__c}"/>    
+           <apex:outputField value="{!acc.Type__c}"/>
+           <apex:outputField value="{!acc.Address_line_1__c}"/>        
+           <apex:outputField value="{!acc.Sub_Type__c}"/>
+           <apex:outputField value="{!acc.Address_line_2__c}"/>        
+           <apex:outputField value="{!acc.PR_Fiscal_Cycle__c}"/>
+           <apex:outputField value="{!acc.Address_line_3__c}"/>        
+           <apex:outputField value="{!acc.City__c}"/>                  
+           <apex:outputField value="{!acc.State_Province__c}"/>        
+           <apex:outputField value="{!acc.Zip_Postal_Code__c}"/>       
+
+           <apex:outputpanel > <br/><br/> </apex:outputpanel>
+           </apex:pageBlockSection>
+       
+           
+   <br>      <span>   <h1>PR Contacts</h1></span>
+ </br>
+ 
+     <table class="list" width="95%" style="background-color:white">
+        <tr class="headerRow ">
+           <th class="headerRow " style="color:white; width:50px;padding-left: 10px;padding-right: 10px;">
+               Primary?
+            </th>
+           
+            <th class="headerRow " style="color:white; width:270px;padding-left: 10px;padding-right: 10px;">
+                Role
+            </th>
+             
+            <th class="headerRow " style="color:white">
+                Salutation
+            </th>
+
+            <th class="headerRow " style="color:white">
+                First Name
+            </th>
+            <th class="headerRow " style="color:white">
+                Last Name
+            </th>
+            <th class="headerRow " style="color:white">
+                Title
+            </th>
+            <th class="headerRow " style="color:white">
+                Email
+            </th>
+            <th class="headerRow " style="color:white">
+                Phone
+            </th>
+        </tr>        
+         <tr class="dataCell  ">
+          <td class="dataCell  " align="center" style="padding-left: 10px;padding-right: 10px;">
+                <apex:outputField value="{!grantAgreement.Primary_Contact__c}"/>
+              </td>
+              
+            <td class="dataCell  ">
+               <apex:outputField value="{!grantAgreement.Role__c}"/>
+            </td>
+           
+            <td class="dataCell  ">
+               <apex:outputField value="{!grantAgreement.Salutation}"/>
+            </td>
+            <td class="dataCell  ">
+               <apex:outputField value="{!grantAgreement.FirstName}"/>
+            </td>
+            <td class="dataCell  ">
+                                <apex:outputField value="{!grantAgreement.LastName}" />
+                        
+            </td>
+            <td class="dataCell  ">
+               <apex:outputField value="{!grantAgreement.Title}"/>
+            </td>
+            <td class="dataCell  ">
+              <apex:outputField value="{!grantAgreement.Email}"/>
+            </td>
+            <td class="dataCell  ">
+                 <apex:outputField value="{!grantAgreement.Phone}"/>
+            </td>
+         
+         </tr>
+        <tr class="dataCell  ">
+            <td class="dataCell " align="center" style="padding-left: 10px;padding-right: 10px;">
+                <apex:outputField value="{!disbursementRequest1.Primary_Contact__c}"/>
+              </td>
+              
+            <td class="dataCell  ">
+               <apex:outputField value="{!disbursementRequest1.Role__c}"/>
+            </td>
+            
+            <td class="dataCell  ">
+               <apex:outputField value="{!disbursementRequest1.Salutation}"/>
+            </td>
+            <td class="dataCell  ">
+               <apex:outputField value="{!disbursementRequest1.FirstName}"/>
+            </td>
+            <td class="dataCell  ">
+                                <apex:outputField value="{!disbursementRequest1.LastName}"/>
+
+            </td>
+            <td class="dataCell  ">
+               <apex:outputField value="{!disbursementRequest1.Title}"/>
+            </td>
+            <td class="dataCell  ">
+              <apex:outputField value="{!disbursementRequest1.Email}"/>
+            </td>
+            <td class="dataCell  ">
+                 <apex:outputField value="{!disbursementRequest1.Phone}"/>
+            </td>
+         
+         </tr>
+         <tr class="dataCell  ">
+           
+            <td class="dataCell  "  align="center" style="padding-left: 10px;padding-right: 10px;">
+                <apex:outputField value="{!disbursementRequest2.Primary_Contact__c}"/>
+             </td>
+             
+             <td class="dataCell  ">
+               <apex:outputField value="{!disbursementRequest2.Role__c}"/>
+            </td>
+            
+            <td class="dataCell  ">
+               <apex:outputField value="{!disbursementRequest2.Salutation}"/>
+            </td>
+            <td class="dataCell  ">
+               <apex:outputField value="{!disbursementRequest2.FirstName}"/>
+            </td>
+            <td class="dataCell  ">
+
+                                <apex:outputField value="{!disbursementRequest2.LastName}" />
+            </td>
+            <td class="dataCell  ">
+               <apex:outputField value="{!disbursementRequest2.Title}"/>
+            </td>
+            <td class="dataCell  ">
+              <apex:outputField value="{!disbursementRequest2.Email}"/>
+            </td>
+            <td class="dataCell  ">
+                 <apex:outputField value="{!disbursementRequest2.Phone}"/>
+            </td>
+         
+         </tr>
+      
+        
+    </table>
+      
+      <br/>
+          <h1>CCM Contacts</h1>
+                    <br/> 
+        <span class="italic">
+    
+    </span>
+    
+     <apex:outputPanel id="ccmSection">
+    <table class="list" width="95%" style="background-color:white">
+        <tr class="headerRow ">
+            <th class="headerRow " style="color:white; width:270px;padding-left: 10px;padding-right: 10px;">
+                Role
+            </th>
+             <th class="headerRow " style="color:white; ;padding-left: 10px;padding-right: 10px;">
+               Salutation 
+            </th>
+            <th class="headerRow " style="color:white;padding-left: 10px;padding-right: 10px;">
+                Name
+            </th>
+
+            <th class="headerRow " style="color:white">
+                Title
+            </th>
+            <th class="headerRow " style="color:white">
+                Email
+            </th>
+            <th class="headerRow " style="color:white">
+                Phone
+            </th>
+
+        </tr>        
+         <tr class="dataCell  ">
+            <td class="dataCell  ">
+                        CCM Chair
+            </td>
+            <td class="dataCell  ">
+               <apex:outputField value="{!contactCCMChair.Salutation}"/>
+            </td>
+            <td class="dataCell  ">
+            <apex:outputField value="{!implementationPeriod.CCM_Chair__c}"  id="contactrole"/>
+            </td>
+
+            <td class="dataCell  ">
+               <apex:outputField value="{!contactCCMChair.Title}"/>
+            </td>
+            <td class="dataCell  ">
+                <apex:outputField value="{!contactCCMChair.Email}"/>
+            </td>
+            <td class="dataCell  ">
+                <apex:outputField value="{!contactCCMChair.Phone}"/>
+            </td>
+  
+         </tr>
+         <tr class="dataCell  ">
+            <td class="dataCell  ">
+                 CCM Civil Society Representative
+            </td>
+            <td class="dataCell  ">
+               <apex:outputField value="{!contactCCMCivilSociety.Salutation}"/>
+            </td>
+            <td class="dataCell  ">
+            <apex:outputField value="{!implementationPeriod.CCM_Civil_Society_Representative__c}"  id="contactrole1"/>
+            </td>
+
+
+            <td class="dataCell  ">
+                <apex:outputField value="{!contactCCMCivilSociety.Title}"/>
+            </td>
+            <td class="dataCell  ">
+                <apex:outputField value="{!contactCCMCivilSociety.Email}"/>
+            </td>
+            <td class="dataCell  ">
+               <apex:outputField value="{!contactCCMCivilSociety.Phone}"/>
+            </td> 
+  
+         </tr>
+      </table> 
+      </apex:outputPanel>
+           
+      <br/><br/>     
+           
+           
+
+           
+           <apex:PageBlockSection columns="1">
+        <b>Comments:</b>       
+        <apex:inputTextarea value="{!approvalComments}" style="width:878px;height:150px;"/>
+        </apex:pageblockSection>
+        </apex:pageblock>
+        
+        <apex:pageblock rendered="{!!vendorExists && !acc.Locked__c && lstAccountApprovals.size > 0 && FO}">
+            <i>You must create a Vendor before approving this record and sending it to GFS. Please click on the button marked "Create Vendor" on the top of the PR page.</i>
+        </apex:pageblock>
+        <apex:pageblock rendered="{!acc.Locked__c && FO}">
+            <i>This organization is locked and may not be edited.</i>
+        </apex:pageblock>
+
+        <apex:outputpanel >
+            <apex:actionstatus id="status">
+                <apex:facet name="start">
+                    <div class="waitingSearchDiv" id="el_loading"
+                        style="background-color: #fbfbfb; height: 100%; opacity: 0.65; width: 100%; z-index: 9000;">
+                    <div class="waitingHolder" style="top: 74.2px; width: 91px;">
+                    <img class="waitingImage" src="/img/loading.gif"
+                        title="Please Wait..." /> <span class="waitingDescription">Please
+                    Wait...</span></div>
+                    </div>
+                </apex:facet>
+            </apex:actionstatus>
+        </apex:outputpanel>
+    </apex:form>    
+</apex:page>

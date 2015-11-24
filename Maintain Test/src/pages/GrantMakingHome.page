@@ -1,0 +1,200 @@
+<apex:page id="page1" sidebar="false" standardController="Country__c" extensions="ctrlGrantMaking" tabstyle="Grant_Making_home__tab">
+    <apex:stylesheet value="{!URLFOR($Resource.GoalsJs, 'assets/css/bootstrap.css')}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.GoalsJs, 'assets/css/bootstrap-responsive.css')}"/>
+    <head>
+        <title>Grant-Making Homepage</title>
+    </head>
+    <style>
+    .pageTitleIcon {
+        background-image: url("/img/icon/custom51_100/globe32.png");
+        background-position: 0 0;
+        height: 32px;
+        width: 32px;
+    }
+    .h3 {
+        font-size:24px;
+        //line-height: 20px;
+        line-height: 24px;
+        font-weight:bold;
+    }
+     .h4 {
+        font-size:18px;
+        line-height: 1.5;
+        font-weight:bold;
+    }
+    
+    table {
+        font-size:14px;
+    }
+    td .middle{
+     vertical-align:middle;
+       }
+    td .align{
+     text-align:center;
+       }
+          
+    .countryselect{
+    font-size:16px;
+    color:black;
+    }
+    .link{
+    color:#2E7BBB;
+    text-decoration:underline;
+    }
+    
+    
+#pBlock #pbTable td {
+    max-width: 120px;
+    white-space: normal;
+}
+        </style>
+    <!--<apex:includeScript value="{!$Resource.GoalsJs/assets/js/bootstrap.js}" />-->
+    <apex:includeScript value="{URLFOR(!$Resource.GoalsJs, 'assets/js/bootstrap.js')}" />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js">
+        
+    </script>
+    <script>
+        window.onload = function() {
+            if({!blndisable})
+            document.getElementById('page1:frm:country').disabled = true;  
+            else
+             document.getElementById('page1:frm:country').disabled = false;         
+        }
+    </script>
+    <!--<script src="assets/js/bootstrap.js">
+    </script>-->
+    <apex:form id="frm">
+         
+    <div style="padding:20px">
+                 <div>
+                    <span class="h3">
+                        {!$label.Grant_Making} {!PRCountry}                      
+                    </span>
+                    <span class="pull-right">
+                        <!--TCS 04/09/2014: Added image for See Help  -->
+                        <img src="/img/func_icons/util/info16.png" style="padding-bottom:5px"/>
+                        <!--TCS 22/08/2014: Remove Profile check from href link : if(CONTAINS($Profile.Name,'PR')  || CONTAINS($Profile.Name,$label.Applicant_CM_Admin) || CONTAINS($Profile.Name,$label.Applicant_CM_Read_Write) || CONTAINS($Profile.Name,$label.Applicant_CM_Read_Only) || CONTAINS($Profile.Name,$label.LFA_GM_Admin_Portal_User)-->
+                        <a href="{!if(blnExternalPro==true,'/GM','')}/apex/GrantMakingGuidance?Id={!strGuidanceId}&lang={!strLanguage}" target="_blank" class="link h4">{!$Label.See_Help}</a>
+                        
+                    </span>
+                    <br/><br/>
+                    </div>
+                    
+                    <div id="Infopanel" class="alert alert-info">
+                    
+                        <button type="button" class="close" data-dismiss="alert" onclick="closePanel();">
+                            ×
+                        </button>
+                        <b>
+                        {!$label.GMHome_Narrative}
+                    </b>
+                    </div>
+
+                    <div>
+                    <apex:selectList size="1" value="{!CountryId}" styleclass="countryselect" id="country" disabled="false" rendered="{!!blnCountrySpecific}">
+                          <apex:selectOptions value="{!selOptCountry}" />
+                        <apex:actionSupport event="onchange" action="{!IPByCountry}" reRender="frm"/>
+                    </apex:selectList>
+                    </div>
+                    <div>
+                        {!$label.GM_Home_Text}
+                    </div>
+        </div>
+       
+
+        <div id="pBlock" style="padding:20px">
+            <table id="pbTable" class="table table-striped" width="80%" cellspacing="0" cellpadding="0" border="0">
+                <tr>
+                    <th>{!$label.Component}</th>
+                    <th style="max-width : 117px ;white-space: normal;">{!$label.IP}</th>
+                    <th style="max-width : 117px ;white-space: normal;">{!$label.Principal_Recipient_no_colon}</th>
+                     <th style="max-width : 117px ;white-space: normal;">{!$label.Approved_Budget}</th>
+                    <!--<th>High level budget GAC 1</th>-->
+                    <th style="max-width : 117px ;white-space: normal;">{!$label.GMstatus}</th>
+                    <th style="max-width : 117px ;white-space: normal;">{!$label.StartDate}</th>
+                    <th style="max-width : 117px ;white-space: normal;">{!$label.EndDate}</th> 
+                    <th style="max-width : 117px ;white-space: normal;">{!$label.GMSubmissionDate}</th>
+                    <!--<th>{!$label.Status}</th>-->
+                </tr>
+            <apex:repeat value="{!lstIP}" var="IP">
+                <tr>
+                    <!--<td width="5%">-->
+                    <td class="middle">
+                        <img src="{!if(IP.Component__c=='Tuberculosis',$Resource.TB,if(IP.Component__c=='HIV/AIDS',$Resource.HIV,if(IP.Component__c=='Malaria',$Resource.Malaria,if(IP.Component__c=='Health Systems Strengthening',$Resource.Other,if(IP.Component__c == 'HIV/TB', $Resource.HIVTB,'')))))}"/>
+                    </td>
+                    <td class="middle">
+                        <!--TCS 22/08/2014: Remove Profile check from href link : if(CONTAINS($Profile.Name,'PR')  || CONTAINS($Profile.Name,$label.Applicant_CM_Admin) || CONTAINS($Profile.Name,$label.Applicant_CM_Read_Write) || CONTAINS($Profile.Name,$label.Applicant_CM_Read_Only) || CONTAINS($Profile.Name,$label.LFA_GM_Admin_Portal_User)-->
+                        <apex:outputlink value="{!if(blnExternalPro==true,'/GM','')}/apex/grantmakingoverview?Id={!IP.Id}" styleclass="link">{!IP.Name}
+                         </apex:outputlink>
+                    </td>
+                    <td class="middle">
+                        <apex:outputField value="{!IP.Principal_Recipient__r.Name}"/>  
+                    </td>
+                    <td class="middle">
+
+            
+                        <apex:outputtext value="{!IF((NOT(ISBLANK(IP.High_level_budget_GAC_1_USD__c))&&IP.Currency_of_Grant_Agreement__c=='USD')||(NOT(ISBLANK(IP.High_level_budget_GAC_1_EUR__c))&&IP.Currency_of_Grant_Agreement__c=='EUR'),IP.Currency_of_Grant_Agreement__c,'')} {0,number,##,###,###,###}">
+                            <apex:param value="{!IF(IP.Currency_of_Grant_Agreement__c=='USD',IP.High_level_budget_GAC_1_USD__c,IP.High_level_budget_GAC_1_EUR__c)}"/>
+                        </apex:outputtext>
+                    </td>
+                   <!-- <td class="middle">
+                       
+           {!IF((NOT(ISBLANK(IP.High_level_budget_GAC_1_USD__c))&&IP.CurrencyIsoCode=='USD')||(NOT(ISBLANK(IP.High_level_budget_GAC_1_EUR__c))&&IP.CurrencyIsoCode=='EUR'),IP.CurrencyIsoCode,'')}&nbsp;
+                        <apex:outputtext value="{0,number,##,###,###,###}">
+                            <apex:param value="{!IF(IP.CurrencyIsoCode=='USD',IP.High_level_budget_GAC_1_USD__c,IP.High_level_budget_GAC_1_EUR__c)}"/>
+                        </apex:outputtext>
+                    </td>-->
+                    <td class="middle">
+                        <apex:outputField value="{!IP.Grant_Status__c}"/>
+                    </td>
+                   <td class="middle">
+                         <apex:outputText value="{0,date,dd MMMM yyyy}">
+                                                                <apex:param value="{!IP.Start_Date__c}" />
+                                                            </apex:outputText>
+                    </td>  
+                    <td class="middle">
+                        <apex:outputText value="{0,date,dd MMMM yyyy}">
+                                                                <apex:param value="{!IP.End_Date__c}" />
+                                                            </apex:outputText>
+                    </td> 
+                      
+                     <td class="middle" style="padding-left:25px;">
+                       <apex:outputText value="{0,date,dd MMMM yyyy}" rendered="{!If(isBlank(IP.Grant_Making_submission_date__c), false,true)}">
+                                <apex:param value="{!IP.Grant_Making_submission_date__c}" />
+                                </apex:outputText>
+                       <!--  <apex:outputField value="{!IP.Grant_Making_submission_date__c}" rendered="{!If(isBlank(IP.Grant_Making_submission_date__c), false,true)}"/>-->
+                        <!-- <apex:outputText value="None" rendered="{!If(isBlank(IP.Grant_Making_submission_date__c), true,false)}"/>-->
+                         <apex:outputlink value="#" styleclass="link" rendered="{!If(isBlank(IP.Grant_Making_submission_date__c), true,false)}">{!$Label.None}
+                         </apex:outputlink>
+                       <!--apex:outputText value="{!If(isBlank(IP.Grant_Making_submission_date__c),'{!$Label.Not_yet_submitted}', 'No')}"/-->
+                    </td>                      
+                </tr>
+                  
+                </apex:repeat>
+               
+                </table>
+                <table>               
+                 <tr style="display:{!if(lstIP.size = null ,'',if(lstIP.size > 0,'none',''))}">
+                     <td colspan="10">
+                         {!$Label.NoGrants}
+                    </td>
+                 </tr>
+                 <tr >
+                 <apex:outputpanel rendered="{!blndisplay}">
+                     <td colspan="10">
+                       {!$Label.message}
+                         
+                    </td>
+                    </apex:outputpanel>
+                 </tr>
+                 
+            </table>
+            <br/>
+        </div>
+        <script>
+         function closePanel(){
+                document.getElementById('Infopanel').style.display = 'none';
+            }
+        </script>
+    </apex:form>
+</apex:page>

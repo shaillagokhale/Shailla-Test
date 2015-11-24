@@ -1,0 +1,30 @@
+<apex:page standardController="IP_Detail_Information__c" extensions="ctrlDetailPageLink" showHeader="true" sidebar="false">
+    <apex:stylesheet value="{!URLFOR($Resource.GoalsJs, 'assets/css/bootstrap.css')}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.GoalsJs, 'assets/css/bootstrap-responsive.css')}"/>
+    
+    <style>
+        .TGFbtn-mini{
+            margin-top:6px;
+        }
+       label {
+            display: inherit;
+            font-weight: bold;
+        }
+    </style>
+<apex:form >
+   <div class="containerTGF">
+   <apex:commandLink id="cmdLinkSaveGoal" styleClass="TGFbtn TGFbtn-mini TGFbtn-success" action="{!if(blnExternalPro,'/GM','')}/{!IP_Detail_Information__c.id}">
+       <strong><apex:outputLabel value="{!$Label.Back_To_Detail_Budget_Framework}"/></strong>                                            
+    </apex:commandLink>
+    <br/>
+    <br/>
+    <apex:pageBlock >
+        <apex:pageblockTable value="{!ModList}" var="M">
+            <apex:column headerValue="Select Module">
+                <apex:outputLink value="/apex/GMDetailedBudget?id={!M.id}">{!M.Name}</apex:outputLink>
+            </apex:column>
+        </apex:pageblockTable>
+    </apex:pageblock>   
+   </div> 
+</apex:form>    
+</apex:page>

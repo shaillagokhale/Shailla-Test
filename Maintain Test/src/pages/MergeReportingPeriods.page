@@ -1,0 +1,150 @@
+<!-- ***********************************************************
+* Created:27-Nov-2014
+* Purpose: Provides user interface to merge short reporting periods with next/previous reporting periods.
+           Opens up as a new popup window when Merge Period list button is clicked on Performance Framework detail page.
+* CreatedBy: Rahul Kumar
+* Revision: Added z-index for spinner 1st-Dec-2014
+************************************************************ -->
+<apex:page standardController="Period__c" sidebar="false" tabstyle="Period__c" showHeader="false" extensions="ReportingPeriodMergeController" recordSetVar="periods">
+   <apex:form >
+   <style>
+          .source
+          {
+            background-color: #dad3ff!important;
+            background-image: none !important;
+            font-size:100% !important; 
+          }
+          .target
+          {
+            background-color: #E0F8FF !important;
+            background-image: none !important;
+            vertical-align:top;
+            text-align:center;
+            font-size:100% !important; 
+          }
+          .headerRow
+          {
+            background-color: #cbc6c6 !important;
+            background-image: none !important;
+            font-size:100% !important;
+            vertical-align:top;
+          }
+       #spinner{
+       		z-index:9999;
+       }
+       #popupBackground{
+            background-color:black;
+            opacity: 0.20;
+            filter: alpha(opacity = 20);
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            z-index: 9998;
+        }                  
+   </style>
+       <!-- spinner -->
+       <apex:pageBlock id="pgblk" title="Merge Reporting Periods">
+           <div id="popupBackground" style="display:none;" />
+               <div id="contentLoading" style="display:none;">
+                <div style="text-align: center;">
+                  <img id="spinner" src="/img/loading.gif" alt="Loading graphic" />
+                </div>
+              </div>
+              <!-- show success message when merge is complete -->
+            <apex:OutputPanel rendered="{!merged}">
+            <span id="countdown" class="timer"></span>
+                <script>                                       
+                            if('{!$User.ContactId}'== '')
+                            {
+                                alert('Merge successful.');
+                                window.top.opener.location.href="/{!$CurrentPage.parameters.id}";
+                                window.top.close();                                
+                            }
+                            else
+                            {
+                                var seconds = 5;
+                                function secondPassed() {
+                                    var remainingSeconds = seconds % 60;
+                                    if (remainingSeconds < 10) {
+                                        remainingSeconds = "0" + remainingSeconds; 
+                                    }
+                                    document.getElementById('countdown').innerHTML = "Window gets closed in "+remainingSeconds+" seconds.";
+                                    if (seconds == 0) {
+                                        clearInterval(countdownTimer);                           
+                                        window.top.close();                                                        
+                                    } else {
+                                        seconds--;
+                                    }
+                                }
+                                 
+                                var countdownTimer = setInterval('secondPassed()', 1000);
+                            }                                                                                                                
+                </script>
+            </apex:OutputPanel>            
+            <apex:pageBlockButtons location="top" rendered="{!!merged}">
+                <apex:commandButton onclick="MergeReportingPeriods();" value="Merge" rendered="{!if(periodwrap.size > 0,true,false)}" reRender="abc"/>
+                <apex:commandButton onclick="window.close();" value="Cancel"/>
+            </apex:pageBlockButtons>
+            <apex:actionFunction name="mergeReps" action="{!mergeRepPeriods}" status="running" reRender="pgblk"/>
+            <apex:actionStatus id="running" onstart="loading(true)" onstop="loading(false)" />
+            <apex:pagemessages escape="false" rendered="{!shwmsg}"></apex:pagemessages>
+            <apex:OutputPanel rendered="{!!merged}">
+            <apex:pageBlockTable value="{!periodwrap}" var="prd" rendered="{!if(periodwrap.size > 0,true,false)}">
+                <apex:column >
+                    <apex:facet name="header"><input type="checkbox" id="checkAllBox" onclick="checkAll(this)"/>&nbsp;Click to Select
+                    </apex:facet>
+                    <apex:inputCheckbox id="checked" value="{!prd.selected}"/>
+                </apex:column>
+                <apex:column headerClass="target" styleClass="source" style="vertical-align:top; text-align:center;" value="{!prd.shortPrd.Period_Number__c}"/>
+                <apex:column headerClass="target" styleClass="source" style="vertical-align:top; text-align:center;" value="{!prd.shortPrd.Period_Length__c}"/>
+                <apex:column headerClass="target" styleClass="source" style="vertical-align:top; text-align:center;" value="{!prd.shortPrd.Start_Date__c}"/>
+                <apex:column headerClass="target" styleClass="source" style="vertical-align:top; text-align:center;" value="{!prd.shortPrd.End_Date__c}"/>              
+                <apex:column headerClass="target" styleClass="target" style="vertical-align:top; text-align:center;" value="{!prd.targetPrd.Period_Number__c}"/>
+                <apex:column headerClass="target" styleClass="target" style="vertical-align:top; text-align:center;" value="{!prd.targetPrd.Period_Length__c}"/>
+                <apex:column headerClass="target" styleClass="target" style="vertical-align:top; text-align:center;" value="{!prd.targetPrd.Start_Date__c}"/>
+                <apex:column headerClass="target" styleClass="target" style="vertical-align:top; text-align:center;" value="{!prd.targetPrd.End_Date__c}"/> 
+            </apex:pageBlockTable>
+            </apex:OutputPanel> 
+        </apex:pageBlock>
+    </apex:form>
+    <!-- Merge confirmation script -->
+    <script>
+            function MergeReportingPeriods()
+            {
+                var cnf = confirm("{!$Label.Confirm_Reporting_Periods_Merge}");
+                if(cnf==true)
+                {
+                     mergeReps();   
+                }
+                else
+                {                    
+                } 
+            }
+            <!-- script for checking all checkboxes at once -->
+            function checkAll(cb) 
+            { 
+                var inputElem = document.getElementsByTagName("input"); 
+                    for(var i=0; i<inputElem.length; i++) 
+                    { 
+                        if(inputElem[i].id.indexOf("checked")!=-1) 
+                        inputElem[i].checked = cb.checked; 
+                    } 
+            }
+            <!-- function for displaying spinner while request is in progress -->
+            function loading(val) 
+            {
+                if (val) 
+                {
+                  document.getElementById('contentLoading').style.display = 'block'; 
+                  document.getElementById('popupBackground').style.display = 'block';  
+                }
+                else 
+                {
+                  document.getElementById('contentLoading').style.display = 'none';
+                  document.getElementById('popupBackground').style.display = 'none';
+                }
+            }        
+    </script>  
+</apex:page>

@@ -1,0 +1,89 @@
+<apex:page standardController="Module__c" extensions="extmodule" id="page">
+   <style>
+   .link{
+    color: #00FF00;
+    text-decoration:underline;
+     text-align:right;
+     float: right;
+     font-weight:bold;
+    }
+    .text{
+      color: red;
+      font-weight:bold;
+      text-align: center;
+    }
+    </style>
+    <script>
+        window.onload = function(){
+           if({!displayothername}){
+             document.getElementById("{!$Component.page.frm.pb.pbs.oplabl}").style.display = '';
+             document.getElementById("{!$Component.page.frm.pb.pbs.namesec.namelbl}").style.display = '';
+             document.getElementById("{!$Component.page.frm.pb.pbs.namesec.nameinpt}").style.display = '';
+            }
+        }
+        function otherintervention(inpcheck,intrname){
+           var chck = document.getElementById(inpcheck).checked;
+           var intr = document.getElementById(intrname).innerText;
+           console.log(intr.indexOf('Please specify'));
+           if(chck == true && (intr == 'Other' || intr.indexOf('Please specify') > -1 || intr == 'Other vector vontrol measures' || intr == 'Other interventions for adolescent and youth')){
+           console.log('Please specify true');
+            document.getElementById("{!$Component.page.frm.pb.pbs.oplabl}").style.display = '';
+            document.getElementById("{!$Component.page.frm.pb.pbs.namesec.namelbl}").style.display = '';
+            document.getElementById("{!$Component.page.frm.pb.pbs.namesec.nameinpt}").style.display = '';
+           }
+           else if(chck == false && (intr == 'Other' || intr.indexOf('Please specify') > -1 || intr == 'Other vector vontrol measures' || intr == 'Other interventions for adolescent and youth')){
+             console.log('Please specify false');
+             document.getElementById("{!$Component.page.frm.pb.pbs.oplabl}").style.display = 'none';
+             document.getElementById("{!$Component.page.frm.pb.pbs.namesec.namelbl}").style.display = 'none';
+             document.getElementById("{!$Component.page.frm.pb.pbs.namesec.nameinpt}").style.display = 'none';
+           }
+        }
+    </script>
+ <apex:form id="frm">
+       <apex:pagemessages />
+       <apex:pageblock rendered="{!display}">
+             <apex:outputtext value="{!message}"  styleclass="text"/>
+             <a href="{!if(CONTAINS($Profile.Name,'PR')||CONTAINS($Profile.Name,'LFA')||CONTAINS($Profile.Name,'CM')||CONTAINS($Profile.Name,'CCM'),'/GM','')}/{!moduleid}" class="link">
+             Back to Module
+            </a>
+       </apex:pageblock>
+        <apex:pageblock rendered="{!display1}">
+             <apex:outputtext value="{!message}"  styleclass="text"/>
+             <a href="{!if(CONTAINS($Profile.Name,'PR')||CONTAINS($Profile.Name,'LFA')||CONTAINS($Profile.Name,'CM')||CONTAINS($Profile.Name,'CCM'),'/GM','')}/{!moduleid}" class="link">
+             Back to Module
+            </a>
+       </apex:pageblock>
+       <apex:pageblock id="pb">
+            <apex:pageBlockButtons >
+                  <apex:commandButton value="Save" action="{!save}" rendered="{!IF(wlstintrvntn != NULL,true,false)}" />
+                  
+                  <apex:CommandButton value="Cancel" action="{!cancel}"/>
+            </apex:pageBlockButtons>
+             <apex:pageblockSection id="pbs" columns="1">
+                   <apex:pageBlockTable value="{!wlstintrvntn}" var="r" rendered="{!displayintrvntn}"> 
+                         <apex:column id="chckcl" headerValue="Action" >
+                         <apex:inputCheckbox id="chckb" value="{!r.selected}" onchange="otherintervention('{!$Component.chckb}','{!$Component.intrname}');"/>
+                         </apex:column>
+                         <apex:column id="intrname" headerValue="Intervention" value="{!r.catintrvntn.Name}"/>
+                   </apex:pageBlockTable>
+                   <apex:outputLabel id="oplabl" value="Please specify name for Other Intervention" style="display:none;"> </apex:outputLabel>
+                   <apex:pageblockSectionItem id="namesec">
+                         <apex:outputLabel id="namelbl" value="Grant Intervention Name" style="display:none;"></apex:outputLabel>
+                         <apex:inputText id="nameinpt" value="{!intrvntnname}"  style="display:none;"/>
+                   </apex:pageblockSectionItem> 
+                    <apex:pageblocksectionItem rendered="{!!display && !displayintrvntn}">
+                    <apex:Outputtext value="Intervention Name"/>
+                    <apex:selectlist value="{!strnintrnvntnname}" size="1">
+                             <apex:selectoptions value="{!intrname}" />
+                    </apex:selectlist>
+                  </apex:pageblocksectionItem>
+                   <apex:pageblocksectionItem rendered="{!!display1 && !displayintrvntn}">
+                    <apex:Outputtext value="Principal Recipient"/>
+                    <apex:selectlist value="{!selectpr}" size="1" multiselect="true">
+                             <apex:selectoptions value="{!lstprs}" />
+                    </apex:selectlist>
+                  </apex:pageblocksectionItem>
+             </apex:pageBlockSection>
+       </apex:pageblock>
+ </apex:form>
+</apex:page>

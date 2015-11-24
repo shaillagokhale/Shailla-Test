@@ -1,0 +1,62 @@
+<apex:page showchat="true">
+<style type="text/css">
+.classname {
+    -moz-box-shadow:inset 0px 0px 13px 0px #ffffff;
+    -webkit-box-shadow:inset 0px 0px 13px 0px #ffffff;
+    box-shadow:inset 0px 0px 13px 0px #ffffff;
+    background:-webkit-gradient( linear, left top, left bottom, color-stop(0.05, #ededed), color-stop(1, #dfdfdf) );
+    background:-moz-linear-gradient( center top, #ededed 5%, #dfdfdf 100% );
+    filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#ededed', endColorstr='#dfdfdf');
+    background-color:#ededed;
+    -moz-border-radius:12px;
+    -webkit-border-radius:12px;
+    border-radius:12px;
+    border:3px solid #1564ed;
+    display:inline-block;
+    color:#777777;
+    font-family:arial;
+    font-size:24px;
+    font-weight:bold;
+    padding:6px 24px;
+    text-decoration:none;
+    text-shadow:1px 1px 0px #ffffff;
+}.classname:hover {
+    background:-webkit-gradient( linear, left top, left bottom, color-stop(0.05, #dfdfdf), color-stop(1, #ededed) );
+    background:-moz-linear-gradient( center top, #dfdfdf 5%, #ededed 100% );
+    filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#dfdfdf', endColorstr='#ededed');
+    background-color:#dfdfdf;
+}.classname:active {
+    position:relative;
+    top:1px;
+}
+</style>
+<apex:sectionHeader title="LFA Services Portal"/>
+<br/>
+<apex:pageblock title="Demo videos">
+<table width="100%">
+  <tr>
+    <td>
+        <p><b>Components of a Work Plan</b></p>
+        <iframe width="420" height="236.25" src="//www.youtube.com/embed/YiEVJfgXlE4" frameborder="0" allowfullscreen="true"></iframe>
+    </td>
+      <td> <b><apex:outputLabel style="font-size: 14px;" value="LFA Services Portal - "></apex:outputLabel> </b>
+<b><a style="font-size: 14px;" href="https://theglobalfund.my.salesforce.com/servlet/servlet.FileDownload?file=015b0000000brKc">                                   LFA User Guide
+                            </a></b>
+   </td>
+  </tr>
+  <tr>
+      <td>
+      <p><b>Understanding the Work Plan Detail Page</b></p>
+        <iframe width="420" height="236.25" src="//www.youtube.com/embed/7rTm9dODF5k" frameborder="0" allowfullscreen="true"></iframe>
+      </td>
+  </tr>
+  <tr>
+      <td>
+      <p><b>Reviewing a Work Plan, Proposing Changes and Submitting your Work Plan</b></p>
+        <iframe width="420" height="236.25" src="//www.youtube.com/embed/-WlKs2i0jfs" frameborder="0" allowfullscreen="true"></iframe>
+      </td>
+  </tr>
+</table>
+</apex:pageblock>
+<br/>
+</apex:page>

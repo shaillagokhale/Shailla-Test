@@ -1,0 +1,47 @@
+<apex:page standardController="Implementer__c" extensions="NewImplementer_controller" action="{!saveNnewCheck}" recordSetVar="Implementers">
+<apex:pageMessages />    
+<apex:form >
+        <apex:pageBlock title="Add Recipient" id="impblock">
+         <apex:pageBlockButtons >
+            <!--<apex:commandButton action="{!Save}" value="SaveInfo"/>--><!--Commented for Deployment-->
+            <apex:commandButton action="{!SaveInfo}" value="Save"/>
+            <apex:commandButton action="{!Cancel}" value="Cancel"/>
+        </apex:pageBlockButtons>
+        <apex:pageBlockSection id="impblocksec1">
+        <!--<apex:pageBlockSectionItem id="impblocksecitem1">
+            <apex:actionRegion>-->       
+                <apex:inputField value="{!Implementer__c.Add_Implementer__c}">
+                    <apex:actionSupport event="onchange" reRender="impblocksec3"/>
+                </apex:inputField>
+                
+            <!--</apex:actionRegion>
+        </apex:pageBlockSectionItem>
+        <apex:pageBlockSectionItem/>-->
+        </apex:pageBlockSection>
+       <!-- <apex:pageBlockSection id="impblocksec2" title="Grant Information" collapsible="false">        
+            <apex:inputField value="{!Implementer__c.Grant_Implementation_Period_Formula__c}"/>
+            <apex:outputField value="{!Implementer__c.Performance_Framework__c}"/>
+        </apex:pageBlockSection>-->
+        <apex:pageBlockSection id="impblocksec3" title="Recipient Information" collapsible="false">
+            <apex:inputField value="{!Implementer__c.Implementer_Name__c}"  rendered="{!if(Implementer__c.Add_Implementer__c == 'New', true, false)}"/>
+            <!--<apex:outputField value="{!Implementer__c.Principal_Recipient__c}"/>
+            <apex:outputField value="{!Implementer__c.Country__c}" />-->
+            <!--apex:inputField value="{!Implementer__c.Account__c}" rendered="{!if(Implementer__c.Add_Implementer__c == 'Existing', true, false)}"/-->
+            <apex:pageBlockSectionItem rendered="{!if(Implementer__c.Add_Implementer__c == 'Existing', true, false)}">
+                 <apex:outputLabel value="Existing-Recipient"></apex:outputLabel>
+                 <apex:selectList size="1" value="{!strsubrecpient}">
+                       <apex:selectOptions value="{!subrecipientoptions}">
+                       </apex:selectOptions>
+                 </apex:selectList>
+            </apex:pageBlockSectionItem>
+            <apex:inputField value="{!Implementer__c.PR_Type__c}" rendered="{!if(Implementer__c.Add_Implementer__c == 'New', true, false)}"/>
+            <apex:inputField value="{!Implementer__c.Implementer_Sub_Type__c}" rendered="{!if(Implementer__c.Add_Implementer__c == 'New', true, false)}"/>
+            <apex:inputField value="{!Implementer__c.Implementer_Short_Name__c}" rendered="{!if(Implementer__c.Add_Implementer__c == 'New', true, false)}"/>          
+        </apex:pageBlockSection>
+        <div style = "display:none;" id = "hidDiv">
+              <apex:inputField value="{!Implementer__c.Principal_Recipient__c}" style="display:none;"/>
+              <apex:inputField value="{!Implementer__c.Country__c}" style="display:none;"/>        
+        </div>  
+    </apex:pageBlock>
+</apex:form>
+</apex:page>

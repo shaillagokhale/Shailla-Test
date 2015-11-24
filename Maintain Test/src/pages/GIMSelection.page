@@ -1,0 +1,917 @@
+<!--*******************************************************************************
+* VisualForce : GIMSelection
+----------------------------------------------------------------------------------
+* Purpose/Methods:
+* - Standard Controller = Module__c
+* - creates Grant_Indicator__c records where Indicator_Type__c = Process/Input Indicator
+----------------------------------------------------------------------------------
+* History:
+* - VERSION    DATE            DETAIL FEATURES/CSR/TTP
+    1.0        09/04/2013      INITIAL DEVELOPMENT   
+********************************************************************************-->
+<apex:page id="page" standardController="Module__c" extensions="GIMSelection" sidebar="false">
+<apex:stylesheet value="{!URLFOR($Resource.GoalsJs, 'assets/css/bootstrap.css')}"/>
+<apex:stylesheet value="{!URLFOR($Resource.GoalsJs, 'assets/css/bootstrap-responsive.css')}"/>
+<apex:includeScript value="{URLFOR(!$Resource.GoalsJs, 'assets/js/bootstrap.js')}" />
+<apex:includeScript value="{!$Resource.jquery142}" />
+<script src="{!URLFOR($Resource.charCounter)}" type="text/javascript"></script>
+<script type="text/javascript">
+    $(document).ready(function(){
+                
+        $('.countable1').jqEasyCounter({
+            'maxChars': 255,
+            'maxCharsWarning': 250
+        });
+        
+        $('.countable2').jqEasyCounter({
+            'maxChars': 255,
+            'maxCharsWarning': 240,
+            'msgFontSize': '12px',
+            'msgFontColor': '#000',
+            'msgFontFamily': 'Arial',
+            'msgTextAlign': 'left',
+            'msgWarningColor': '#F00',
+            'msgAppendMethod': 'insertBefore'               
+        });
+       
+});
+</script>
+<style>
+    /* To push content below navbar */
+    @media (min-width: 980px) {
+        body {
+          margin-top: 41px;
+        }
+    }
+    .calValueCell{
+        vertical-align: middle !important;
+    }
+    a.brand > a > img {
+        height:40px;
+    }
+    .sidebarMenu{
+        width : 270px;
+    }
+    div.active{
+        background-color: #D1D1D1;
+    }    
+    .indicators{
+        border: 1px solid #CCC;
+        padding: 10px;
+        margin-bottom:10px;
+    }
+    .pr_name, .tied {
+        display: inline-block;
+        margin-right: 15px;      
+    }
+    .targets{
+        display: inline-block;
+    }
+    .container, .navbar-static-top .container, .navbar-fixed-top .container, .navbar-fixed-bottom .container {
+        display: inline-block;
+        width: 100%;
+    }
+    .containerTGF
+    {
+        display: inline-block;
+        width: 100%;
+    }
+    div.active{
+        background-color: #D1D1D1;
+    }
+    .indicator{
+        border:1px solid #CCC;
+        padding:10px;
+        margin-bottom:10px;
+    }
+    .target {
+        width:50%;
+        display: inline-block;
+    }
+    .popupButtonYes{
+        background-color: #49C739 !important;
+        background-image: none !important;
+        color: white !important;
+        font-size: 12.9pt !important;
+        font-weight: bold !important;
+        height: 30px !important;;
+        width: 90px !important;;
+    }
+    .popupButtonCancel{
+        background-color: #d82516 !important;
+        background-image: none !important;
+        color: white !important;
+        font-size: 12.9pt !important;
+        font-weight: bold !important;
+        height: 30px !important;;
+        width: 90px !important;;
+    }
+    .Image{
+        cursor:pointer;
+        height:13px;
+        width:13px;
+        vertical-align:middle;
+    }
+    .custPopup{
+        background-color: #ededed;
+        border-width: 0px;
+        border-radius:10px;
+        border-style: solid;
+        z-index: 9999;
+        left: 50%;
+        margin-top:-60px;
+        padding:10px;
+        position: absolute;
+        width:300px;
+        height:130px;
+    }
+    .popupBackground{
+        background-color:black;
+        opacity: 0.50;
+        filter: alpha(opacity = 20);
+        position: fixed;
+        width: 100%;
+        height: 100%;
+        z-index: 9998;
+        top: 0;
+        left: 0;
+    }
+    .deletePopup{
+        background-color: #EDEDED !important;
+        border-top: 0px !important;
+        text-align:center !important;
+    }
+    .deletePopupCancel{
+        background-color: #EDEDED !important;
+        border-top: 0px !important;
+        text-align:left !important;
+    }
+    .h3{
+        display: inline-table;
+        font-size: 24px;
+        font-weight: bold;
+        margin-bottom: 15px;
+    }
+    .h4{
+        display: inline-table;
+        font-size: 20px;
+        font-weight: bold;
+        margin-bottom: 15px;
+    }
+    .link{
+        color:#2E7BBB !important;
+    }
+    input[type="text"]{
+        width: 60px !important;
+        margin : 1px !important;
+        padding : 0px !important;
+    }
+    .tableEdit td{
+        padding : 2px;
+    }
+    .row{
+        display: inline-flex;
+    }
+    .TGFbtn{
+        margin-bottom : 3px;
+    }
+    .indicatorSide{
+        padding-left: 10px;
+    }
+    .h5Class{
+        color: inherit !important;
+        font-family: inherit !important;
+        font-weight: bold !important;
+        line-height: 20px !important;
+        margin: 10px 0 !important;
+        text-rendering: optimizelegibility !important;
+        font-size: 14px !important;
+    }
+    .resourcetTable{
+     vertical-align:top;
+    }
+    .chatterFeedPanel{
+        height: 225px !important;
+    }
+         .custPopupChatter{
+            background-color: white;
+            border-width: 0px;
+            border-radius:10px;
+            border-style: solid;
+            /*z-index: 9999;*/
+            z-index: 51;
+             left: 24%;
+            margin-top: 5%;
+            padding:10px;
+            position: absolute;
+            width:55%;
+        }
+        .popupBackgroundChatter{
+            background-color:black;
+            opacity: 0.20;
+            filter: alpha(opacity = 20);
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            /*z-index: 9998;*/
+            z-index: 50;
+            top: 0;
+            left: 0;
+           
+        } 
+        .webkitright {
+            text-align: right;
+            white-space: nowrap;
+        };
+        .headerSearchContainer {
+            margin-top: -20px !important;
+        }    
+        .phHeaderCustomLogo .headerSearchLeftRoundedCorner {
+            margin-top: -20px !important;
+        }        
+</style>
+<script>
+  $(document).ready(function () {
+      $('label.tree-toggler').click(function () {
+          $(this).parent().children('ul.tree').toggle(300);
+      });
+      
+       if ( $.browser.webkit ) {
+        $("#phHeaderLogoImage").parents("table").find("td").eq(2).removeClass("right").addClass("webkitright");  
+       };
+  });
+</script>
+<div class="container">
+<span class="pull-right">
+                        <a href="{!if(CONTAINS($Profile.Name,'PR')||CONTAINS($Profile.Name,'LFA')||CONTAINS($Profile.Name,'CM')||CONTAINS($Profile.Name,'CCM'),'/GM','')}/apex/GrantMakingGuidance?Id={!strGuidanceId}&lang={!strLanguage}" target="_blank" class="link">{!$Label.See_Help}</a>
+                        </span>
+<div id="Infopanel" class="alert alert-info">
+    Use this page to set targets for Process and Input Indicators
+    <button type="button" class="close" data-dismiss="alert" onclick="closePanel();">
+        ×
+    </button>
+</div>
+<ul class="breadcrumb">
+    <li>
+        <a href="{!if($Profile.Name=='PR Standard Portal User','/GM','')}{!if($Profile.Name=='PR Manager Portal User','/GM','')}{!if($Profile.Name=='PR Read-Only Portal User','/GM','')}{!if($Profile.Name=='LFA GM Admin Portal User','/GM','')}{!if($Profile.Name=='LFA GM Editor Portal User','/GM','')}{!if($Profile.Name=='PR Only Portal User','/GM','')}/apex/grantmakinghome" class="link">
+            {!$Label.Grant_Making}
+        </a>
+        <span class="divider">/</span>
+    </li>
+    <li>
+        <a href="{!if($Profile.Name=='PR Standard Portal User','/GM','')}{!if($Profile.Name=='PR Manager Portal User','/GM','')}{!if($Profile.Name=='PR Read-Only Portal User','/GM','')}{!if($Profile.Name=='LFA GM Admin Portal User','/GM','')}{!if($Profile.Name=='LFA GM Editor Portal User','/GM','')}{!if($Profile.Name=='PR Only Portal User','/GM','')}/apex/grantmakinghome?id={!Module__c.Implementation_Period__r.Principal_recipient__r.country__c}" class="link">
+            {!Module__c.Implementation_Period__r.Principal_Recipient__r.country__r.Name}
+        </a>
+        <span class="divider">/</span>
+    </li>                 
+                <li>
+                    <a href="{!if($Profile.Name=='PR Standard Portal User','/GM','')}{!if($Profile.Name=='PR Manager Portal User','/GM','')}{!if($Profile.Name=='PR Read-Only Portal User','/GM','')}{!if($Profile.Name=='LFA GM Admin Portal User','/GM','')}{!if($Profile.Name=='LFA GM Editor Portal User','/GM','')}{!if($Profile.Name=='PR Only Portal User','/GM','')}/apex/grantmakingoverview?id={!Module__c.Implementation_Period__r.Id}" class="link">{!Module__c.Implementation_Period__r.Name}</a>
+                </li>
+</ul>
+<chatter:feedWithFollowers entityId="{!Module__c.id}"/>
+</div> 
+<apex:form id="frm">
+    <div class="containerTGF">
+        <br/>      
+        <table width="100%">
+            <tr>
+                <td width="20%" valign="top" align="left">
+                <c:GMSidebar RecordId="{!lstPages[0].Id}"/>
+                    <!--div class="span3 side_menu">
+                    <div class="well" style=" padding: 8px 0;">
+                        <div>
+                            <ul class="nav nav-list">
+                                <li>
+                                    <div class="tree-toggler nav-header">
+                                        <a href="{!if($Profile.Name=='PR Standard Portal User','/GM','')}{!if($Profile.Name=='PR Manager Portal User','/GM','')}{!if($Profile.Name=='PR Read-Only Portal User','/GM','')}{!if($Profile.Name=='LFA GM Admin Portal User','/GM','')}{!if($Profile.Name=='LFA GM Editor Portal User','/GM','')}{!if($Profile.Name=='PR Only Portal User','/GM','')}/apex/GrantmakingOverview?ID={!strImplementationPeriodId}" class="link">Summary</a>
+                                    </div>
+                                </li>
+                                <li class="divider">
+                                </li>
+                                <apex:variable value="{!0}" var="Count"/>
+
+                                <apex:repeat id="rptMain" value="{!lstPages}" var="P">
+                                    <li>
+                                        <div class="tree-toggler nav-header {!if(P.name=='Grant Implementaiton Measures','active','')}">
+                                            <apex:inputHidden id="CollapseStatus" value="{!blnExpandSection}" />
+                                            <apex:outputpanel id="collapseimage" style="display:{!if(blnExpandSection != true && P.Modular__c == true,'','none')};margin-right:5px" rendered="{!if(lstModules.size > 0,if(P.Modular__c == true,true,false),false)}">
+                                                <apex:image styleClass="Image" url="{!$Resource.Collepse}" onclick="switchMenu('Module{!Count}','{!$Component.Expandimage}','{!$Component.collapseimage}','{!$Component.CollapseStatus}','true')" title="Expand"/>
+                                            </apex:outputpanel>
+                                            <apex:outputpanel id="Expandimage" style="display:{!if(blnExpandSection == true && P.Modular__c == true,'','none')};margin-right:5px" rendered="{!if(lstModules.size > 0,if(P.Modular__c == true,true,false),false)}">
+                                                  <apex:image styleClass="Image" url="{!$Resource.Expand}" onclick="switchMenu('Module{!Count}','{!$Component.collapseimage}','{!$Component.Expandimage}','{!$Component.CollapseStatus}','false')" title="Collapse"/>
+                                            </apex:outputpanel>
+                                            
+                                            
+                                            <apex:outputtext value="{!P.Name}" rendered="{!P.Modular__c}"/>
+                                            <a href="{!if($Profile.Name=='PR Standard Portal User','/GM','')}{!if($Profile.Name=='PR Manager Portal User','/GM','')}{!if($Profile.Name=='PR Read-Only Portal User','/GM','')}{!if($Profile.Name=='LFA GM Admin Portal User','/GM','')}{!if($Profile.Name=='LFA GM Editor Portal User','/GM','')}{!if($Profile.Name=='PR Only Portal User','/GM','')}/apex/{!P.URL_prefix__c}?id={!P.Id}" class="link" style="display:{!if(P.Modular__c=true,'none','')}">{!P.Name} </a>
+                                        </div>                                    
+                                    </li>
+                                    <apex:variable var="ModuleCount" value="{!0}"/>
+                                    <apex:repeat id="rptModules" value="{!lstModules}" var="M">
+                                        
+                                        <li id="Module{!Count}" style="display:none;">
+                                            <div class="tree-toggler nav-header}">
+                                                <a href="{!if($Profile.Name=='PR Standard Portal User','/GM','')}{!if($Profile.Name=='PR Manager Portal User','/GM','')}{!if($Profile.Name=='PR Read-Only Portal User','/GM','')}{!if($Profile.Name=='LFA GM Admin Portal User','/GM','')}{!if($Profile.Name=='LFA GM Editor Portal User','/GM','')}{!if($Profile.Name=='PR Only Portal User','/GM','')}/apex/{!P.URL_prefix__c}?id={!M.Id}" style="display:{!if(P.Modular__c=true,'','none')};margin-left:15px;font-size:10px" class="link" title="{!P.Name} - {!M.Name}">{!M.Name}</a>
+                                            </div>
+                                        </li>
+                                        <apex:variable var="ModuleCount" value="{!ModuleCount+1}"/>
+                                    </apex:repeat> 
+                                    <li class="divider">
+                                    </li>
+                                    <apex:variable value="{!Count+1}" var="Count"/>
+                                </apex:repeat>
+                            </ul>
+                        </div>
+                    </div>
+                </div-->
+                </td>
+                <td valign="top" align="left" class="indicatorSide">              
+                    <div>
+                        <!--<a href="#" class="pull-right link" >{!strSeeHelp}</a>-->
+                        
+                          <span class="h3">
+                            {!$Label.WP_Title} - {!Module__c.Name}
+                          </span>
+                    </div>
+                    <apex:outputPanel id="indicatorPanel">
+                        <apex:variable var="CountIndicator" value="{!0}"/>                
+                        <apex:repeat id="GIM" value="{!lstGIMResult}" var="GIM">
+                            <apex:variable var="CountIndicator" value="{!CountIndicator+1}"/>
+                            <div class="indicators">
+                                <table width="100%" >
+                                    <tr>
+                                        <td colspan="2">
+                                            <h5 class="h5Class">
+                                                {!$Label.Indicator_Description}
+                                            </h5>
+                                        </td>
+                                        <td align="right">
+                                            <apex:outputPanel style="float:right;">
+                                                <apex:commandLink styleClass="TGFbtn TGFbtn-mini TGFbtn-primary" action="{!EditGIMResult}" reRender="indicatorPanel" style="display:{!if(GIM.blndisplaySave == false,'','none')};" status="Processing" rendered="{!if(CONTAINS($Profile.Name,$Label.PR_Read_Write_Edit)||CONTAINS($Profile.Name,$Label.PR_Admin)||CONTAINS($Profile.Name,$Label.FPM)||CONTAINS($Profile.Name,$Label.PSM_Officer)||CONTAINS($Profile.Name,$Label.System_Admin),true,false)}">
+                                                    <apex:param value="{!CountIndicator-1}" name="EditIndiIndex"/>
+                                                    <i class="icon-edit icon-white">
+                                                    </i> <strong>{!strEdit}</strong>
+                                                </apex:commandLink>&nbsp;
+                                                <apex:commandLink styleClass="TGFbtn TGFbtn-mini TGFbtn-danger" style="display:{!if(GIM.blndisplaySave == false,'','none')};" onclick="return OpenPopup('{!$Component.tstpopup1}');" rendered="{!if(CONTAINS($Profile.Name,$Label.PR_Read_Write_Edit)||CONTAINS($Profile.Name,$Label.PR_Admin)||CONTAINS($Profile.Name,$Label.FPM)||CONTAINS($Profile.Name,$Label.PSM_Officer)||CONTAINS($Profile.Name,$Label.System_Admin),true,false)}">
+                                                    <i class="icon-trash icon-white">
+                                                    </i> <strong>{!strDelete}</strong>
+                                                </apex:commandLink>
+                                                <apex:commandLink action="{!SaveGIMResult}" reRender="indicatorPanel" status="Processing" styleClass="TGFbtn TGFbtn-mini TGFbtn-success"  style="display:{!if(GIM.blndisplaySave == true,'','none')};width:if(strLanguage == 'FRENCH','70','40')px;" >
+                                                    <apex:param name="SaveIndiIndex" value="{!CountIndicator-1}"/>
+                                                    <strong>{!strSave}</strong>
+                                                </apex:commandLink>
+                                                <apex:commandLink styleClass="TGFbtn TGFbtn-mini TGFbtn-danger" action="{!CancelGIMResult}" reRender="indicatorPanel" style="display:{!if(GIM.blndisplaySave == true,'','none')};" status="Processing">
+                                                    <apex:param value="{!CountIndicator-1}" name="CancelIndiIndex"/>
+                                                    <strong>{!strCancel}</strong>
+                                                </apex:commandLink>
+                                            </apex:outputPanel>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="3">
+                                            <apex:outputText style="font-weight:bold;" value="{!GIM.objGIM.Indicator_Full_Name__c}" styleClass="bold" rendered="{!if(GIM.blnIndicatorDisplay == true || (GIM.blnIndicatorDisplay == false && GIM.objGIM.Indicator__c != null),true,false)}"></apex:outputText>
+                                            <apex:inputTextArea styleclass="countable1" onKeyPress="return charLimit(this)" onKeyUp="return characterCount(this)" style="height: 50px;resize: none; width: 64%;" value="{!GIM.objGIM.Indicator_Full_Name__c}" rendered="{!if(GIM.blnIndicatorDisplay == false && GIM.objGIM.Indicator__c == null,true,false)}"></apex:inputTextArea>
+                                            <br/><br/>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td width="40%">
+                                            <h5 class="h5Class">
+                                                {!strDataSource}
+                                            </h5>
+                                        </td>
+                                        <td colspan="2">
+                                             <h5 class="h5Class">
+                                               {!strIntervention}
+                                           </h5>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <apex:outputText value="{!GIM.objGIM.Data_Source__c}" styleClass="bold" rendered="{!if(GIM.blnIndicatorDisplay == true || (GIM.blnIndicatorDisplay == false && GIM.objGIM.Indicator__c != null),true,false)}"></apex:outputText>
+                                            <apex:inputField style="height: 50px;resize: none; width: 280px;" value="{!GIM.objGIM.Data_Source__c}" rendered="{!if(GIM.blnIndicatorDisplay == false && GIM.objGIM.Indicator__c == null,true,false)}"></apex:inputField>
+                                        </td>
+                                        <td colspan="2" valign="top">
+                                            <apex:outputText id="GIntervention" value="{!GIM.objGIntervention.Name}" styleClass="bold" rendered="{!if(GIM.blnIndicatorDisplay == true || (GIM.blnIndicatorDisplay == false && GIM.objGIM.Indicator__c != null),true,false)}"></apex:outputText>
+                                            <apex:selectList style="width:250px;" id="SelectCatIndicator" value="{!GIM.strIntervention}" size="1" rendered="{!if(GIM.blnIndicatorDisplay == false && GIM.objGIM.Indicator__c == null,true,false)}">
+                                                <apex:selectOptions value="{!GrantInterventionGIM}"></apex:selectOptions>
+                                                <apex:actionSupport action="{!SelectInterventionForGIM}" event="onchange" reRender="frm">
+                                                    <apex:param value="{!CountIndicator-1}" name="SaveIndiIndex"/>
+                                                </apex:actionSupport>
+                                            </apex:selectList>
+                                        </td>
+                                    </tr>
+                                </table>
+                                <br/>
+                                <apex:outputPanel id="tstpopup1" style="display:none;">
+                                    <apex:outputPanel id="popupBackground1" styleClass="popupBackground"/>
+                                    <apex:outputPanel id="custPopup1" styleClass="custPopup">
+                                        <table width="100%" cellspacing="0" cellpadding="0" border="0">
+                                            <tr><td style="height:10px;"></td></tr>
+                                            <tr>
+                                                <td colspan="3" align="center">
+                                                    <apex:outputtext style="color:#6590c4; font-size: 13.9pt;font-weight: bold;" value="{!strAreYouSure}"/>
+                                                </td>
+                                            </tr>
+                                            <tr><td style="height:6px;"></td></tr>
+                                            <tr>
+                                                <td colspan="3" align="center">
+                                                    <apex:outputtext style="color:#6590c4; font-size: 13.9pt;font-weight: bold;" value="{!strIndicatorDeleted}"/>
+                                                </td>
+                                            </tr>
+                                            <tr><td style="height:10px;"></td></tr>
+                                            <tr>
+                                                <td width="47%" align="right">
+                                                    <apex:commandButton styleClass="popupButtonYes" value="{!strYes}" action="{!DeleteGIMResult}" reRender="frm" status="Processing">
+                                                        <apex:param value="{!CountIndicator-1}" name="DeleteIndiIndex"/>
+                                                    </apex:commandButton>
+                                                </td>
+                                                <td width="6%"></td>
+                                                <td width="47%" align="left">
+                                                    <apex:commandButton styleClass="popupButtonCancel" value="{!strCancel}" onclick="return ClosePopup('{!$Component.tstpopup1}');"/>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </apex:outputPanel>
+                                </apex:outputPanel>
+                                <div class="targets">
+                                    <h5 class="h5Class">
+                                        {!strTargets}
+                                    </h5>
+                                    <table width="100%" class="table table-bordered {!if(!GIM.blnIndicatorDisplay,' tableEdit ','')}">
+                                        <thead>
+                                            <tr>
+                                                <apex:repeat value="{!lstPeriods}" var="P"> 
+                                                    <th>
+                                                        <h5 class="h5Class">{!P.Start_Date_Short__c}</h5>
+                                                    </th>
+                                                </apex:repeat>
+                                                <th>
+                                                    <h5 class="h5Class">{!strTotal}</h5>
+                                                </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <apex:variable var="Total" value="{!0}"/>
+                                                <apex:repeat id="rptrGIRNume" value="{!GIM.lstResults}" var="GIR"> 
+                                                    <td>
+                                                        <apex:variable var="Total" value="{!if(GIR.Target__c!=null,Total+GIR.Target__c,Total)}"/>
+                                                        <apex:outputText value="{!GIR.Target__c}" rendered="{!GIM.blnIndicatorDisplay}"/> 
+                                                         <!--   <apex:outputText value="{!GIM.blnIndicatorDisplay}" /> -->                                        
+                                                        <apex:inputField id="txtTvalue" value="{!GIR.Target__c}" rendered="{!!GIM.blnIndicatorDisplay}"
+                                                        onchange="calTotal('{!$Component.GIM}','{!$Component.labelTy2}')"/> 
+                                                    </td>                                    
+                                                </apex:repeat>
+                                                <td class="calValueCell">
+                                                   <apex:outputlabel id="labelTy2" style=" display: inline !important; " value="{!Total}"/>
+                                                </td>  
+                                            </tr>
+                                        </tbody> 
+                                    </table>
+                                </div>
+                                <div class="assumptions">
+                                    <h5 class="h5Class">
+                                        {!strTargetAssumptions}
+                                    </h5>
+                                    <p>
+                                        <apex:outputText value="{!GIM.strAssumptions}" rendered="{!GIM.blnIndicatorDisplay}"/>                                        
+                                        <apex:inputTextarea styleclass="countable1" onKeyPress="return charLimit(this)" onKeyUp="return characterCount(this)" style="height: 50px;resize: none; width: 70%;" value="{!GIM.strAssumptions}" rendered="{!!GIM.blnIndicatorDisplay}"/>
+                                    </p>
+                                </div>
+                                <br></br>
+                                 <h5 class="h5Class">
+                                    {!strTotalInterventionBudget}
+                                </h5>
+                                <apex:outputPanel id="pnlBudget">
+                                    <br/>
+                                    <table width="70%" class="table-bordered" cellpadding="5" style="background-color:#F0F0F0">
+                                        <thead>
+                                            <tr>
+                                                <th>
+                                                    <h5 class="h5Class">{!strYear} 1</h5>
+                                                </th>
+                                                <th>
+                                                    <h5 class="h5Class">{!strYear} 2</h5>
+                                                </th>
+                                                <th>
+                                                    <h5 class="h5Class">{!strYear} 3</h5>
+                                                </th>
+                                                <th>
+                                                    <h5 class="h5Class">{!strTotal}</h5>
+                                                </th>
+                                                <th>
+                                                    <h5 class="h5Class">{!strTotalBudgetPercent}</h5>
+                                                </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td style="border-top: 1px solid #DDDDDD;">
+                                                    <apex:outputField value="{!GIM.objGIntervention.Y1_Total__c}"/>
+                                                </td>
+                                                <td style="border-top: 1px solid #DDDDDD;">
+                                                    <apex:outputField value="{!GIM.objGIntervention.Y2_Total__c}"/>
+                                                </td>
+                                                <td style="border-top: 1px solid #DDDDDD;">
+                                                    <apex:outputField value="{!GIM.objGIntervention.Y3_Total__c}"/>
+                                                </td>
+                                                <td style="border-top: 1px solid #DDDDDD;">
+                                                    <apex:outputField value="{!GIM.objGIntervention.Total_Intervention_Budget__c}"/>
+                                                </td>
+                                             
+                                                <td style="border-top: 1px solid #DDDDDD;" width="50">
+                                                <apex:outputText value="{0, number,###,###,##0.0}">
+                                                    <apex:param value="{!if(GIM.objGIntervention.Implementation_Period__r.Total_Budget__c!=0, (GIM.objGIntervention.Total_Intervention_Budget__c / GIM.objGIntervention.Implementation_Period__r.Total_Budget__c)*100 ,'')}"/>
+                                                </apex:outputText>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </apex:outputPanel>
+                                <table width="100%">
+                                    <tr>
+                                        <td align="right">
+                                           <img style="{!if(GIM.blnHasPost,'width:25px;height:28px;','display:none;')}" src="{!$Resource.PostCount}"/>
+                                            <sup style="margin-left: -3px;margin-right:5px;color:dark-grey;padding-right:2px;display:{!if(GIM.blnHasPost,'','none')}">{!GIM.intPostCount}</sup>
+                                            <apex:commandLink styleClass="TGFbtn TGFbtn-mini TGFbtn-warning" onclick="return OpenChatterPopup('{!$Component.ChatterPopup}');" rendered="{!if(CONTAINS($Profile.Name,$Label.Finance_Officer)||CONTAINS($Profile.Name,$Label.PSM_Hub),false,true)}" > <!-- rerender="GoalsPanel" action="{!AddNewGoal}" status="Processing"> -->
+                                                <img style="{!if(GIM.blnHasPost,'width:15px;height:16px;','')}" src="{!$Resource.comment}"/>
+                                                <strong>{!strDialogue}</strong>
+                                            </apex:commandLink>
+                                            <apex:outputPanel id="ChatterPopup" style="display:none;">
+                                                <apex:outputPanel id="popupBackground" styleClass="popupBackgroundChatter"/>
+                                                <apex:outputPanel id="custPopup" styleClass="custPopupChatter">
+                                                    <table width="100%" cellspacing="0" cellpadding="0" border="0" >
+                                                        <tr>
+                                                            <td>
+                                                                <div>
+                                                                 <br/>
+                                                                    <span class="h3">
+                                                                        {!GIM.objGIM.Indicator_Full_Name__c}
+                                                                    </span>
+                                                                    <br></br>
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                           <td class="resourcetTable">
+                                                                <div id="boxscroll" class="chatterFeedPanel">
+                                                                    <apex:iframe id="ifResourceChatter" height="225px" scrolling="true" src="/apex{!if($Profile.Name=='PR Standard Portal User','/GM','')}/IndicatorChatter?IndicatorId={!GIM.objGIM.Id}" />
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                           <td align="center">
+                                                                <apex:commandLink styleClass="TGFbtn TGFbtn-mini TGFbtn-danger" onclick="return CloseChatterPopup('{!$Component.ChatterPopup}');">
+                                                                    <strong>{!strClose}</strong>
+                                                                </apex:commandLink>
+                                                           </td>
+                                                        </tr>
+                                                    </table>
+                                                </apex:outputPanel>
+                                            </apex:outputPanel>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </apex:repeat>
+                    </apex:outputPanel>
+                    <table id="tableCusStdBtn" width="100%" cellspacing="0" cellpadding="0" border="0">
+                        <tr>
+                            <td align="right">
+                                <div class="add">
+                                    <apex:commandLink styleClass="TGFbtn TGFbtn-success pull-right" onclick="return openCustomIndicator();" rendered="{!if(CONTAINS($Profile.Name,$Label.PR_Read_Write_Edit)||CONTAINS($Profile.Name,$Label.PR_Admin)||CONTAINS($Profile.Name,$Label.FPM)||CONTAINS($Profile.Name,$Label.PSM_Officer)||CONTAINS($Profile.Name,$Label.System_Admin),true, false)}">
+                                        <i class="icon-plus icon-white"></i> 
+                                        <strong>{!$Label.Add_Indicator}</strong>
+                                    </apex:commandLink>
+                                   </div>  
+                            </td>
+                        </tr>
+                    </table>
+                    <br/>                        
+                    <apex:outputPanel id="CustomIndiPanel">
+                        <div id="custIndiLabel" style="display:none;">
+                            <span class="h3">
+                                 {!$Label.Add_Indicator}
+                            </span>
+                        </div>
+                        <br/>
+                        <apex:actionFunction action="{!SaveCustomIndicator}" name="actSaveNewIndicator" reRender="frm" status="Processing" oncomplete="CancelCustIndioncomplete();"/>
+                        <div id="custIndiSec" class="indicators" style="display:none;">
+                            <table width="100%" >
+                                <tr>
+                                    <td colspan="2">
+                                        <h5 class="h5Class">
+                                            {!$Label.Indicator_Description}
+                                        </h5>
+                                    </td>
+                                    <td align="right">
+                                        <apex:outputPanel style="float:right;">
+                                            <apex:actionFunction action="{!SaveCustomIndicator}" name="afSaveCustomIndicator" reRender="frm" status="Processing">
+                                                <apex:param value="{!if(lstGIMResult != null && lstGIMResult.size > 0,lstGIMResult.size + 1,1)}" name="SaveIndex"/>
+                                            </apex:actionFunction>
+                                            <apex:commandLink onclick="return validate();" styleClass="TGFbtn TGFbtn-mini TGFbtn-success"  style="width:{!if(strLanguage == 'FRENCH','70','40')}px;" >
+                                                <strong>{!strSave}</strong>
+                                            </apex:commandLink>&nbsp;
+                                            <apex:commandLink styleClass="TGFbtn TGFbtn-mini TGFbtn-danger" onclick="return CancelCustIndi();">
+                                                <strong>{!strCancel}</strong>
+                                            </apex:commandLink>
+                                        </apex:outputPanel>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td colspan="3">
+                                        <apex:inputTextArea styleclass="countable1"  onKeyPress="return charLimit(this)" onKeyUp="return characterCount(this)" id="GIDesc" style="height: 50px;resize: none; width: 64%;" value="{!objCustomGIMResult.objGIM.Indicator_Full_Name__c}" />
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td width="40%">
+                                        <h5 class="h5Class">
+                                            {!strDataSource}
+                                        </h5>
+                                    </td>
+                                    <td colspan="2">
+                                         <h5 class="h5Class">
+                                           {!strIntervention}
+                                       </h5>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <apex:inputField style="height: 50px;resize: none; width: 280px;" value="{!objCustomGIMResult.objGIM.Data_Source__c}">
+                                        </apex:inputField>
+                                    </td>
+                                    <td colspan="2" valign="top">
+                                        <apex:selectList style="width:250px;" id="SelectCatIndicator" value="{!objCustomGIMResult.strIntervention}" size="1">
+                                            <apex:selectOptions value="{!GrantIntervention}"></apex:selectOptions>
+                                            <apex:actionSupport action="{!SelectInterventionForCustomNew}" event="onchange" reRender="pnlBudget">
+                                            </apex:actionSupport>
+                                        </apex:selectList>
+                                    </td>
+                                </tr>
+                            </table>
+                            <div class="targets">
+                                <h5 class="h5Class">
+                                    {!strTargets}
+                                </h5>
+                                <table width="100%" class="table table-bordered tableEdit ">
+                                    <thead>
+                                        <tr>
+                                            <apex:repeat value="{!lstPeriods}" var="P"> 
+                                                <th>
+                                                    <h5 class="h5Class">{!P.Start_Date_Short__c}</h5>
+                                                </th>
+                                            </apex:repeat>
+                                            <th>
+                                                <h5 class="h5Class">
+                                                    {!strTotal}
+                                                </h5>
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <apex:variable var="Total" value="{!0}"/>
+                                            
+                                            <apex:repeat id="rptrGIRNume" value="{!objCustomGIMResult.lstResults}" var="GIR"> 
+                                                <td>
+                                                    <apex:variable var="Total" value="{!Total+GIR.Target__c}"/>
+                                                    <apex:inputField id="txtTvalue" value="{!GIR.Target__c}"
+                                                    onchange="calTotal('{!$Component.frm}','{!$Component.labelTy2}')"/> 
+                                                </td>                                    
+                                            </apex:repeat>
+                                            <td class="calValueCell">
+                                               <apex:outputlabel id="labelTy2" style=" display: inline !important; " value="{!Total}"/>
+                                            </td>  
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="assumptions">
+                                <h5 class="h5Class">
+                                    {!strTargetAssumptions}
+                                </h5>
+                                <p>
+                                    <apex:inputTextarea styleclass="countable1" onKeyPress="return charLimit(this)" onKeyUp="return characterCount(this)" style="height: 50px;resize: none; width: 70%;" value="{!objCustomGIMResult.strAssumptions}"/>
+                                </p>
+                            </div>
+                            <br></br>
+                             <h5 class="h5Class">
+                                    {!strTotalInterventionBudget}
+                            </h5>
+                            
+                            <apex:outputPanel id="pnlBudget">
+                                <br/>
+                                <table width="70%" class="table-bordered" cellpadding="5" style="background-color:#F0F0F0" >
+                                    <thead>
+                                        <tr>
+                                            <th>
+                                                <h5 class="h5Class">{!strYear} 1</h5>
+                                            </th>
+                                            <th>
+                                                <h5 class="h5Class">{!strYear} 2</h5>
+                                            </th>
+                                            <th>
+                                                <h5 class="h5Class">{!strYear} 3</h5>
+                                            </th>
+                                            <th>
+                                                <h5 class="h5Class">{!strTotal}</h5>
+                                            </th>
+                                            <th>
+                                                <h5 class="h5Class">{!strTotalBudgetPercent}</h5>
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td style="border-top: 1px solid #DDDDDD;">
+                                                <apex:outputField value="{!objCustomGIMResult.objGIntervention.Y1_Total__c}"/>
+                                            </td>
+                                            <td style="border-top: 1px solid #DDDDDD;">
+                                                <apex:outputField value="{!objCustomGIMResult.objGIntervention.Y2_Total__c}"/>
+                                            </td>
+                                            <td style="border-top: 1px solid #DDDDDD;">
+                                                <apex:outputField value="{!objCustomGIMResult.objGIntervention.Y3_Total__c}"/>
+                                            </td>
+                                            <td style="border-top: 1px solid #DDDDDD;">
+                                                <apex:outputField value="{!objCustomGIMResult.objGIntervention.Total_Intervention_Budget__c}"/>
+                                            </td>
+                                            <td style="border-top: 1px solid #DDDDDD;" width="50">
+                                            <apex:outputText value="{0, number,###,###,##0.0}">
+                                                <apex:param value="{!if(objCustomGIMResult.objGIntervention.Implementation_Period__r.Total_Budget__c!=0,(objCustomGIMResult.objGIntervention.Total_Intervention_Budget__c / objCustomGIMResult.objGIntervention.Implementation_Period__r.Total_Budget__c)*100,'')}"/>
+                                            </apex:outputText>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </apex:outputPanel>
+                        </div>
+                    </apex:outputPanel>                
+                </td>
+            </tr>
+        </table>
+    </div>
+     <style>
+        .ProcessingBackground
+        {
+            background-color: black;
+            opacity: 0.50;
+            filter: alpha(opacity = 50);
+            width: 100%;
+            height: 100%;
+            position: fixed;
+            z-index: 9999;
+            top:0;
+            left:0;
+        }
+        .Processing
+        {
+            z-index: 9999;
+            left: 50%;
+            top: 50%;
+            text-align: center;
+            position: fixed;
+        }        
+        </style>
+        <div id="divProcessing" style="display:none;">
+            <div class="ProcessingBackground"></div>
+            <div class="Processing">
+                <apex:image alt="Processing" url="{!$Resource.LoadingCircle}" />
+            </div>
+        </div>  
+        <apex:actionStatus id="Processing" onstart="document.getElementById('divProcessing').style.display = '';" onstop="document.getElementById('divProcessing').style.display = 'none';">                            
+        </apex:actionStatus> 
+</apex:form>
+
+<script type="text/javascript">
+    var maxLength=255;
+    function charLimit(el) {
+        if (el.value.length > maxLength) return false;
+        return true;
+    }
+    function switchMenu(obj,obj1,obj2,hdn,val) 
+            {   
+                var AllLI = document.getElementsByTagName('li');
+                for(var i=0;i<AllLI.length;i++){
+                    if(AllLI[i].id == obj){
+                        if(AllLI[i].style.display != 'none'){
+                            AllLI[i].style.display = 'none';
+                        }else{
+                            AllLI[i].style.display = '';
+                        }
+                    }
+                }
+                document.getElementById(hdn).value=val; 
+                
+                var e2 = document.getElementById(obj1);                                       
+                if ( e2.style.display != 'none' ) {
+                    e2.style.display = 'none';
+                }
+                else {
+                    e2.style.display = '';
+                }
+                var e3 = document.getElementById(obj2);                                       
+                if ( e2.style.display != 'none' ) {
+                    e3.style.display = 'none';
+                }
+                else {
+                    e3.style.display = '';
+                }
+            }
+    function characterCount(el) {
+        var charCount = document.getElementById('charCount');
+        if (el.value.length > maxLength) el.value = el.value.substring(0,maxLength);
+        if (charCount) charCount.innerHTML = maxLength - el.value.length;
+        return true;
+    }
+</script>
+
+<script>
+    function closePanel(){
+        document.getElementById('Infopanel').style.display = 'none';
+    }
+    function OpenPopup(PopupPanelId){
+        document.getElementById(PopupPanelId).style.display = '';
+        return false;
+    }
+    function ClosePopup(PopupPanelId){
+        document.getElementById(PopupPanelId).style.display = 'none';
+        return false;
+    }
+    function openCustomIndicator(){
+        document.getElementById('custIndiLabel').style.display = '';
+        document.getElementById('custIndiSec').style.display = '';
+        document.getElementById('tableCusStdBtn').style.display = 'none';
+        return false;
+    }
+    function GeOnlyNumber(st){
+        if(st !=null){    
+            var ReComma = new RegExp("\\,","g");
+            var ReQuate = new RegExp("\\'","g");
+            st = st.replace(ReComma,"");
+            st = st.replace(ReQuate,"");
+            st = st.replace(",.",".");
+            st = st.replace("'.",".");
+            if(isNaN(st)==false){
+                return Number(st);
+            }else{
+                return '';
+            }
+        }else{
+            return '';
+        }
+    }
+        
+    function calTotal(firstID,totalID){
+        var i=0;
+        var obj = document.getElementById(firstID+':rptrGIRNume:'+i+':'+'txtTvalue');
+        var objTotal = document.getElementById(totalID);
+        var Total=0;
+        while(obj!=null){
+            Total+=GeOnlyNumber(obj.value);
+            i++;
+            obj = document.getElementById(firstID+':rptrGIRNume:'+i+':'+'txtTvalue');
+        }
+        objTotal.innerHTML=Total;
+    }
+    
+    function validate(){
+        var blnCheck = false;
+        
+        var lengthRe = '{!objCustomGIMResult.lstResults.size}';
+        for(var i=0;i<lengthRe;i++){
+            var targetValue = document.getElementById('page:frm:rptrGIRNume:'+i+':txtTvalue').value;
+            if(isNaN(targetValue)){
+                blnCheck = true;
+            }
+        }
+        
+        if(document.getElementById('page:frm:SelectCatIndicator').value=='' ||document.getElementById('page:frm:GIDesc').value==''){
+            if(document.getElementById('page:frm:GIDesc').value==''){
+                alert("{!strDescriptionReuiredMessage}");
+            }else{
+                alert("Please select Intervention.");
+            }
+        }else if(blnCheck == true){
+            alert("Please enter valid target value.");
+        }else{
+            afSaveCustomIndicator();
+        }
+        return false;
+    }
+    function OpenChatterPopup(ChatterPanel){
+        document.getElementById(ChatterPanel).style.display = '';
+        return false;
+    }
+    function CloseChatterPopup(ChatterPanel){
+        document.getElementById(ChatterPanel).style.display = 'none';
+        return false;
+    }
+    function CancelCustIndi(){
+        document.getElementById('custIndiLabel').style.display = 'none';
+        document.getElementById('custIndiSec').style.display = 'none';
+        document.getElementById('tableCusStdBtn').style.display = '';
+        return false;
+    }
+</script>
+</apex:page>

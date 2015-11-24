@@ -1,0 +1,5 @@
+<apex:page standardController="DocumentUpload__c" extensions="New_Controller" action="{!checkprof}">
+    <apex:pageMessages /> 
+      <a href="{!getBackURL}">{!$Label.Back_to_IP}</a>
+    
+</apex:page>

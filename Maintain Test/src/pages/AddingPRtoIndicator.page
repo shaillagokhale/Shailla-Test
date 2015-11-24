@@ -1,0 +1,45 @@
+<apex:page standardcontroller="Grant_Indicator__c" extensions="prindicatorext" >
+   <style>
+   .link{
+    color: #00FF00;
+    text-decoration:underline;
+     text-align:right;
+     float: right;
+     font-weight:bold;
+    }
+    .text{
+      color: red;
+      font-weight:bold;
+      text-align: center;
+      
+    }
+    </style>
+  <apex:form >
+  <apex:pageMessages ></apex:pageMessages>
+        <apex:pageBlock rendered="{!display}">
+                  <apex:outputPanel >
+                        <apex:outputText value="{!message}" styleclass="text"> </apex:outputText>
+                        <a href="{!if(CONTAINS($Profile.Name,'PR')||CONTAINS($Profile.Name,'LFA')||CONTAINS($Profile.Name,'CM')||CONTAINS($Profile.Name,'CCM'),'/GM','')}/{!lstind[0].Parent_Module__c}" class="link">
+                         Back to Module
+                        </a>
+                  </apex:outputPanel>
+                  
+            </apex:pageBlock>
+       <apex:pageblock rendered="{!display1}">
+            <apex:pageBlockButtons >
+                  <apex:commandButton value="Save" action="{!save}"/>
+                  <apex:CommandButton value="Cancel" action="{!cancel}"/>
+            </apex:pageBlockButtons>
+             <apex:pageblockSection >           
+                   <apex:pageBlockTable value="{!wraplstgin}" var="pr">
+                         <apex:column headerValue="">
+                               <apex:inputCheckbox value="{!pr.selected}"/>
+                         </apex:column>
+                         <apex:column headerValue="Principal Recipient" value="{!pr.grantintrvntn.PR__c}" rendered="{!!displayname}"/>
+                         <apex:column headerValue="Principal Recipient" value="{!pr.grantintrvntn.PR1__c}" rendered="{!displayname}"/>
+                   </apex:pageBlockTable>
+             </apex:pageblockSection>
+       </apex:pageblock>
+ </apex:form>
+ 
+</apex:page>

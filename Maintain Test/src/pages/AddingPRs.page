@@ -1,0 +1,42 @@
+<apex:page standardController="Intervention__c" extensions="AddingPRext"  >
+   <style>
+   .link{
+    color: #00FF00;
+    text-decoration:underline;
+     text-align:right;
+     float: right;
+     font-weight:bold;
+    }
+    .text{
+      color: red;
+      font-weight:bold;
+      text-align: center;
+      
+    }
+    </style>
+ <apex:form >
+ <apex:pagemessages />
+       <apex:pageBlock rendered="{!display}">
+             <apex:outPuttext value="{!message}" styleclass="text"/>
+             <a href="{!if(CONTAINS($Profile.Name,'PR')||CONTAINS($Profile.Name,'LFA')||CONTAINS($Profile.Name,'CM')||CONTAINS($Profile.Name,'CCM'),'/GM','')}/{!modid}" class="link">
+             Back to Module
+            </a>
+       </apex:pageBlock>
+       <apex:pageblock rendered="{!display1}">
+            <apex:pageBlockButtons >
+                  <apex:commandButton value="Save" action="{!save}"/>
+                  <apex:CommandButton value="Cancel" action="{!cancel}"/>
+            </apex:pageBlockButtons>
+             <apex:pageblockSection >           
+                   <apex:pageBlockTable value="{!lstwgip}" var="pr">
+                         <apex:column headerValue="">
+                               <apex:inputCheckbox value="{!pr.selected}"/>
+                         </apex:column>
+                         <apex:column headerValue="Principal Recipient" value="{!pr.gip.Principal_Recipient__r.Name}"/>
+                   </apex:pageBlockTable>
+             </apex:pageblockSection>
+       </apex:pageblock>
+ </apex:form>
+
+              
+</apex:page>

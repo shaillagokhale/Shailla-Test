@@ -1,0 +1,3 @@
+<apex:page standardController="Goals_Objectives__c" extensions="saveAndNewGoalsObjController" action="{!createNewGobjurl}">
+  <apex:pageMessages escape="false" />
+</apex:page>

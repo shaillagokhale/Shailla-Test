@@ -1,0 +1,40 @@
+<apex:page standardController="Module__c" extensions="NewModuleExt" recordSetVar="Module"  >
+      <style>
+   .link{
+    color: #00FF00;
+    text-decoration:underline;
+     text-align:right;
+     float: right;
+     font-weight:bold;
+    }
+    .text{
+      color: red;
+      font-weight:bold;
+      text-align: center;
+      
+    }
+    </style>
+      <apex:form >
+      <apex:pageMessages />
+      <apex:pageblock rendered="{!display}">
+            <apex:outputtext value="{!message}" styleclass="text" />
+             <a href="{!if(CONTAINS($Profile.Name,'PR')||CONTAINS($Profile.Name,'LFA')||CONTAINS($Profile.Name,'CM')||CONTAINS($Profile.Name,'CCM'),'/GM','')}/{!pfid }" class="link">
+             Back to Performance framework
+            </a>
+      </apex:pageblock>
+       <apex:pageblock rendered="{!!display}">
+            <apex:pageBlockButtons rendered="{!display1}">
+                  <apex:commandButton value="Save" action="{!save}"/>
+                  <apex:CommandButton value="Cancel" action="{!cancel}"/>
+            </apex:pageBlockButtons>
+             <apex:pageblockSection >           
+                   <apex:pageBlockTable value="{!lstwrapcatmod}" var="pr">
+                         <apex:column headerValue="">
+                               <apex:inputCheckbox value="{!pr.selected}"/>
+                         </apex:column>
+                         <apex:column headerValue="Module" value="{!pr.wrapcatmod.Name}"/>
+                   </apex:pageBlockTable>
+             </apex:pageblockSection>
+       </apex:pageblock>
+ </apex:form>
+</apex:page>

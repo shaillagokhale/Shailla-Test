@@ -1,0 +1,1537 @@
+<apex:page id="CNoverview" showHeader="true" sidebar="false" standardController="Concept_Note__c" extensions="ctrlCNOverview" tabstyle="Concept_Note_Home__tab">
+    <apex:stylesheet value="{!URLFOR($Resource.GoalsJs, 'assets/css/bootstrap.css')}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.GoalsJs, 'assets/css/bootstrap-responsive.css')}"/>
+    <apex:includeScript value="{!URLFOR($Resource.jquery142)}" />
+    
+    <script>
+    <!-- TCS Changes:added Javascript method  -->
+    //window.onload = function(){var btn = document.getElementById('CNoverview:frm:finishCTR').disabled=true;}
+    function setFocusOnLoad() {
+     
+    //var querystring = window.location.querystring;
+    
+     var GET = {};
+           var query = window.location.search.substring(1).split("&");
+              for (var i = 0, max = query.length; i < max; i++)
+                  {
+                          if (query[i] === "") // check for trailing & with no param
+                               continue;
+
+                       var param = query[i].split("=");
+                   GET[decodeURIComponent(param[0])] = decodeURIComponent(param[1] || "");
+                    }
+                   // alert(GET["param"]);
+                 var s = GET["param"];
+         if(s == "openpopup" )
+         {
+         document.getElementById('CNoverview:frm:tstpopupTRP').style.display='';
+         
+         }
+    }
+    function validateOnConfirm(){
+   
+    //var subDate = document.getElementbyId('CNoverview:frm:subDateList').value;
+    //var subLang = document.getElementbyId('CNoverview:frm:subLang').value;
+    var lang = document.getElementById('CNoverview:frm:subLang');
+    var subLang = lang.options[lang.selectedIndex].value;
+    var date = document.getElementById('CNoverview:frm:subDateList');
+    var subDate = date.options[date.selectedIndex].value;
+    //var justText = document.getElementById('CNoverview:frm:justification').value;
+    //alert(justText);
+    var element = document.getElementById('CNoverview:frm:justification')
+  
+    
+    if(subDate=='--None--') {
+    alert('{!$Label.Sub_date_Mandate}');
+    return false;
+    }
+    if(subLang==''){
+    alert('{!$Label.Sub_Lang_Mandate}');
+    return false;
+    }
+    
+    if(element.offsetWidth > 0 && element.offsetHeight > 0){
+    if(element.value == ''){
+    alert('{!$Label.Alert_Justify}');
+    return false;
+    }
+    if(element.value.length <10){
+    alert('{!$Label.Alert_10_Char_Mandate}');
+    return false;
+    }
+    
+    }
+    confirmActionJS();
+    }
+    //TCS Changes: Added Javascript function
+    function pageReload(cid){
+   //alert(cid);
+    var cnid = document.getElementById(cid).value;
+   //alert(cnid);
+    window.open('CNOverview?ID='+cnid, '_self');
+    }
+   function closeSubmitToTRP(popup){
+   document.getElementById(popup).style.display = 'none';
+   funcSubmitToTRP();
+   return false;
+   }
+   
+   //******************START*************Code for CN Unlock, rollback**************************************
+   //--------------RequestCNUnlock------------------------------
+   //function closeRequestUnlockCN(popup){
+   //DisableCNunlockandCTreview();
+   //return false;
+   //}
+   
+   //function RollbackCN(popup){
+   //CNrollback();
+   //return false;
+   //}
+   
+   //function UnlockCNyes(popup){
+   //YesUnlockCN();
+   //return false;
+   //}
+   
+   //function UnlockCNno(popup){
+   //NoUnlockCN();
+   //return false;
+   //}
+   
+    //function disableCNunlockbutton(){
+    //var btn = document.getElementById('CNoverview:frm:j_id50');
+    //document.getElementById('CNoverview:frm:j_id50').disabled = true;
+    //btn.style.setProperty ("background-color", "#A4A4A4", 'important');
+    //return false;
+    //}
+    
+    //function disableCTreviewbutton(){
+    //var btn = document.getElementById('CNoverview:frm:j_id55');
+    //document.getElementById('CNoverview:frm:j_id55').disabled = true;
+    //btn.style.setProperty ("background-color", "#A4A4A4", 'important');
+    //return false;
+    //}
+    //**************END*****************Code for CN Unlock, rollback****************************************
+    function enableCTRBtn(){
+    var checkbox = document.getElementById('CNoverview:frm:checkBox');
+    var btn = document.getElementById('CNoverview:frm:finishCTR');
+    
+    if(checkbox.checked){
+    
+    btn.style.setProperty ("background-color", "#49C739", 'important');
+    btn.disabled = false;
+    //btn.style.setProperty("backgroundColor", "#49C739", 'important');
+    //alert(window.getComputedStyle(btn).backgroundColor);
+    }else{
+    btn.style.setProperty ("background-color", "#6E6E6E", 'important');
+    btn.disabled = true;
+    }
+    }
+    
+    function assessSubDate(){
+    var radio = document.getElementById('CNoverview:frm:probNotRadio1:1');
+    //alert(radio.checked);
+    if(radio.checked){
+    //alert('hi I am checked');
+    document.getElementById('CNoverview:frm:notProbText').style.display ='';
+    document.getElementById('CNoverview:frm:subDateListAssess').style.display ='';
+    document.getElementById('CNoverview:frm:custPopupAssess').style.setProperty ("height", "300px", 'important');
+    }
+    else{
+    document.getElementById('CNoverview:frm:notProbText').style.display ='none';
+    document.getElementById('CNoverview:frm:subDateListAssess').style.display ='none';
+    document.getElementById('CNoverview:frm:custPopupAssess').style.setProperty ("height", "230px", 'important');
+    }
+    
+    }
+    
+    function dateCheckCT(){
+    var newSubDate = document.getElementById('CNoverview:frm:subDateListAssess');
+    var dateVal = newSubDate.options[newSubDate.selectedIndex].value;
+    var initialSubDate =  document.getElementById('CNoverview:frm:revSubDate').value;
+    if(initialSubDate == dateVal && (newSubDate.offsetWidth > 0 && newSubDate.offsetHeight > 0)){
+    alert('{!$Label.Diff_Date}');
+    return false;
+    }else{
+    document.getElementById('CNoverview:frm:tstpopupAssess').style.display = 'none';
+    }
+    ConfirmLikDateJS();
+    }
+    </script>
+    
+    <style>
+    .h3 {
+        font-size:24px;
+        line-height: 1.5;
+        font-weight:bold;
+    }
+    .h4 {
+        font-size:18px;
+        line-height: 1.5;
+        font-weight:bold;
+    }
+    table {
+        font-size:14px;
+        position:relative;
+    }
+    .table-margin{
+        margin:20px 40px;        
+    }
+    table-no-margin {
+        font-size:14px;
+        margin:0px 0px;
+        cellpadding: 0px;
+    }
+    td .middle{
+        vertical-align:middle;
+       }
+    .link{
+        color:#2E7BBB;
+    }
+    .dateFormat{
+      visibility:hidden;
+    }
+    .container{
+        margin-left:1%;
+        margin-right:1%;
+        width:97%;
+    }
+    .text{
+        margin-left:20px;
+    }
+    table-striped{
+        margin-left:20px;
+    }
+    .table-striped1 tbody > tr:nth-child(odd) > td,
+    .table-striped1 tbody > tr:nth-child(odd) > th {
+        background-color: #f9f9f9;
+        margin:20px 40px;
+    }
+    .active{
+        color:black;
+        text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.2);
+        background-color: #D1D1D1;
+    }
+    .topborder{
+        border-top:1px solid #000000 !important;
+    }
+    .bold{
+        font-weight:bold;
+    }
+    .custPopup{
+        background-color: #ededed;
+        border-width: 0px;
+        border-radius:10px;
+        border-style: solid;
+        z-index: 9999;
+        left: 50%;
+        margin-top:-60px;
+        padding:10px;
+        position: absolute;
+        width:270px;
+        height:144px;
+    }
+    .custPopupMissingDoc{
+        background-color: #ededed;
+        border-width: 0px;
+        border-radius:10px;
+        border-style: solid;
+        z-index: 9999;
+        left: 31%;
+        margin-top:-60px;
+        padding:10px;
+        position: absolute;
+        width:600px;
+        height:230px;
+    }
+    
+    .custPopuptwo{
+            background-color: #ededed;
+            border-width: 0px;
+            border-radius:20px;
+            border-style: solid;
+            z-index: 10000;
+            left: 25%;
+            padding:10px;
+            position: absolute;
+            margin-top:10px;
+            top:10%;
+            width:450px;
+            //height:210px;
+        }
+        
+    .custPopupthree{
+            background-color: #ededed;
+            border-width: 0px;
+            border-radius:20px;
+            border-style: solid;
+            z-index: 10000;
+            left: 25%;
+            padding:10px;
+            position: absolute;
+            margin-top:10px;
+            top:10%;
+            width:750px;
+            height:400px;
+      }
+      .custPopupthreethree{
+            background-color: #ededed;
+            border-width: 0px;
+            border-radius:20px;
+            border-style: solid;
+            z-index: 10000;
+            left: 25%;
+            padding:10px;
+            position: absolute;
+            margin-top:10px;
+            top:10%;
+            width:400px;
+            height:120px;
+      }
+    .custPopupDialog{
+        background-color: #FFFFFF;
+        border-width: 0px;
+        border-radius:10px;
+        border-style: solid;
+        z-index: 9999;
+        left: 40%;
+        top:30%;
+        padding:10px;
+        position: absolute;
+        width:600px;
+        height:700px;
+    }
+    .popupBackground{
+        background-color:black;
+        opacity: 0.50;
+        filter: alpha(opacity = 20);
+        position: fixed;
+        width: 100%;
+        height: 100%;
+        z-index: 9998;
+        top: 0;
+        left: 0;
+    }
+    .popupBackgroundDialog{
+        background-color:black;
+        opacity: 0.50;
+        filter: alpha(opacity = 20);
+        position: fixed;
+        width: 100%;
+        height: 100%;
+        z-index: 9998;
+        top: 0;
+        left: 0;
+    }
+    .popupButtonFinish{
+        //background-color: #49C739 !important;
+        background-color: #6E6E6E !important;
+        background-image: none !important;
+        color: white !important;
+        font-size: 12.9pt !important;
+        font-weight: bold !important;
+        height: 30px !important;;
+        
+    }
+    .popupButtonYes{
+        background-color: #49C739 !important;        
+        background-image: none !important;
+        color: white !important;
+        font-size: 12.9pt !important;
+        font-weight: bold !important;
+        height: 30px !important;;
+        width: 90px !important;;
+    }
+    .popupButtonYes1{
+        background-color: #49C739 !important;        
+        background-image: none !important;
+        color: white !important;
+        font-size: 12.9pt !important;
+        font-weight: bold !important;
+        height: 60px !important;;
+        width: 180px !important;;
+    }
+    .popupButtonConfirm{
+        background-color: #49C739 !important;        
+        background-image: none !important;
+        color: white !important;
+        font-size: 12.9pt !important;
+        font-weight: bold !important;
+        height: 30px !important;;
+        width: 120px !important;;
+    }
+    .popupButtonCancel{
+        background-color: #d82516 !important;
+        background-image: none !important;
+        color: white !important;
+        font-size: 12.9pt !important;
+        font-weight: bold !important;
+        height: 30px !important;;
+        width: 90px !important;;
+    }
+    
+    .popupButtonCancel1{
+        background-color: #084B8A !important;        
+        background-image: none !important;
+        color: white !important;
+        font-size: 12.9pt !important;
+        font-weight: bold !important;
+        height: 30px !important;;
+        width: 90px !important;;
+    }
+    .deletePopup{
+        background-color: #EDEDED !important;
+        border-top: 0px !important;
+        text-align:center !important;
+        white-space: normal !important;
+    }
+     .deletePopupCT{
+        background-color: #EDEDED !important;
+        border-top: 0px !important;
+        padding-left: 50px !important;
+        white-space: normal !important;
+    }
+    .deletePopupCTItem{
+        background-color: #EDEDED !important;
+        border-top: 0px !important;
+        padding-left: 100px !important;
+        white-space: normal !important;
+    }
+    .deletePopupCancel{
+        background-color: #EDEDED !important;
+        border-top: 0px !important;
+        text-align:left !important;
+    }
+    .ProcessingBackground {
+            background-color: black;
+            opacity: 0.50;
+            filter: alpha(opacity = 50);
+            width: 100%;
+            height: 100%;
+            position: fixed;
+            z-index: 9999;
+            top:0;
+            left:0;
+     }
+    .Processing {
+            z-index: 9999;
+            left: 50%;
+            top: 50%;
+            text-align: center;
+            position: fixed;
+     }
+    .webkitright {
+        text-align: right;
+        white-space: nowrap;
+    };
+    .headerSearchContainer {
+        margin-top: -20px !important;
+    }    
+    .phHeaderCustomLogo .headerSearchLeftRoundedCorner {
+        margin-top: -20px !important;
+    } 
+    .TGFbtn{
+        margin-left:20px;
+        margin-top:6px;
+        padding-top:3px;
+        padding-bottom:3px;
+    }
+    .disabledbutton {
+          color:#08233e;
+          font:2.4em Futura, ‘Century Gothic’, AppleGothic, sans-serif;
+          font-size:70%;
+          padding:14px;
+          background:url(overlay.png) repeat-x center #ffcc00;
+          background-color:rgba(255,204,0,1);
+          border:1px solid #ffcc00;
+          -moz-border-radius:10px;
+          -webkit-border-radius:10px;
+          border-radius:10px;
+          border-bottom:1px solid #9f9f9f;
+          -moz-box-shadow:inset 0 1px 0 rgba(255,255,255,0.5);
+          -webkit-box-shadow:inset 0 1px 0 rgba(255,255,255,0.5);
+          box-shadow:inset 0 1px 0 rgba(255,255,255,0.5);
+          cursor:pointer;
+     }      
+        </style>
+    <script>
+      $(document).ready(function () {
+          $('label.tree-toggler').click(function () {
+              $(this).parent().children('ul.tree').toggle(300);
+          });
+          
+           
+            $("#phHeaderLogoImage").parents("table").find("td").eq(2).removeClass("right").addClass("webkitright");  
+          
+      });
+    </script>
+    <apex:form id="frm" >        
+    <div class="container">
+            <span class="h3">
+                {!$Label.CN_Overview} - {!Concept_Note__c.Name}                 
+            </span>
+            <span class="pull-right">
+                <img src="/img/func_icons/util/info16.png" style="padding-bottom:5px"/>
+                <!--TCS 10/09/2014 Profile Access Setting-->
+                <a href="{!if(blnExternalPro==true,'/GM','')}/apex/CN_Guidance_New?Id={!strGuidanceId}&lang={!Concept_Note__c.Language__c}" target="_blank" class="link h4">{!$Label.See_Help}</a>
+            </span>
+            <br/><br/>
+            <div id="Infopanel" class="alert alert-info">
+                <button type="button" class="close" data-dismiss="alert" onclick="closePanel();">
+                      ×
+                </button>
+                <b>
+                     {!$Label.Overview_Instructions}
+                </b>
+            </div>
+            
+            <c:CNbreadcrumb recordId="{!Concept_Note__c.Id}"/>
+            
+          <div class="row">
+          <table width="100%" cellpadding="0">
+            <tr>
+              <td width="20%" valign="top" align="left"> 
+          <!--START SIDEBAR-->
+                <c:Sidebar RecordId="{!Concept_Note__c.Id}"/>
+          <!--END SIDEBAR--> 
+              </td>
+              <td valign="top" align="left" >               
+                <div>                   
+                    <!--<span class="text">
+                        {!$Label.Overview_Text} {!Concept_Note__c.Name}.
+                    </span>-->
+                    <div style="width:1100px;" >
+                    <table>
+                        <tr>
+                        <!--<td>
+                         <apex:commandLink styleClass="TGFbtn TGFbtn-mini TGFbtn-primary" action="{!if(CONTAINS($Profile.Name,'CM')||CONTAINS($Profile.Name,'PR')||CONTAINS($Profile.Name,'LFA'),'/GM','')}{!if(strCNType=='Multi-Country'||strCNType=='Regional',CASE(Concept_Note__c.Component__c,'HIV/TB','/servlet/servlet.FileDownload?file=015b0000000bfXL','/servlet/servlet.FileDownload?file=015b0000000bfXB'),if(strLanguage=='SPANISH',CASE(Concept_Note__c.Component__c,'Health Systems Strengthening','/servlet/servlet.FileDownload?file=015b0000000bfX6','HIV/TB','/servlet/servlet.FileDownload?file=015b0000000bfWm','/servlet/servlet.FileDownload?file=015b0000000bfTO'),if(strLanguage=='FRENCH','/servlet/servlet.FileDownload?file=015b0000000bfUH',if(strLanguage=='RUSSIAN','/servlet/servlet.FileDownload?file=015b0000000bfVU',CASE(Concept_Note__c.Component__c,'Health Systems Strengthening','/servlet/servlet.FileDownload?file=015b0000000bfWw','HIV/TB','/servlet/servlet.FileDownload?file=015b0000000bfWS','/servlet/servlet.FileDownload?file=015b0000000bfSG')))))}" target="_blank">
+                                     <i class="icon-download icon-white">
+                                     </i> <strong>{!$Label.Download_Narrative}</strong>
+                         </apex:commandLink>
+                         </td>-->
+                           <td>
+                           <!--TCS 10/09/2014 Profile Access Setting-->
+                         <apex:commandLink id="CommandLinkAssess" styleClass="TGFbtn TGFbtn-mini TGFbtn-danger" onclick="return OpenConfirmPopup('{!$Component.tstpopupAssess}');" style="display:{!IF(objCN.Assess_Submission_Date__c == true && objCN.Concept_Note_Submission_Date__c != '' && blnAccessLikehood==true,'','none')}" rendered="{!objCN.Assess_Submission_Date__c}">
+                                     <i class="icon-download icon-white">
+                                     </i> <strong>{!$Label.Likelihood_Btn} </strong>
+                         </apex:commandLink>
+                         </td>
+                         
+                         <td>
+                         <!--TCS 10/09/2014 Profile Access Setting
+                         <apex:commandLink id="CommandLinkTRP" styleClass="TGFbtn TGFbtn-mini TGFbtn-danger" onclick="return OpenConfirmPopup('{!$Component.tstpopupTRP}');" style="display:{!IF(objCN.Status__c != $Label.Sub_to_GF && objCN.Concept_Note_Submission_Date__c == '' && OR(CONTAINS($Profile.Name,'CM Admin'),$Profile.Name=='System Administrator',$Profile.Name=='Country Team'),'','none')}" oncomplete="return CloseConfirmPopup('{!$Component.CommandLinkTRP}');">-->
+                         <apex:commandLink id="CommandLinkTRP" styleClass="TGFbtn TGFbtn-mini TGFbtn-danger" onclick="return OpenConfirmPopup('{!$Component.tstpopupTRP}');" style="display:{!IF(objCN.Concept_Note_Submission_Date__c == '' && blnRegisterToTRP==true,'','none')}" oncomplete="return CloseConfirmPopup('{!$Component.CommandLinkTRP}');">
+                                     <i class="icon-download icon-white">
+                                     </i> <strong>{!$Label.Register_Btn}</strong>
+                         </apex:commandLink>
+                         </td>
+                          <td>
+                          <!--TCS 10/09/2014 Profile Access Setting
+                         <apex:commandLink styleClass="TGFbtn TGFbtn-mini TGFbtn-danger" onclick="return OpenConfirmPopup('{!$Component.tstpopupTRP}');" style="display:{!IF((objCN.Status__c != $Label.Sub_to_GF && objCN.Status__c != $Label.Rev_OK_TRP) && objCN.Concept_Note_Submission_Date__c != '' && OR(CONTAINS($Profile.Name,'CM Admin'),$Profile.Name=='System Administrator'),'','none')}">-->
+                         <apex:commandLink styleClass="TGFbtn TGFbtn-mini TGFbtn-danger" onclick="return OpenConfirmPopup('{!$Component.tstpopupTRP}');" style="display:{!IF(objCN.Concept_Note_Submission_Date__c != '' && blnChangeSubmissionDate==true,'','none')}">
+                                     <i class="icon-download icon-white">
+                                     </i> <strong>{!$Label.Chang_Sub_Date}</strong>
+                         </apex:commandLink>
+                         </td>
+                           <td style="width:10px">
+                         <td style="width:150px">
+                         <apex:outputText >
+                           <h5>{!$Label.Description_TRP}</h5>
+                         </apex:outputText>
+                         </td>
+                         </td>
+                            <td style="width:10px">
+                         <td> 
+                         <apex:outputText rendered="{!IF(Concept_Note__c.Concept_Note_Submission_Date__c == '',true,false)}" >
+                            {!$Label.TRP_Not_Registered}
+                         </apex:outputText>
+                         </td>
+                         <td>
+                         <apex:outputField value="{!Concept_Note__c.Revised_Submission_Date__c}" />
+                         </td>
+                         </td>
+                       
+                       
+                         <!-- apex:commandLink styleClass="TGFbtn TGFbtn-mini TGFbtn-primary" action="{!if(CONTAINS($Profile.Name,'CM')||CONTAINS($Profile.Name,'PR')||CONTAINS($Profile.Name,'LFA'),'/GM','')}/apex/TRPTranslation?Id={!Concept_Note__c.Id}" target="_blank">
+                                     <i class="icon-download icon-white">
+                                     </i> <strong>TRP Translation</strong>
+                         </apex:commandLink-->
+                         <td>
+                         <!-- TCS 10/09/2014 Profile Access Setting
+                         <apex:commandLink styleClass="TGFbtn TGFbtn-mini TGFbtn-danger" onclick="return OpenConfirmPopup('{!$Component.tstpopup1}');" style="display:{!IF((objCN.Status__c != $Label.Sub_to_GF && objCN.Status__c != $Label.Rev_OK_TRP) && OR(CONTAINS($Profile.Name,'CM') && CONTAINS($Profile.Name,'Admin'),$Profile.Name=='System Administrator'),'','none')}"> -->
+                         <apex:commandLink styleClass="TGFbtn TGFbtn-mini TGFbtn-danger" onclick="return OpenConfirmPopup('{!$Component.tstpopup1}');" style="display:{!IF(blnSubmitCN==true,'','none')}">
+                                     <i class="icon-download icon-white">
+                                     </i> <strong>{!$Label.Submit_Concept_Note}</strong>
+                         </apex:commandLink>
+                         </td>
+                         
+                         <td>
+                         <!-- TCS 10/09/2014 Profile Access Setting
+                           <apex:commandLink styleClass="TGFbtn TGFbtn-mini TGFbtn-primary" action="{!if(CONTAINS($Profile.Name,'CM')||CONTAINS($Profile.Name,'PR')||CONTAINS($Profile.Name,'LFA'),'/GM','')}/apex/CN_IntegratedView_pdf?Id={!Concept_Note__c.Id}" target="_blank">-->
+                           <apex:commandLink styleClass="TGFbtn TGFbtn-mini TGFbtn-primary" action="{!if(blnExternalPro==true,'/GM','')}/apex/CN_IntegratedView_pdf?Id={!Concept_Note__c.Id}" target="_blank">
+                                     <i class="icon-download icon-white">
+                                     </i> <strong>{!$Label.Download_Integrated_View}</strong>
+                         </apex:commandLink>
+                         </td>
+                         <td>
+                         <!--ZK 21/8/14 Changed display so it does not show for CM Admin, per requirements-->
+                         <!-- TCS 10/09/2014 Profile Access Setting
+                         <apex:commandLink styleClass="TGFbtn TGFbtn-mini TGFbtn-danger" onclick="return OpenConfirmPopup('{!$Component.tstpopup2}');" style="display:{!IF(objCN.Status__c == $Label.Sub_to_GF && OR($Profile.Name=='System Administrator',$Profile.Name=='Country Team'),'','none')}">-->
+                         <apex:commandLink styleClass="TGFbtn TGFbtn-mini TGFbtn-danger" onclick="return OpenConfirmPopup('{!$Component.tstpopup2}');" style="display:{!IF(blnFinalCTReview == true,'','none')}">
+                                     <i class="icon-download icon-white">
+                                     </i> <strong>{!$Label.Final_CT_Review}</strong>
+                         </apex:commandLink>
+                         </td>
+                         
+                         </tr>
+                         </table>
+                                <apex:outputPanel id="tstpopup1" style="display:none;">
+                                    <apex:outputPanel id="popupBackground1" styleClass="popupBackground"/>
+                                    <apex:outputPanel id="custPopup1" styleClass="custPopup">
+                                        <table style="width:100% !important;padding:0px !important;" cellspacing="0" cellpadding="0" border="0" >                                            
+                                            <tr>
+                                                <td colspan="2" class="deletePopup" style="text-align:left">
+                                                    <apex:outputtext style="color:#6590c4; font-size: 13.9pt;font-weight: bold;" value="{!$Label.Submit_CN}"/>
+                                                </td>
+                                            </tr>
+                                            <tr height="25px"></tr>
+                                            <tr>
+                                                <td class="deletePopup" align="center">
+                                                    <apex:commandButton styleClass="popupButtonYes" style="margin-right:5px" value="{!$Label.Yes}" action="{!SubmitToCN}" oncomplete="location.reload();" status="Processing"/> <!--reRender="frm"--->
+                                                    <apex:commandButton styleClass="popupButtonCancel"  value="{!$Label.No}" onclick="return CloseConfirmPopup('{!$Component.tstpopup1}');"/>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </apex:outputPanel>
+                                </apex:outputPanel>
+                                
+                                <!-- New TRP CT Review Enchancement Start-->
+                                
+                                <apex:outputPanel id="tstpopup2" style="display:none;">
+                                    <apex:outputPanel id="popupBackground3" styleClass="popupBackground"/>
+                                    <apex:outputPanel id="custPopup3" styleClass="custPopupthree">
+                                        <table style="width:100% !important;padding:0px !important;border-color:#6590c4;border-style:solid;" cellspacing="0" cellpadding="0" border="1" >                                            
+                                            <tr>
+                                                <td colspan="2" class="deletePopup" style="text-align:left !important">
+                                                    <apex:outputtext style="color:#6590c4; font-size: 13.9pt;font-weight: bold;" value="{!$Label.CT_Review_Table_Head}"/>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                        <table style="width:100% !important;padding:0px !important;" cellspacing="0" cellpadding="0" border="0" >     
+                                            <tr height="25px"></tr>
+                                             <tr>
+                                                <td colspan="2" class="deletePopup" style="text-align:left !important">
+                                                    <apex:outputtext style="color:#6590c4; font-size: 13.9pt;font-weight: bold;" value="{!$Label.CT_Table_Head1}"/>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                               <td colspan="2" class="deletePopupCT" >
+                                                    <apex:outputtext style="color:#6590c4; font-size: 13.9pt;font-weight: bold; text-align:left !important" value="{!$Label.CT_Table_Head2}"/>
+                                                    <!-- <a href="{!if(CONTAINS($Profile.Name,'PR')||CONTAINS($Profile.Name,'LFA')||CONTAINS($Profile.Name,'CM')||CONTAINS($Profile.Name,'CCM'),'/GM','')}/apex/cn_documentupload?Id={!strCNId}" target="_blank" class="link h2">here</a>-->
+                                                    <!-- TCS 10/09/2014 Profile Access Setting
+                                                    <apex:outputLink value="{!if(CONTAINS($Profile.Name,'PR')||CONTAINS($Profile.Name,'LFA')||CONTAINS($Profile.Name,'CM')||CONTAINS($Profile.Name,'CCM'),'/GM','')}/apex/cn_documentupload?Id={!strCNId}" target="_blank" id="theLink" styleClass="link">-->
+                                                    <apex:outputLink value="{!if(blnExternalPro == true,'/GM','')}/apex/cn_documentupload?Id={!strCNId}" target="_blank" id="theLink" styleClass="link">
+                                                    <u>{!$Label.Here}</u>
+                                                    </apex:outputLink>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                               <td colspan="2" class="deletePopupCT" >
+                                                    <apex:outputtext style="color:#6590c4; font-size: 13.9pt;font-weight: bold; text-align:left !important" value="{!$Label.CT_Table_Head3}"/>
+                                                </td>
+                                            </tr>
+                                            <!-- Sub Items of the List in Pop-Up -->
+                                            <apex:repeat value="{!lstSubItem}" var="sub">
+                                             <tr>
+                                               <td colspan="2" class="deletePopupCTItem" >
+                                                    <apex:outputtext style="color:#6590c4; font-size: 13.9pt;font-weight: bold; text-align:left !important" value="{!sub}"/>
+                                                </td>
+                                            </tr>
+                                            </apex:repeat>
+                                            <!-- <tr>
+                                               <td colspan="2" class="deletePopupCTItem" >
+                                                    <apex:outputtext style="color:#6590c4; font-size: 13.9pt;font-weight: bold; text-align:left !important" value="- Programmatic Gap Table"/>
+                                                </td>
+                                            </tr> -->
+                                            <tr height="25px"></tr>
+                                            <tr height="25px"></tr>
+                                            <tr>
+                                               <td colspan="2" class="deletePopupCT" >
+                                                    <apex:inputCheckbox id="checkBox" onclick="return enableCTRBtn();" style="vertical-align:baseline;margin-bottom:10px;"/> &nbsp; &nbsp;
+                                                    <apex:outputtext style="color:#6590c4; font-size: 13.9pt;font-weight: bold; text-align:left !important" value="{!$Label.CT_Confirm_Text}"/>
+                                                </td>
+                                            </tr>
+                                            <tr height="25px"></tr>
+                                            <tr> 
+                                                <td class="deletePopup" align="center">
+                                                    <apex:commandButton id="finishCTR" styleClass="popupButtonFinish" style="margin-right:5px" value="{!$Label.Finish_CT_Btn}" onclick="return OpenFinishCTPopup('{!$Component.tstpopup4}','{!$Component.tstpopup2}');"/> <!--action="{!SubmitToCN}" oncomplete="location.reload();reRender="frm"--->
+                                                    <apex:commandButton styleClass="popupButtonCancel"  value="{!$Label.Cancel}" onclick="return CloseConfirmPopup('{!$Component.tstpopup2}');"/>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </apex:outputPanel>
+                                </apex:outputPanel>
+                                
+                                <!--*********Start*********Pop up for CN unlock request by Country Team*********************-->
+                                <!--
+                                <apex:outputPanel id="tstpopup3" style="display:none;">
+                                    <apex:outputPanel id="popupBackground33" styleClass="popupBackground"/>
+                                    <apex:outputPanel id="custPopup33" styleClass="custPopupthreethree">
+                                    <table style="width:100% !important;padding:0px !important;" cellspacing="0" cellpadding="0" border="0" >
+                                        <tr>
+                                            <td colspan="2">
+                                                <apex:outputtext style="color:black; font-size: 10pt;" value="{!$Label.Request_CN_Unlock_message}"/>
+                                            </td>
+                                        </tr>
+                                        <tr height="25px"></tr>
+                                            <tr>
+                                                <td class="deletePopup" align="center">
+                                                    <apex:commandButton styleClass="popupButtonYes" style="margin-right:5px" value="{!$Label.Confirm}" onclick="return closeRequestUnlockCN('{!$Component.tstpopup3}');"/>
+                                                    <apex:commandButton styleClass="popupButtonCancel"  value="{!$Label.Cancel}" onclick="return CloseConfirmPopup('{!$Component.tstpopup3}');"/>
+                                                </td>
+                                            </tr>
+                                    </table>   
+                                    </apex:outputPanel>                             
+                                </apex:outputPanel>
+                                -->
+                                <!--**********End***********Pop up for CN unlock request by Country Team*********************-->
+                                
+                                <!--*********Start*********Pop up for CN unlock by A2F*********************-->
+                                <!--
+                                <apex:outputPanel id="tstpopup5" style="display:none;">
+                                    <apex:outputPanel id="popupBackground5" styleClass="popupBackground"/>
+                                    <apex:outputPanel id="custPopup5" styleClass="custPopupthreethree">
+                                    <table style="width:100% !important;padding:0px !important;" cellspacing="0" cellpadding="0" border="0" >
+                                        <tr>
+                                            <td colspan="2">
+                                                <apex:outputtext style="color:black; font-size: 10pt;" value="{!$Label.CN_unlock_confirm_message}"/>
+                                            </td>
+                                        </tr>
+                                        <tr height="25px"></tr>
+                                            <tr>
+                                                <td class="deletePopup" align="center">                                               
+                                                    <apex:commandButton styleClass="popupButtonYes" style="margin-right:3px;" value="{!$Label.Yes}" onclick="return UnlockCNyes('{!$Component.tstpopup5}');"/>                                                    
+                                                    <apex:commandButton styleClass="popupButtonCancel" style="margin-right:3px" value="{!$Label.No}" onclick="return UnlockCNno('{!$Component.tstpopup5}');"/>
+                                                    <apex:commandButton styleClass="popupButtonCancel1" style="margin-right:3px" value="{!$Label.Cancel}" onclick="return CloseConfirmPopup('{!$Component.tstpopup5}');"/><br/>
+                                                </td>
+                                            </tr>
+                                    </table>   
+                                    </apex:outputPanel>                             
+                                </apex:outputPanel>
+                               -->
+                                 <!--**********End***********Pop up for CN unlock by A2F*********************-->
+                                
+                                <!--*********Start*********Pop up for CN rollback by A2F*********************-->
+                                <!--
+                                <apex:outputPanel id="tstpopup6" style="display:none;">
+                                    <apex:outputPanel id="popupBackground6" styleClass="popupBackground"/>
+                                    <apex:outputPanel id="custPopup6" styleClass="custPopupthreethree">
+                                    <table style="width:100% !important;padding:0px !important;" cellspacing="0" cellpadding="0" border="0" >
+                                        <tr>
+                                            <td colspan="2">
+                                                <apex:outputtext style="color:black; font-size: 10pt;" value="{!$Label.Rollback_Concept_Note_Message}"/>
+                                            </td>
+                                        </tr>
+                                        <tr height="25px"></tr>
+                                            <tr>
+                                                <td class="deletePopup" align="center">
+                                                    <apex:commandButton styleClass="popupButtonYes" style="margin-right:5px" value="{!$Label.Confirm}" onclick="return RollbackCN('{!$Component.tstpopup6}');"/>
+                                                    <apex:commandButton styleClass="popupButtonCancel"  value="{!$Label.Cancel}" onclick="return CloseConfirmPopup('{!$Component.tstpopup6}');"/>
+                                                </td>
+                                            </tr>
+                                    </table>   
+                                    </apex:outputPanel>                             
+                                </apex:outputPanel>
+                                -->
+                                <!--**********End***********Pop up for CN rollback by A2F*********************-->
+                                
+                                <apex:outputPanel id="tstpopup4" style="display:none;">
+                                    <apex:outputPanel id="popupBackground4" styleClass="popupBackground"/>
+                                    <apex:outputPanel id="custPopup4" styleClass="custPopupMissingDoc">
+                                        <table style="width:100% !important;padding:0px !important;" cellspacing="0" cellpadding="0" border="0" >                                            
+                                            <tr>
+                                                <td colspan="2">
+                                                    <apex:outputtext style="color:#6590c4; font-size: 13.9pt;font-weight: bold;" value="{!$Label.Document_Pop_Head}" rendered="{!if(lstDocMissing.size!=0,true,false)}"/>
+                                                </td>
+                                            </tr>
+                                            <tr height="25px"></tr>
+                                            <apex:repeat value="{!lstDocMissing}" var="doc">
+                                             <tr>
+                                               <td colspan="2" class="deletePopupCTItem" >
+                                               <apex:outputtext style="color:#6590c4;font-weight: bold;" value="-"/> &nbsp; <apex:outputtext style="color:#6590c4; font-size: 13.9pt;font-weight: bold; text-align:left !important" value="{!doc}"/>
+                                                </td>
+                                            </tr>
+                                            </apex:repeat>
+                                            <tr height="25px"></tr>
+                                            <tr>
+                                                <td colspan="2">
+                                                    <apex:outputtext style="color:#6590c4; font-size: 13.9pt;font-weight: bold;" value="{!$Label.Document_Cnf_Text}"/>
+                                                </td>
+                                            </tr>
+                                            <tr height="25px"></tr>
+                                            <tr>
+                                                <td class="deletePopup" align="center">
+                                                    <apex:commandButton styleClass="popupButtonYes" style="margin-right:5px" value="{!$Label.Confirm}" onclick="return closeSubmitToTRP('{!$Component.tstpopup4}');"/> <!--reRender="frm"--->
+                                                    <apex:commandButton styleClass="popupButtonCancel"  value="{!$Label.Cancel}" onclick="return CloseConfirmPopup('{!$Component.tstpopup4}');"/>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </apex:outputPanel>
+                                </apex:outputPanel>
+                                
+                               <apex:outputPanel id="tstpopupAssess" style="display:none;">
+                                    <apex:outputPanel id="popupBackgroundAssess" styleClass="popupBackground"/>
+                                    <apex:outputPanel id="custPopupAssess" styleClass="custPopupMissingDoc">
+                                        <table style="width:100% !important;padding:0px !important;" cellspacing="0" cellpadding="0" border="0" >                                            
+                                            <tr>
+                                                <td colspan="2">
+                                                    <apex:outputtext style="color:#6590c4; font-size: 13.9pt;font-weight: bold;" value="{!$Label.Assess_Head} "/>
+                                                    <apex:inputtext id="revSubDate" value="{!Concept_Note__c.Revised_Submission_Date__c}" disabled="true"/>
+                                                </td>
+                                            </tr>
+                                            <tr height="25px"></tr>
+                                           
+                                             <tr>
+                                               <td colspan="2" class="">
+                                               <apex:outputtext style="color:#6590c4; font-size: 13.9pt;font-weight: bold; text-align:left !important" value="{!$Label.Assess_Head2}"/>
+                                                </td>
+                                            </tr>
+                                            <tr height="25px"></tr>
+                                        
+                                            <tr>
+                                              <td colspan="2" style="padding-left: 130px;">      
+                                              <apex:selectRadio id="probNotRadio1" value="{!selectLikli}" style="width:100%;" onclick="return assessSubDate();">
+                                                 <table>
+                                                  <tr>       
+                                                    <td>
+                                                    <apex:selectOption itemValue="1" />
+                                                    <apex:outputtext style="color:#6590c4; font-size: 13.9pt;font-weight: bold;" value="{!$Label.Pretty_Sure}"/>    
+                                                    </td>
+                                                    <td><apex:selectOption itemValue="2" />
+                                                        <apex:outputtext style="color:#6590c4; font-size: 13.9pt;font-weight: bold;padding-left: 80px;" value="{!$Label.Probably_Not}"/>
+                                                    </td>
+                                                 </tr>
+                                              </table>   
+                                            </apex:selectRadio>
+                                            </td>                                        
+                                         </tr>
+                                            
+                                            <tr height="25px"></tr>
+                                            <tr>
+                                            <td style="width:70%">
+                                                <apex:outputtext id="notProbText" style="color:#6590c4; font-size: 13.9pt;font-weight: bold;display:none" value="{!$Label.Assess_Realistic}"/>
+                                            </td> 
+                                            <td> 
+                                                <apex:outputtext value="{!strSelectSubDateAccess}"/> 
+                                                <apex:selectList id="subDateListAssess" value="{!strSelectSubDateAccess}" size="1" style="display:none">
+                                                       
+                                                        <apex:selectOptions id="subDateOptAssess" value="{!submissionDate}"></apex:selectOptions>
+                                                         
+                                                </apex:selectList>
+                                                
+                                                </td>
+                                            </tr>
+                                           <!--  <tr height="25px"></tr>-->
+                                            <tr>
+                                                <td class="deletePopup" align="center" colspan="2">
+                                                    <apex:commandButton styleClass="popupButtonYes" style="margin-right:5px" onclick="return dateCheckCT();" value="{!$Label.Confirm}" oncomplete="location.reload()" /> <!--reRender="frm" action="{!SubmitToTRP}" oncomplete="location.reload();--->
+                                                    <apex:commandButton styleClass="popupButtonCancel"  value="{!$Label.Cancel}" onclick="return CloseConfirmPopup('{!$Component.tstpopupAssess}');"/>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </apex:outputPanel>
+                                </apex:outputPanel>
+                                
+                                <!-- New TRP CT Review Enchancement End-->
+                                <apex:inputhidden id="hcid" value="{!objCN.Id}"/>
+                                <apex:outputPanel id="tstpopupTRP" style="display:none;">
+                                    <apex:outputPanel id="popupBackgroundTRP" styleClass="popupBackground"/>
+                                    <apex:outputPanel id="custPopupTRP" styleClass="custPopuptwo" style="height:{!if(objCN.Concept_Note_Submission_Date__c != '','220px','150px')}">
+                                        <table style="width:100% !important;padding:0px !important;" cellspacing="0" cellpadding="0" border="0" >                                            
+                                             
+                                             <tr></tr>
+                                             <tr>
+                                            <td style="width:40%">
+                                                <h5> {!$Label.Sub_Date_head} </h5>
+                                            </td>
+                                            <td>
+                                                     
+                                                <apex:selectList id="subDateList" value="{!strSelectSubDate}" size="1">
+                                                       
+                                                        <apex:selectOptions id="subDateOpt" value="{!submissionDate}"></apex:selectOptions>
+                                                         <apex:actionSupport event="onchange" reRender="custPopupTRP" action="{!trpDate}"/>
+                                                </apex:selectList>
+                                                <!--    <apex:inputField value="{!Concept_Note__c.Concept_Note_Submission_Date__c}" />-->
+                                                </td>
+                                            </tr>
+                                            <tr></tr>
+                                            <tr>
+                                                <td >
+                                                <h5>  {!$Label.TRP_Date_Head}</h5>   
+                                                </td>
+                                                <td>
+                                                    <apex:outputText value="{!strTrpRelDate}" />
+                                                </td>
+                                            </tr>
+                                            <tr></tr>
+                                            <tr>
+                                                <td >
+                                                <h5>{!$Label.Select_Language_Head}</h5>
+                                                </td>
+                                                <td>
+                                                    <!--Commented Based on incidentINC016599
+                                                    <apex:inputField id="subLang" value="{!objCN.TRP_Submission_Language__c}"/>-->
+                                                    <apex:inputField id="subLang" value="{!objCN.Language__c}"/>
+                                                </td>
+                                            </tr>
+                                            <!-- TCS 10/09/2014 Profile Access Setting
+                                             <tr style="display:{!IF(objCN.Status__c != $Label.Sub_to_GF && objCN.Concept_Note_Submission_Date__c != '' && OR(CONTAINS($Profile.Name,'CCM') || CONTAINS($Profile.Name,'Admin'),$Profile.Name=='System Administrator',$Profile.Name=='Country Team'),'','none')}">-->
+                                             <tr style="display:{!IF(objCN.Concept_Note_Submission_Date__c != '' && blnSubmitCN == true,'','none')}">
+                                                <td colspan="2">
+                                                <h5>{!$Label.Brief_Description_Head}</h5>
+                                                </td>
+                                            </tr>
+                                             <tr style="display:{!IF(objCN.Concept_Note_Submission_Date__c != '' && blnSubmitCN == true,'','none')}">   
+                                                <td colspan="2">
+                                                    <apex:inputField id="justification" value="{!objCN.Justification__c}" style="width:95%"/>
+                                                </td>
+                                            </tr>                                       
+                                            <tr>
+                                                <td align="right" >
+                                                    <apex:commandButton styleClass="popupButtonYes" style="margin-right:5px" value="{!$Label.Confirm}" onclick="validateOnConfirm();return false;" oncomplete="location.reload()"  />
+                                                    
+                                                </td>
+                                                <td align="left">
+                                                    <apex:commandButton styleClass="popupButtonCancel" value="{!$Label.Cancel}" onclick="return CloseConfirmPopup('{!$Component.tstpopupTRP}');"/>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </apex:outputPanel>
+                                </apex:outputPanel>                        
+                    </div>
+                <br/>
+                <apex:actionFunction id="confirmJS" name="confirmActionJS" action="{!submitCNDate}" oncomplete="pageReload('{!$Component.hcid}');"/>
+                <apex:actionFunction id="SubmitToTRP" name="funcSubmitToTRP" action="{!SubmitToTRP}" oncomplete="location.reload();" status="Processing"/> 
+                <apex:actionFunction id="FinishCTRAction" action="{!DocCheckCust}" reRender="custPopup4" name="DocCheckJS" />                                                                                                
+                <apex:actionFunction id="CTSubAction" action="{!CTSubLike}" name="ConfirmLikDateJS" oncomplete="pageReload('{!$Component.hcid}');"/>
+                <!--********START*********Code for CN Unlock, Rollback*********************
+                <apex:actionFunction id="RequestCNUnlock" action="{!closeRequestCNunlock}" name="DisableCNunlockandCTreview" oncomplete="pageReload('{!$Component.hcid}');"/>   
+                <apex:actionFunction id="YesUnlockCN" action="{!YesCNunlock}" name="YesUnlockCN" oncomplete="pageReload('{!$Component.hcid}');"/>
+                <apex:actionFunction id="YesUnlockCN1" action="{!Unlocked_Itegrated_View}" name="YesUnlockCN1" oncomplete="pageReload('{!$Component.hcid}');"/>      
+                <apex:actionFunction id="NoUnlockCN" action="{!NoCNunlock}" name="NoUnlockCN" oncomplete="pageReload('{!$Component.hcid}');"/>
+                <apex:actionFunction id="CNrollback" action="{!CNrollback}" name="CNrollback" oncomplete="pageReload('{!$Component.hcid}');"/>
+                ***********END***********Code for CN Unlock, Rollback*********************-->   
+                
+                <div style="margin-right:40px">
+                <table class="table" style="margin-left:40px;margin-right:1%;">
+                    <tr>
+                        <td>
+                            <b>{!$Label.Country} : </b>
+                           <apex:outputField value="{!Concept_Note__c.CCM_New__r.Country__r.Name}"/>
+                        </td>
+                        <td>
+                            <b>{!$Label.Applicant} : </b> 
+                            <apex:outputField value="{!Concept_Note__c.CCM_New__r.Name}"/>
+                        </td>
+                        <td>
+                            <b>{!$Label.Language} : </b>
+                           <apex:outputField value="{!Concept_Note__c.Language__c}"/>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <b>{!$Label.Component} : </b>
+                             <apex:outputField value="{!Concept_Note__c.Component__c}"/>
+                        </td>
+                        <td>
+                            <b>{!$Label.Start_Date} : </b>
+                             <apex:outputField value="{!Concept_Note__c.Start_Month__c}"/> &nbsp;<apex:outputField value="{!Concept_Note__c.Year_1__c}"/>
+                        </td>
+                        <td>
+                            <b>{!$Label.Status} : </b>
+                             <apex:outputField value="{!Concept_Note__c.Status__c}"/>
+                        </td>
+                    </tr>
+                </table>
+                </div>      
+                <table class="table-margin">
+                    <tr>
+                        <td>
+                            <b>{!$Label.View_Costs} {!Concept_Note__c.CurrencyISOCode})</b>
+                        </td>
+                        <td rowspan="2" style="padding-left:40px">
+                            <b>{!$Label.Agreed_Split} : </b>                            
+                            <apex:outputtext value="{0, number,###,###,##0}" rendered="{!Concept_Note__c.Program_Split__r.Agreed__c}">
+                                <apex:param value="{!IF(Concept_Note__c.CurrencyIsoCode=='USD',Concept_Note__c.Agreed_Split_USD__c,Concept_Note__c.Agreed_Split_EUR__c)}"/>
+                            </apex:outputtext>
+                            <apex:outputText value="{!$Label.Not_yet_agreed}" rendered="{!!Concept_Note__c.Program_Split__r.Agreed__c}"/>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <apex:selectList size="1" onchange="onchangeView(this);" id="SelCategory">
+                                <apex:selectOption itemvalue="{!$Label.By_Module}"/>
+                                <apex:selectOption itemvalue="{!$Label.By_PR}"/>
+                            </apex:selectList>
+                        </td>
+                    </tr>   
+                    
+                </table>
+            <table width="100%" id="moduleTable" class="table-margin">
+                <tr>
+                    <td>
+                    <!-- TCS 10/09/2014 Profile Access Setting
+                        <a href="{!if(CONTAINS($Profile.Name,'PR')||CONTAINS($Profile.Name,'LFA')||CONTAINS($Profile.Name,'CM')||CONTAINS($Profile.Name,'CCM'),'/GM','')}/00Ob0000003Srv9?pv0={!Concept_Note__c.Name}" target="_blank" class="link" style="display:{!if(CONTAINS($Profile.Name,'PR')||CONTAINS($Profile.Name,'LFA')||CONTAINS($Profile.Name,'CM')||CONTAINS($Profile.Name,'CCM'),'none','')}">-->
+                        <a href="{!if(blnExternalPro == true,'/GM','')}/00Ob0000003Srv9?pv0={!Concept_Note__c.Name}" target="_blank" class="link" style="display:{!if(blnExternalPro == true,'none','')}">
+                            {!$Label.View_Chart}
+                        </a>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="vertical-align:top">
+                        <table style="width:90% !important;" class="table table-striped">
+                            <tr>
+                                <th>
+                                    {!$Label.Module}
+                                </th>
+                                <th>
+                                    {!$Label.Allocated_Above}
+                                </th>
+                                <th>
+                                    {!Concept_note__c.Year_1__c}
+                                </th>
+                                <th>
+                                    {!Concept_note__c.Year_2__c}
+                                </th>
+                                <th>
+                                    {!Concept_note__c.Year_3__c}
+                                </th>
+                                <th style="display:{!if(Concept_Note__c.Number_of_Years__c=='4','','none')}">
+                                    {!Concept_note__c.Year_4__c}
+                                </th>
+                                <th>
+                                    {!$Label.Total}
+                                </th>
+                            </tr>
+                            <apex:repeat value="{!lstBLModule}" var="BLM">
+                                <tr>
+                                    <td rowspan="2">
+                                        <apex:outputText value="{!BLM.ModuleName}"></apex:outputText>
+                                    </td>
+                                    <td class="bold">
+                                        {!$Label.Indicative}
+                                    </td>
+                                    <td>
+                                        <apex:outputText value="{0, number,###,###,##0}">
+                                             <apex:param value="{!round(BLM.IndY1,0)}"/>
+                                        </apex:outputText>
+                                    </td>
+                                    <td>
+                                        <apex:outputText value="{0, number,###,###,##0}">
+                                             <apex:param value="{!round(BLM.IndY2,0)}"/>
+                                        </apex:outputText>
+                                    </td>
+                                    <td>
+                                        <apex:outputText value="{0, number,###,###,##0}">
+                                             <apex:param value="{!round(BLM.IndY3,0)}"/>
+                                        </apex:outputText>
+                                    </td>
+                                    <td style="display:{!if(Concept_Note__c.Number_of_Years__c=='4','','none')}">
+                                        <apex:outputText value="{0, number,###,###,##0}">
+                                             <apex:param value="{!round(BLM.IndY4,0)}"/>
+                                        </apex:outputText>
+                                    </td>
+                                    <td class="bold">
+                                        <apex:outputText value="{0, number,###,###,##0}">
+                                             <apex:param value="{!round(BLM.TotalModuleCostI,0)}"/>
+                                        </apex:outputText>
+                                    </td>
+                                    
+                                </tr>
+                                <tr>
+                                    <td class="bold">
+                                       {!$Label.Above}
+                                    </td>
+                                    <td>
+                                        <apex:outputText value="{0, number,###,###,##0}">
+                                             <apex:param value="{!round(BLM.AboveY1,0)}"/>
+                                        </apex:outputText>
+                                    </td>
+                                    <td>
+                                        <apex:outputText value="{0, number,###,###,##0}">
+                                             <apex:param value="{!round(BLM.AboveY2,0)}"/>
+                                        </apex:outputText>
+                                    </td>
+                                    <td>
+                                        <apex:outputText value="{0, number,###,###,##0}">
+                                             <apex:param value="{!round(BLM.AboveY3,0)}"/>
+                                        </apex:outputText>
+                                    </td>
+                                    <td style="display:{!if(Concept_Note__c.Number_of_Years__c=='4','','none')}">
+                                        <apex:outputText value="{0, number,###,###,##0}">
+                                             <apex:param value="{!round(BLM.AboveY4,0)}"/>
+                                        </apex:outputText>
+                                    </td>
+                                    <td class="bold">
+                                        <apex:outputText value="{0, number,###,###,##0}">
+                                             <apex:param value="{!round(BLM.TotalModuleCostA,0)}"/>
+                                        </apex:outputText>
+                                    </td>
+                                </tr>
+                            </apex:repeat>
+                            <tr>
+                                <th rowspan="2" class="topborder bold">
+                                    {!$Label.Total}
+                                </th>
+                                <td class="topborder bold">
+                                    {!$Label.Indicative}
+                                </td>
+                                <td class="topborder bold">
+                                    <apex:outputText styleclass="bold" value="{0, number,###,###,##0}"> 
+                                        <apex:param value="{!round(TotalModuleY1CostI,0)}"/>
+                                    </apex:outputText>
+                                </td>
+                                <td class="topborder bold">
+                                    <apex:outputText styleclass="bold" value="{0, number,###,###,##0}"> 
+                                        <apex:param value="{!round(TotalModuleY2CostI,0)}"/>
+                                    </apex:outputText>
+                                </td>
+                                <td class="topborder bold">
+                                    <apex:outputText styleclass="bold" value="{0, number,###,###,##0}"> 
+                                        <apex:param value="{!round(TotalModuleY3CostI,0)}"/>
+                                    </apex:outputText>
+                                </td>
+                                <td class="topborder bold" style="display:{!if(Concept_Note__c.Number_of_Years__c=='4','','none')}">
+                                    <apex:outputText styleclass="bold" value="{0, number,###,###,##0}"> 
+                                        <apex:param value="{!round(TotalModuleY4CostI,0)}"/>
+                                    </apex:outputText>
+                                </td>
+                                <td class="topborder bold">
+                                    <apex:outputText styleclass="bold" style="color:{!if((Concept_Note__c.CurrencyIsoCode == 'USD' && Concept_Note__c.Agreed_Split_USD__c != null && Concept_Note__c.Program_Split__r.Agreed__c && AND(NOT(ISBLANK(AllYearModuleTotalCostI)), AllYearModuleTotalCostI > Concept_Note__c.Agreed_Split_USD__c)) || (Concept_Note__c.CurrencyIsoCode == 'EUR' && Concept_Note__c.Agreed_Split_EUR__c != null && Concept_Note__c.Program_Split__r.Agreed__c && AND(NOT(ISBLANK(AllYearModuleTotalCostI)), AllYearModuleTotalCostI > Concept_Note__c.Agreed_Split_EUR__c)),'red','')}" value="{0, number,###,###,##0}">
+                                        <apex:param value="{!round(AllYearModuleTotalCostI,0)}"/>
+                                    </apex:outputText>
+                                </td>                                
+                            </tr>
+                            <tr>
+                                <td class="bold">
+                                    {!$Label.Above}
+                                </td>
+                                <td class="bold">
+                                    <apex:outputText styleclass="bold" value="{0, number,###,###,##0}"> 
+                                        <apex:param value="{!round(TotalModuleY1CostA,0)}"/>
+                                    </apex:outputText>
+                                </td>
+                                <td class="bold">
+                                    <apex:outputText styleclass="bold" value="{0, number,###,###,##0}"> 
+                                        <apex:param value="{!round(TotalModuleY2CostA,0)}"/>
+                                    </apex:outputText>
+                                </td>
+                                <td class="bold">
+                                    <apex:outputText styleclass="bold" value="{0, number,###,###,##0}"> 
+                                        <apex:param value="{!round(TotalModuleY3CostA,0)}"/>
+                                    </apex:outputText>
+                                </td>
+                                <td class="bold" style="display:{!if(Concept_Note__c.Number_of_Years__c=='4','','none')}">
+                                    <apex:outputText styleclass="bold" value="{0, number,###,###,##0}"> 
+                                        <apex:param value="{!round(TotalModuleY4CostA,0)}"/>
+                                    </apex:outputText>
+                                </td>
+                                <td class="bold">
+                                    <apex:outputText styleclass="bold" value="{0, number,###,###,##0}">
+                                        <apex:param value="{!round(AllYearModuleTotalCostA,0)}"/>
+                                    </apex:outputText>
+                                </td>                                
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+            </table>
+    <!--TABLE IF BY PR IS SELECTED-->         
+            <table width="100% !important" id="PRtable" style="display:none;" class="table-margin">
+                <tr>
+                    <td>
+                        <a href="{!if(CONTAINS($Profile.Name,'PR')||CONTAINS($Profile.Name,'LFA')||CONTAINS($Profile.Name,'CM')||CONTAINS($Profile.Name,'CCM'),'/GM','')}/00Ob0000003SrvO?pv0={!Concept_Note__c.Name}" target="_blank" class="link" style="display:{!if(CONTAINS($Profile.Name,'PR')||CONTAINS($Profile.Name,'LFA')||CONTAINS($Profile.Name,'CM')||CONTAINS($Profile.Name,'CCM'),'none','')}">
+                            {!$Label.View_Chart}
+                        </a>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="vertical-align:top">
+                        <table style="width:90% !important;" class="table table-striped">
+                            <tr>
+                                <th>
+                                    {!$Label.PR_Name}
+                                </th>
+                                <th>
+                                    {!$Label.Allocated_Above}
+                                </th>
+                                <th>
+                                    {!Concept_note__c.Year_1__c}
+                                </th>
+                                <th>
+                                    {!Concept_note__c.Year_2__c}
+                                </th>
+                                <th>
+                                    {!Concept_note__c.Year_3__c}
+                                </th>
+                                <th style="display:{!if(Concept_Note__c.Number_of_Years__c=='4','','none')}">
+                                    {!Concept_note__c.Year_4__c}
+                                </th>
+                                <th>
+                                    {!$Label.Total}
+                                </th>
+                            </tr>
+                            <apex:repeat value="{!lstBLModulePR}" var="BLM">
+                                <tr>
+                                    <td rowspan="2">
+                                        <apex:outputText value="{!BLM.ModuleName}"></apex:outputText>
+                                    </td>
+                                    <td class="bold">
+                                        {!$Label.Indicative}
+                                    </td>
+                                    <td>
+                                        <apex:outputText value="{0, number,###,###,##0}">
+                                             <apex:param value="{!round(BLM.IndY1,0)}"/>
+                                        </apex:outputText>
+                                    </td>
+                                    <td>
+                                        <apex:outputText value="{0, number,###,###,##0}">
+                                             <apex:param value="{!round(BLM.IndY2,0)}"/>
+                                        </apex:outputText>
+                                    </td>
+                                    <td>
+                                        <apex:outputText value="{0, number,###,###,##0}">
+                                             <apex:param value="{!round(BLM.IndY3,0)}"/>
+                                        </apex:outputText>
+                                    </td>
+                                    <td style="display:{!if(Concept_Note__c.Number_of_Years__c=='4','','none')}">
+                                        <apex:outputText value="{0, number,###,###,##0}">
+                                             <apex:param value="{!round(BLM.IndY4,0)}"/>
+                                        </apex:outputText>
+                                    </td>
+                                    <td class="bold">
+                                        <apex:outputText value="{0, number,###,###,##0}">
+                                             <apex:param value="{!round(BLM.TotalModuleCostI,0)}"/>
+                                        </apex:outputText>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="bold">
+                                        {!$Label.Above}
+                                    </td>
+                                    <td>
+                                        <apex:outputText value="{0, number,###,###,##0}">
+                                             <apex:param value="{!round(BLM.AboveY1,0)}"/>
+                                        </apex:outputText>
+                                    </td>
+                                    <td>
+                                        <apex:outputText value="{0, number,###,###,##0}">
+                                             <apex:param value="{!round(BLM.AboveY2,0)}"/>
+                                        </apex:outputText>
+                                    </td>
+                                    <td>
+                                        <apex:outputText value="{0, number,###,###,##0}">
+                                             <apex:param value="{!round(BLM.AboveY3,0)}"/>
+                                        </apex:outputText>
+                                    </td>
+                                    <td style="display:{!if(Concept_Note__c.Number_of_Years__c=='4','','none')}">
+                                        <apex:outputText value="{0, number,###,###,##0}">
+                                             <apex:param value="{!round(BLM.AboveY4,0)}"/>
+                                        </apex:outputText>
+                                    </td>
+                                    <td class="bold">
+                                        <apex:outputText value="{0, number,###,###,##0}">
+                                             <apex:param value="{!round(BLM.TotalModuleCostA,0)}"/>
+                                        </apex:outputText>
+                                    </td>                                    
+                                </tr>
+                            </apex:repeat>
+                            <tr>
+                                <th rowspan="2" class="topborder bold">
+                                    {!$Label.Total}
+                                </th>  
+                                <td class="topborder bold">
+                                    {!$Label.Indicative}
+                                </td>
+                                <td class="topborder bold">
+                                    <apex:outputText styleclass="bold" value="{0, number,###,###,##0}"> 
+                                        <apex:param value="{!round(TotalModuleY1CostI,0)}"/>
+                                    </apex:outputText>
+                                </td>
+                                <td class="topborder bold">
+                                    <apex:outputText styleclass="bold" value="{0, number,###,###,##0}"> 
+                                        <apex:param value="{!round(TotalModuleY2CostI,0)}"/>
+                                    </apex:outputText>
+                                </td>
+                                <td class="topborder bold">
+                                    <apex:outputText styleclass="bold" value="{0, number,###,###,##0}"> 
+                                        <apex:param value="{!round(TotalModuleY3CostI,0)}"/>
+                                    </apex:outputText>
+                                </td>
+                                <td class="topborder bold" style="display:{!if(Concept_Note__c.Number_of_Years__c=='4','','none')}">
+                                    <apex:outputText styleclass="bold" value="{0, number,###,###,##0}"> 
+                                        <apex:param value="{!round(TotalModuleY4CostI,0)}"/>
+                                    </apex:outputText>
+                                </td>
+                                <td class="topborder bold">
+                                    <apex:outputText styleclass="bold" value="{0, number,###,###,##0}" style="color:{!if((Concept_Note__c.CurrencyIsoCode == 'USD' && Concept_Note__c.Agreed_Split_USD__c != null && Concept_Note__c.Program_Split__r.Agreed__c && AND(NOT(ISBLANK(AllYearModuleTotalCostI)), AllYearModuleTotalCostI > Concept_Note__c.Agreed_Split_USD__c)) || (Concept_Note__c.CurrencyIsoCode == 'EUR' && Concept_Note__c.Agreed_Split_EUR__c != null && Concept_Note__c.Program_Split__r.Agreed__c && AND(NOT(ISBLANK(AllYearModuleTotalCostI)), AllYearModuleTotalCostI > Concept_Note__c.Agreed_Split_EUR__c)),'red','')}">
+                                        <apex:param value="{!round(AllYearModuleTotalCostI,0)}"/>
+                                    </apex:outputText>
+                                </td>                             
+                            </tr>
+                            <tr>
+                                <td class="bold">
+                                    {!$Label.Above}
+                                </td>
+                                <td class="bold">
+                                    <apex:outputText styleclass="bold" value="{0, number,###,###,##0}"> 
+                                        <apex:param value="{!round(TotalModuleY1CostA,0)}"/>
+                                    </apex:outputText>
+                                </td>
+                                <td class="bold">
+                                    <apex:outputText styleclass="bold" value="{0, number,###,###,##0}"> 
+                                        <apex:param value="{!round(TotalModuleY2CostA,0)}"/>
+                                    </apex:outputText>
+                                </td>
+                                <td class="bold">
+                                    <apex:outputText styleclass="bold" value="{0, number,###,###,##0}"> 
+                                        <apex:param value="{!round(TotalModuleY3CostA,0)}"/>
+                                    </apex:outputText>
+                                </td>
+                                <td class="bold" style="display:{!if(Concept_Note__c.Number_of_Years__c=='4','','none')}">
+                                    <apex:outputText styleclass="bold" value="{0, number,###,###,##0}"> 
+                                        <apex:param value="{!round(TotalModuleY4CostA,0)}"/>
+                                    </apex:outputText>
+                                </td>
+                                <td class="bold">
+                                    <apex:outputText styleclass="bold" value="{0, number,###,###,##0}">
+                                        <apex:param value="{!round(AllYearModuleTotalCostA,0)}"/>
+                                    </apex:outputText>
+                                </td>                                
+                            </tr>
+                        </table>
+                     </td>
+                </tr>
+            </table>
+          </div> 
+        <!-- end of wrapping table -->
+          </td>
+        </tr>
+      </table>
+    <!--TABLE OF PAGE STATUSES-->                         
+                <!--<span class="h3">
+                    {!$Label.Review_Submission}
+                </span>  -->
+                <!--<table style="width:65%" class="table table-striped table-margin">
+                        <tr>
+                            <th>
+                                {!$Label.Page}
+                            </th>
+                            <th>
+                                {!$Label.Status}
+                            </th>
+                            <th>
+                                {!$Label.Action}
+                            </th>
+                            <th>
+                                {!$Label.Dialogue}
+                            </th>
+                        </tr>
+                        <apex:variable value="{!0}" var="Count"/>
+                    <apex:repeat value="{!lstPages}" id="rptpages" var="P">
+                        <tr>  
+                            <td>
+                             {!if(strLanguage=='FRENCH',P.French_Name__c,if(strLanguage=='RUSSIAN',P.Russian_Name__c,if(strLanguage=='SPANISH',P.Spanish_Name__c,P.Name)))}
+                            </td>
+                            <td style="color:{!CASE(P.Status__c,'Ready for Global Fund Review','#339900','Draft','black','#FFA500')}">
+                                <apex:outputfield value="{!P.Status__c}"/>
+                            </td>
+                            <td>
+                                <apex:commandLink styleClass="TGFbtn TGFbtn-mini TGFbtn-success" onclick="return OpenConfirmPopup('{!$Component.tstpopup}','{!Count}');" rendered="{!if(P.Status__c=='Not yet ready for review',true,false)}">
+                                     <strong>{!$Label.Ready_Review}</strong>
+                                </apex:commandLink>
+                                <apex:outputPanel id="tstpopup" style="display:none;">
+                                    <apex:outputPanel id="popupBackground" styleClass="popupBackground"/>
+                                    <apex:outputPanel id="custPopup" styleClass="custPopup">
+                                        <table width="100%" height="100%" cellspacing="0" cellpadding="0" border="0" >
+                                            <tr>
+                                                <td colspan="3" class="deletePopup">
+                                                    <apex:outputtext style="color:#6590c4; font-size: 13.9pt;font-weight: bold;" value="{!$Label.Ready}"/>
+                                                </td>
+                                            </tr>
+                   
+                                            <tr>
+                                                <td width="47%" class="deletePopup">
+                                                    
+                                                    <apex:commandButton styleClass="popupButtonYes" value="{!$Label.Yes}" action="{!SubmitToReview}" reRender="frm">
+                                                        <apex:param value="{!Count}" name="ReviewIndex"/>
+                                                    </apex:commandButton>
+                                                </td>
+                                                <td width="6%" class="deletePopup"></td>
+                                                <td width="47%" align="left" class="deletePopupCancel">
+                                                    <apex:commandButton styleClass="popupButtonCancel" value="{!$Label.No}" onclick="return CloseConfirmPopup('{!$Component.tstpopup}');"/>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </apex:outputPanel>
+                                </apex:outputPanel>
+                            </td>
+                            <td>
+                                <apex:commandLink styleClass="TGFbtn TGFbtn-mini TGFbtn-warning" onclick="return OpenConfirmPopup('{!$Component.tstpopupdialog}','{!Count}');">
+                                     <strong>{!$Label.Dialogue}</strong>
+                                </apex:commandLink>
+                                <apex:outputPanel id="tstpopupdialog" style="display:none;">
+                                    <apex:outputPanel id="popupBackground1" styleClass="popupBackgroundDialog"/>
+                                    <apex:outputPanel id="custPopup1" styleClass="custPopupDialog">
+                                       <!-- <h3>Dialogue - {!P.Name}</h3> -->
+                                        <!--<table width="90%">
+                                                    <tr>
+                                                        <td width="20%">
+                                                            <b>{!$Label.CCM_Comments}:</b><br/>
+                                                            <apex:outputtext value="{!$Label.Last_Update} " rendered="{!if(isblank(P.Latest_PR_Comment__c)==false,true,false)}"/><br/>
+                                                            <apex:outputfield value="{!P.Latest_PR_Comment__c}"/>
+                                                        </td>
+                                                        <td>
+                                                            <apex:inputField style="height: 50px;resize: none;width: 90%;" value="{!P.PR_Comments__c}"/>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td width="20%">
+                                                            <b>{!$Label.LFA_Comments}: </b><br/>
+                                                            <apex:outputtext value="{!$Label.Last_Update} " rendered="{!if(isblank(P.Latest_LFA_Comment__c)==false,true,false)}"/><br/>
+                                                            <apex:outputfield value="{!P.Latest_LFA_Comment__c}"/>
+                                                        </td>
+                                                        <td>
+                                                            <apex:inputField style="height: 50px;resize: none;width: 90%;" value="{!P.LFA_Comments__c}"/>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td width="20%">
+                                                            <b>{!$Label.GF_Comments}:</b><br/>
+                                                            <apex:outputtext value="{!$Label.Last_Update} " rendered="{!if(isblank(P.Latest_LFA_Comment__c)==false,true,false)}"/><br/>
+                                                            <apex:outputfield value="{!P.Latest_LFA_Comment__c}"/> 
+                                                        </td>
+                                                        <td>
+                                                            <apex:inputField style="height: 50px;resize: none;width: 90%;" value="{!P.CT_Comments__c}"/>                                                            
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="dataCell TDstyle" colspan="2" style="text-align:center;">
+                                                            <apex:commandLink styleClass="TGFbtn TGFbtn-mini TGFbtn-success" style="width:37px;align:right;margin-right:10px;" action="{!SavePage}" status="Processing" rerender="frm">
+                                                                <apex:param value="{!Count-1}" name="SavePageIndex"/>
+                                                                <strong>{!$Label.Save}</strong>
+                                                            </apex:commandLink>
+                                                            <apex:commandLink styleClass="TGFbtn TGFbtn-mini TGFbtn-danger" style="align:left;" action="{!CancelPage}" status="Processing" rerender="frm"> 
+                                                                <strong>{!$Label.Cancel}</strong>
+                                                            </apex:commandLink>
+                                                        </td>
+                                                    </tr>
+                                                    <br/>
+                                                    <tr>
+                                                        <td class="resourcetTable" colspan="2">
+                                                            <div id="boxscroll" class="chatterFeedPanel">
+                                                                <apex:iframe id="ifResourceChatter" height="225px" scrolling="true" src="!if(CONTAINS($Profile.Name,'PR')||CONTAINS($Profile.Name,'LFA')||CONTAINS($Profile.Name,'CM')||CONTAINS($Profile.Name,'CCM'),'/GM','')}/apex/ServiceChatter?ServiceId={!P.Id}" />
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                </table>
+                                    </apex:outputPanel>
+                                </apex:outputPanel>
+                             </td>
+                        </tr>
+                        <apex:variable value="{!Count+1}" var="Count"/>
+                     </apex:repeat>-->                                            
+      <!-- end of row-->                                       
+       </div>
+    <!-- end of container -->
+     </div>
+     <script>
+     function closePanel(){
+                document.getElementById('Infopanel').style.display = 'none';
+            }            
+     function switchMenu(obj,obj1,obj2,hdn,val) 
+        {   
+            var AllLI = document.getElementsByTagName('li');
+            for(var i=0;i<AllLI.length;i++){
+                if(AllLI[i].id == obj){
+                    if(AllLI[i].style.display != 'none'){
+                        AllLI[i].style.display = 'none';
+                    }else{
+                        AllLI[i].style.display = '';
+                    }
+                }
+            }
+            document.getElementById(hdn).value=val; 
+            
+            var e2 = document.getElementById(obj1);                                       
+            if ( e2.style.display != 'none' ) {
+                e2.style.display = 'none';
+            }
+            else {
+                e2.style.display = '';
+            }
+            var e3 = document.getElementById(obj2);                                       
+            if ( e2.style.display != 'none' ) {
+                e3.style.display = 'none';
+            }
+            else {
+                e3.style.display = '';
+            }
+        }
+        function OpenConfirmPopup(popId,count){
+            document.getElementById(popId).style.display = '';
+            document.getElementById('CNoverview:frm:finishCTR').disabled=true;
+            return false;
+        }
+        //*****START******Code for CN Unlock, CN Rollback******************************
+        //function OpenRequestCNunlockPopup(popId,count){
+            //document.getElementById(popId).style.display = '';
+            //document.getElementById('CNoverview:frm:finishCTR').disabled=true;
+            //return false;
+        //}
+        //function OpenCNunlockPopup(popId,count){
+            //document.getElementById(popId).style.display = '';
+            //document.getElementById('CNoverview:frm:finishCTR').disabled=true;
+            //return false;
+        //}
+        //function OpenCNRollbackPopup(popId,count){
+            //document.getElementById(popId).style.display = '';
+            //document.getElementById('CNoverview:frm:finishCTR').disabled=true;
+            //return false;
+        //}
+        //*****END******Code for CN Unlock, CN Rollback******************************
+       function OpenFinishCTPopup(popId,docPopupID){
+            document.getElementById(popId).style.display = '';
+            document.getElementById(docPopupID).style.display = 'none';
+            DocCheckJS();
+            return false;
+            
+       } 
+        function CloseConfirmPopup(panelId){
+            document.getElementById(panelId).style.display = 'none';
+            
+            return false;
+        } 
+    
+        function onchangeView(viewValue){
+            if(viewValue.value == 'By Module' || viewValue.value == 'Par module' || viewValue.value == '?? ???????' || viewValue.value == 'Por Módulo'){
+                document.getElementById('moduleTable').style.display = '';
+                document.getElementById('PRtable').style.display = 'none';
+                
+            }else if(viewValue.value == 'By PR' || viewValue.value == 'Par récipiendaire principal' || viewValue.value == '?? ??' || viewValue.value == 'Por RP'){
+                document.getElementById('moduleTable').style.display = 'none';
+                document.getElementById('PRtable').style.display = '';
+            }
+        }
+          
+     </script>
+      <div id="divProcessing" style="display:none;">
+            <div class="ProcessingBackground"></div>
+            <div class="Processing">
+                <apex:image alt="Processing" url="{!$Resource.LoadingCircle}" />
+            </div>
+        </div>  
+        <apex:actionStatus id="Processing" onstart="document.getElementById('divProcessing').style.display = '';" onstop="document.getElementById('divProcessing').style.display = 'none';">                            
+        </apex:actionStatus>
+    </apex:form>
+</apex:page>

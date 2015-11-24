@@ -1,0 +1,46 @@
+<apex:page standardController="Grant_Indicator__c" extensions="GoalSelectionCtrl" >
+   
+   <style>
+   .link{
+    color: #00FF00;
+    text-decoration:underline;
+     text-align:right;
+     float: right;
+     font-weight:bold;
+    }
+    .text{
+      color: red;
+      font-weight:bold;
+      text-align: center;
+      
+    }
+    </style>
+      <apex:form >
+      <apex:pageMessages />
+      <apex:Pageblock rendered="{!display2}">
+       <apex:outputpanel > 
+            <apex:outputText value="{!message}" styleClass="text">
+            </apex:outputText>
+           
+            <a href="{!if(CONTAINS($Profile.Name,'PR')||CONTAINS($Profile.Name,'LFA')||CONTAINS($Profile.Name,'CM')||CONTAINS($Profile.Name,'CCM'),'/GM','')}/{!lstind[0].performance_framework__c }" class="link">
+             Back to Performance framework
+            </a>
+           </apex:outputpanel>
+      </apex:Pageblock>
+       <apex:pageblock rendered="{!!display2}">
+            <apex:pageBlockButtons >
+                  <apex:commandButton value="Save" action="{!save}" />
+                  <apex:CommandButton value="Cancel" action="{!cancel}" />
+            </apex:pageBlockButtons>
+             <apex:pageblockSection showheader="true" title="{!if((lstgoals.size > 0 &&  lstgoals[0].type__c == 'Goal' ) ,'Link to Goals','Link to Objectives')}">           
+                   <apex:pageBlockTable value="{!lstwgoalobj}" var="pr" >
+                         <apex:column headerValue="">
+                               <apex:inputCheckbox value="{!pr.selected}"/>
+                         </apex:column>
+                         <apex:column headerValue="Goal" value="{!pr.wgoalobj.Goal__c}" rendered="{!display3}"/>
+                         <apex:column headerValue="Objective" value="{!pr.wgoalobj.Goal__c}" rendered="{!display1}"/>
+                   </apex:pageBlockTable>
+             </apex:pageblockSection>
+       </apex:pageblock>
+ </apex:form>
+</apex:page>

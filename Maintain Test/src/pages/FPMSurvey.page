@@ -1,0 +1,1336 @@
+<apex:page id="page" standardController="Performance_Evaluation__c" sidebar="false" action="{!beingEdited}" extensions="ctrlFPMSurveys">
+
+ <style>
+
+    table {
+        table-layout:fixed;
+        border-spacing:0;
+        border-collapse:collapse;
+        margin: 10px 0;
+    }   
+    thead,tr {
+        border-bottom:1px solid #E0E3E5;
+    }
+
+    thead {
+        font-weight:bold;
+        background-color:#0066BB !important;
+        color:white !important;
+        white-space:normal !important;
+    }
+
+    th,td {
+        padding:3px;
+        text-align:left;
+    }
+    
+    .tableSubhead {
+        background-color:#adf;
+        font-weight:bold;
+    }
+
+    .rating,.rating1,.rating2,.rating3,.rating4,.rating5 {
+        width:100px;
+        text-align:center;
+    }
+    .rating5 {background-color:#00b0f0;}
+    .rating4 {background-color:#008000;}
+    .rating3 {background-color:#99cc00;}
+    .rating2 {background-color:#ffcc00;}
+    .rating1 {background-color:#ff0000;}
+    
+    .commentsField {
+        width: 394px;
+        resize:vertical;
+        resize:none;
+    }
+    
+    .commentsRequired {
+        background-color:#ffdddd;
+        width: 394px;
+        resize:vertical;
+    }
+    
+    /* page blocks */
+    
+    #pagetitle,#pageheader,#questionnaire,#technical,#overall {
+        width:800px;
+    }
+    #pagetitle,#services {
+        float:left;
+        clear:left;
+    }
+    #pageheader table,#technical table {
+        float:right;
+        clear:none;
+    }
+    #key {
+        margin-right:154px;
+    }
+    #overall,#technical {
+        //background-color:#E0E3E5;
+        background-color:#ADF;
+        border:1px solid #E0E3E5;
+        width:791px;
+        padding:4px;
+        
+        -moz-border-radius:4px;
+        -webkit-border-radius:4px;
+        margin-bottom:10px;
+    }
+    #overall,#final{
+          background-color:#ADF;
+        border:1px solid #E0E3E5;
+        width:791px;
+        padding:4px;
+        
+        -moz-border-radius:4px;
+        -webkit-border-radius:4px;
+        margin-bottom:10px;
+    }
+     
+    .clearfix:after {
+        visibility:hidden;
+        display:block;
+        font-size:0;
+        content:" ";
+        clear:both;
+        height:0;
+     }
+    /* text styles */
+    h2 {
+        font-size: 14px;
+    }
+    h3 {
+        font-size: 14px;
+        margin-top: 10px;
+    }
+    
+    .alert {
+        color:#ff0000;
+    }
+    .leftLabel {
+        text-align:right;
+        font-weight:bold;
+        font-size:93%;
+    }
+
+    .ProcessingBackground{
+        background-color: black;
+        opacity: 0.50;
+        filter: alpha(opacity = 50);
+        width: 100%;
+        height: 100%;
+        position: fixed;
+        z-index: 9999;
+        top:0;
+        left:0;
+     }
+    .Processing{
+        z-index: 9999;
+        left: 50%;
+        top: 50%;
+        text-align: center;
+        position: fixed;
+    }     
+        
+    .module{
+        font-size:98%;
+        font-weight:bold;
+        margin-top: 10px;
+    }    
+</style>
+<apex:form id="frm">
+    <div id="pagetitle" style="display:{!if($Profile.Name=='LFA Portal User','none','')};">
+        <h2 class="module">LFA Performance Evaluation Tool</h2><br />
+        <apex:sectionHeader subtitle="{!Performance_Evaluation__c.Name}"/>
+        <br>
+            <apex:outputText style="position:relative; top:-20px; margin-left:40px;" rendered="{!if(Performance_Evaluation__c.Type__c=='Period',true,false)}" value="Period Covered: {!Performance_Evaluation__c.Period_Start__c} – {!Performance_Evaluation__c.Period_End__c}" />
+            <apex:outputText style="position:relative; top:-20px; margin-left:40px;" rendered="{!if(Performance_Evaluation__c.Type__c=='Product',true,false)}" value="Service Submission Date: {!Performance_Evaluation__c.LFA_Service_Submission_Date__c} " />
+        </br><br/>
+    </div>
+
+<apex:pageBlock id="pb" >
+
+<div id="pageheader">
+    <!-- rendered="{!if($Profile.Name=='LFA Portal User',false,true)}" -->
+    <div id="services" style="display:{!if($Profile.Name=='LFA Portal User','none','')};">
+    <!-- display:{!if($Profile.Name=='LFA Portal User','none','')}; -->
+    </div>
+    
+    <apex:commandButton value="Click to View Services" action="{!viewService}" reRender="tstpopup" status="Processing" />
+    <br/><apex:commandButton id="submit8" value="Quick Save" action="{!quicksave}" reRender="frm" status="Processing" />
+    <br/>
+    
+    <span style="float:left;width:280px;display:{!If((perform.Display_final_rating_box__c=false && perform.Display_Send_to_LFA__c=false && (perform.RecordType.Name == 'Period' || perform.RecordType.Name == 'Product')),'visible','none')}" >
+        <b>Questionnaire Completion Stage </b> <br/>
+        Please answer all questions and choose a rating. Technical teams have been sent notification that they must input their ratings and comments within 15 days of the PET end date.  Once they have submitted their responses and/or 15 days have passed, you will be prompted to return to this page to review their responses below, adjust the rating if necessary and prepare final comments to be sent to the LFA.
+    </span>
+ 
+    <span style="float:left;width:280px;display:{!If((perform.Display_final_rating_box__c == true && perform.Display_Send_to_LFA__c == true && (perform.RecordType.Name == 'Period' || perform.RecordType.Name == 'Product')),'visible','none')}" >
+        <b> Feedback preparation Stage </b>
+        The deadline has passed for technical teams to input their ratings and comments.  You may view their responses below, adjust the rating if necessary and prepare final comments, and send the evaluation to the LFA.
+    </span>
+    
+<div id="key" style="width: 900px;">
+    <table style="margin-top:-18px;">
+        <thead>
+        <th colspan="2" width="502">Performance Rating Key</th>
+        </thead>
+        <tr>
+            <td class="rating5">5</td><td>Outstanding</td>
+        </tr>
+        <tr>
+            <td class="rating4">4</td><td>Exceeds Expectations</td>
+        </tr>
+        <tr>
+            <td class="rating3">3</td><td>Meets Expectations</td>
+        </tr>
+        <tr>
+            <td class="rating2">2</td><td>Needs Improvements (comments mandatory) <span class="alert"></span></td>
+        </tr>
+        <tr>
+            <td class="rating1">1</td><td>Unacceptable (comments mandatory) <span class="alert"></span></td>
+        </tr>
+    </table>
+</div>
+</div>
+<!-- pageheader -->
+<div class="clearfix"></div>
+
+<apex:pageMessages ></apex:pageMessages>
+
+<!--<apex:actionFunction action="calculate" name="afcalculate" reRender="frm"/>--->
+<apex:actionFunction name="afRefresh" reRender="frm"/>
+<div id="questionnaire">
+    <table>
+        <thead>
+            <th style="width:300px">Categories</th>
+            <th style="text-align:center">Rating</th>
+            <th style="width:400px; max-width:300px;">Comments 
+            </th>
+        </thead>
+        <tr class="tableSubhead">
+            <td colspan="3">Completeness, Accuracy, and Clarity</td>
+        </tr>
+        <tr>
+            <td class="question">The information in LFA deliverables is complete. The LFA used the correct GF template, where applicable, and followed the latest GF guidelines.</td>
+           
+            <td class="rating{!perform.Q1_Rating__c}">
+                <apex:inputField id="Q1" value="{!perform.Q1_Rating__c}" onChange="Calculate(); this.parentNode.className = 'rating' + this.value;" rendered="{!if($Profile.Name=='LFA Portal User' || perform.RecordType.Name == 'Finished',false,true)}"/>
+                    
+                <apex:outputPanel rendered="{!if($Profile.Name=='LFA Portal User' || perform.RecordType.Name == 'Finished',true,false)}">
+                    <apex:outputField id="Q1_op" value="{!perform.Q1_Rating__c}" /> <!--  onChange="Calculate(); this.parentNode.className = 'rating' + this.value;" -->
+                </apex:outputPanel>
+             </td>      
+        <td class="comments">
+            <apex:outputPanel rendered="{!if($Profile.Name=='LFA Portal User' || perform.RecordType.Name == 'Finished',false,true)}">
+                <apex:inputField id="C1" value="{!perform.Q1_Comments__c}"  styleClass="commentsField"/>
+            </apex:outputPanel>
+                
+            <apex:outputPanel rendered="{!if($Profile.Name=='LFA Portal User' || perform.RecordType.Name == 'Finished',true,false)}">
+                <apex:outputField id="C1_op" value="{!perform.Q1_Comments__c}" styleClass="commentsField"/>
+            </apex:outputPanel>
+        </td> 
+        </tr>
+        <tr>
+            <td class="question">The deliverables are well-written and understandable.          </td>
+            
+            <td class="rating{!perform.Q2_Rating__c}">
+                <apex:inputField id="Q2" value="{!perform.Q2_Rating__c}" onChange="Calculate(); this.parentNode.className = 'rating' + this.value;" rendered="{!if($Profile.Name=='LFA Portal User' || perform.RecordType.Name == 'Finished',false,true)}"/>
+                <apex:outputPanel rendered="{!if($Profile.Name=='LFA Portal User' || perform.RecordType.Name == 'Finished',true,false)}">
+                    <apex:outputField id="Q2_op" value="{!perform.Q2_Rating__c}" /> <!-- onChange="Calculate(); this.parentNode.className = 'rating' + this.value;" -->
+                </apex:outputPanel>
+            </td>
+            
+            <td class="comments">
+                <apex:outputPanel rendered="{!if($Profile.Name=='LFA Portal User' || perform.RecordType.Name == 'Finished',false,true)}">
+                    <apex:inputField id="C2" value="{!perform.Q2_Comments__c}" styleClass="commentsField"/>
+                </apex:outputPanel>
+                
+                <apex:outputPanel rendered="{!if($Profile.Name=='LFA Portal User' || perform.RecordType.Name == 'Finished',true,false)}">
+                    <apex:outputField id="C2_op" value="{!perform.Q2_Comments__c}" styleClass="commentsField"/>
+                </apex:outputPanel> 
+            </td>
+        </tr>
+        <tr>
+        <td class="question">Based on the information available, the calculations and reported information are accurate.            </td>
+        
+        <td class="rating{!perform.Q3_Rating__c}">
+            <apex:inputField id="Q3" value="{!perform.Q3_Rating__c}" onchange="Calculate(); this.parentNode.className = 'rating' + this.value;"  rendered="{!if($Profile.Name=='LFA Portal User' || perform.RecordType.Name == 'Finished',false,true)}"/>
+            <apex:outputPanel rendered="{!if($Profile.Name=='LFA Portal User' || perform.RecordType.Name == 'Finished',true,false)}">
+                <apex:outputField id="Q3_op" value="{!perform.Q3_Rating__c}" /> <!-- onchange="Calculate(); this.parentNode.className = 'rating' + this.value;" -->
+            </apex:outputPanel>
+        </td>
+        
+        <td class="comments">
+            <apex:outputPanel rendered="{!if($Profile.Name=='LFA Portal User' || perform.RecordType.Name == 'Finished',false,true)}">
+                <apex:inputField id="C3" value="{!perform.Q3_Comments__c}" styleClass="commentsField"/>
+            </apex:outputPanel>
+    
+            <apex:outputPanel rendered="{!if($Profile.Name=='LFA Portal User' || perform.RecordType.Name == 'Finished',true,false)}">
+                <apex:outputField id="C3_op" value="{!perform.Q3_Comments__c}" styleClass="commentsField"/>
+            </apex:outputPanel>
+        </td>
+    </tr>
+    <tr class="tableSubhead">
+        <td colspan="3">Analysis and Consistency</td>
+    </tr>
+    <tr>
+        <td class="question">The LFA independently verified, where applicable, and analyzed the relevant source documentation.</td>
+        
+        <td class="rating{!perform.Q4_Rating__c}">
+            <apex:inputField id="Q4" value="{!perform.Q4_Rating__c}" onChange="Calculate(); this.parentNode.className = 'rating' + this.value;" rendered="{!if($Profile.Name=='LFA Portal User' || perform.RecordType.Name == 'Finished',false,true)}"/>
+            <apex:outputPanel rendered="{!if($Profile.Name=='LFA Portal User' || perform.RecordType.Name == 'Finished',true,false)}">
+                <apex:outputField id="Q4_op" value="{!perform.Q4_Rating__c}" /> <!-- onChange="Calculate(); this.parentNode.className = 'rating' + this.value;" -->
+            </apex:outputPanel>
+        </td>
+        
+        <td class="comments">
+
+            <apex:outputPanel rendered="{!if($Profile.Name=='LFA Portal User' || perform.RecordType.Name == 'Finished',false,true)}">
+                <apex:inputField id="C4" value="{!perform.Q4_Comments__c}"  styleClass="commentsField"/>
+            </apex:outputPanel>
+    
+            <apex:outputPanel rendered="{!if($Profile.Name=='LFA Portal User' || perform.RecordType.Name == 'Finished',true,false)}">
+                <apex:outputField id="C4_op" value="{!perform.Q4_Comments__c}"  styleClass="commentsField"/>
+            </apex:outputPanel>
+    
+        </td>
+    </tr>
+    <tr>
+        <td class="question">The LFA's deliverables are analytical rather than purely descriptive.</td>
+        <td class="rating{!perform.Q5_Rating__c}">
+            <apex:inputField id="Q5" value="{!perform.Q5_Rating__c}" onChange="Calculate(); this.parentNode.className = 'rating' + this.value;" rendered="{!if($Profile.Name=='LFA Portal User' || perform.RecordType.Name == 'Finished',false,true)}"/>
+            <apex:outputPanel rendered="{!if($Profile.Name=='LFA Portal User' || perform.RecordType.Name == 'Finished',true,false)}">
+                <apex:outputField id="Q5_op" value="{!perform.Q5_Rating__c}" /> <!-- onChange="Calculate(); this.parentNode.className = 'rating' + this.value;" -->
+            </apex:outputPanel>
+        </td>
+        
+        <td class="comments">
+            <apex:outputPanel rendered="{!if($Profile.Name=='LFA Portal User' || perform.RecordType.Name == 'Finished',false,true)}">
+                <apex:inputField id="C5" value="{!perform.Q5_Comments__c}" styleClass="commentsField"/>
+            </apex:outputPanel>
+    
+            <apex:outputPanel rendered="{!if($Profile.Name=='LFA Portal User' || perform.RecordType.Name == 'Finished',true,false)}">
+                <apex:outputField id="C5_op" value="{!perform.Q5_Comments__c}" styleClass="commentsField"/>
+            </apex:outputPanel>
+        </td>
+    </tr>
+    <tr>
+        <td class="question">The LFA&#39;s analysis demonstrates sound judgement and informed understanding of the relevant programmatic and country context.           </td>
+        <td class="rating{!perform.Q6_Rating__c}">
+            <apex:inputField id="Q6" value="{!perform.Q6_Rating__c}" onChange="Calculate(); this.parentNode.className = 'rating' + this.value;" rendered="{!if($Profile.Name=='LFA Portal User' || perform.RecordType.Name == 'Finished',false,true)}"/>
+            <apex:outputPanel rendered="{!if($Profile.Name=='LFA Portal User' || perform.RecordType.Name == 'Finished',true,false)}">        
+                <apex:outputField id="Q6_op" value="{!perform.Q6_Rating__c}" /> <!-- onChange="Calculate(); this.parentNode.className = 'rating' + this.value;" -->
+            </apex:outputPanel>
+        </td>
+        
+        <td class="comments">
+            <apex:outputPanel rendered="{!if($Profile.Name=='LFA Portal User' || perform.RecordType.Name == 'Finished',false,true)}">
+                <apex:inputField id="C6" value="{!perform.Q6_Comments__c}" styleClass="commentsField"/>
+            </apex:outputPanel>
+        
+            <apex:outputPanel rendered="{!if($Profile.Name=='LFA Portal User' || perform.RecordType.Name == 'Finished',true,false)}">
+                <apex:outputField id="C6_op" value="{!perform.Q6_Comments__c}" styleClass="commentsField"/>
+            </apex:outputPanel>
+        </td>
+    </tr>
+    <tr class="tableSubhead">
+        <td colspan="3">Practicality of Recommendations</td>
+    </tr>
+    <tr>
+        <td class="question">The LFA recommendations are specific, realistic and appropriate for managing the identified risks/issues.</td>
+    
+        <td class="rating{!perform.Q7_Rating__c}">
+            <apex:inputField id="Q7" value="{!perform.Q7_Rating__c}" onChange="Calculate(); this.parentNode.className = 'rating' + this.value;" rendered="{!if($Profile.Name=='LFA Portal User' || perform.RecordType.Name == 'Finished',false,true)}"/>
+            <apex:outputPanel rendered="{!if($Profile.Name=='LFA Portal User' || perform.RecordType.Name == 'Finished',true,false)}">        
+                <apex:outputField id="Q7_op" value="{!perform.Q7_Rating__c}" /> <!-- onChange="Calculate(); this.parentNode.className = 'rating' + this.value;" -->
+            </apex:outputPanel>
+        </td>
+    
+        <td class="comments">
+            <apex:outputPanel rendered="{!if($Profile.Name=='LFA Portal User' || perform.RecordType.Name == 'Finished',false,true)}">
+                <apex:inputField id="C7" value="{!perform.Q7_Comments__c}" styleClass="commentsField"/>
+            </apex:outputPanel>
+            
+            <apex:outputPanel rendered="{!if($Profile.Name=='LFA Portal User' || perform.RecordType.Name == 'Finished',true,false)}">
+                <apex:outputField id="C7_op" value="{!perform.Q7_Comments__c}" styleClass="commentsField"/>
+            </apex:outputPanel>
+        </td>
+    </tr>
+    <tr class="tableSubhead">
+        <td colspan="3">Timeliness/Responsiveness/Proactivity/Communication</td>
+    </tr>
+    <tr>
+        <td class="question">The LFA response time is according to the agreed timeframe.</td>
+        <td class="rating{!perform.Q8_Rating__c}">
+            <apex:inputField id="Q8" value="{!perform.Q8_Rating__c}" onChange="Calculate(); this.parentNode.className = 'rating' + this.value;" rendered="{!if($Profile.Name=='LFA Portal User' || perform.RecordType.Name == 'Finished',false,true)}"/>
+            <apex:outputPanel rendered="{!if($Profile.Name=='LFA Portal User' || perform.RecordType.Name == 'Finished',true,false)}">        
+                <apex:outputField id="Q8_op" value="{!perform.Q8_Rating__c}" /> <!-- onChange="Calculate(); this.parentNode.className = 'rating' + this.value;" -->
+            </apex:outputPanel>
+        </td>
+        <td class="comments">
+            <apex:outputPanel rendered="{!if($Profile.Name=='LFA Portal User' || perform.RecordType.Name == 'Finished',false,true)}">    
+                <apex:inputField id="C8" value="{!perform.Q8_Comments__c}" styleClass="commentsField"/>
+            </apex:outputPanel>
+    
+            <apex:outputPanel rendered="{!if($Profile.Name=='LFA Portal User' || perform.RecordType.Name == 'Finished',true,false)}">    
+                <apex:outputField id="C8_op" value="{!perform.Q8_Comments__c}" styleClass="commentsField"/>
+            </apex:outputPanel>
+        </td>
+    </tr>
+    <tr>
+        <td class="question">The LFA demonstrates an understanding of its role.</td>
+        
+        <td class="rating{!perform.Q9_Rating__c}">
+            <apex:inputField id="Q9" value="{!perform.Q9_Rating__c}" onChange="Calculate(); this.parentNode.className = 'rating' + this.value;" rendered="{!if($Profile.Name=='LFA Portal User' || perform.RecordType.Name == 'Finished',false,true)}"/>
+            <apex:outputPanel rendered="{!if($Profile.Name=='LFA Portal User' || perform.RecordType.Name == 'Finished' ,true,false)}">        
+                <apex:outputField id="Q9_op" value="{!perform.Q9_Rating__c}" /> <!-- onChange="Calculate(); this.parentNode.className = 'rating' + this.value;" -->
+            </apex:outputPanel>
+        </td>
+
+        <td class="comments">
+    
+            <apex:outputPanel rendered="{!if($Profile.Name=='LFA Portal User' || perform.RecordType.Name == 'Finished',false,true)}">
+                <apex:inputField id="C9" value="{!perform.Q9_Comments__c}" styleClass="commentsField"/>
+            </apex:outputPanel>
+    
+            <apex:outputPanel rendered="{!if($Profile.Name=='LFA Portal User' || perform.RecordType.Name == 'Finished',true,false)}">
+                <apex:outputField id="C9_op" value="{!perform.Q9_Comments__c}" styleClass="commentsField"/>
+            </apex:outputPanel>
+    
+        </td>
+    </tr>
+    <tr>
+        <td class="question">The LFA follows GF communication protocols.</td>
+        <td class="rating{!perform.Q10_Rating__c}">
+            <apex:inputField id="Q10" value="{!perform.Q10_Rating__c}" onChange="Calculate(); this.parentNode.className = 'rating' + this.value;" rendered="{!if($Profile.Name=='LFA Portal User' || perform.RecordType.Name == 'Finished',false,true)}"/>
+            <apex:outputPanel rendered="{!if($Profile.Name=='LFA Portal User' || perform.RecordType.Name == 'Finished',true,false)}">        
+                <apex:outputField id="Q10_op" value="{!perform.Q10_Rating__c}" /> <!-- onChange="Calculate(); this.parentNode.className = 'rating' + this.value;" -->
+            </apex:outputPanel>
+       </td>
+       
+       <td class="comments">
+            <apex:outputPanel rendered="{!if($Profile.Name=='LFA Portal User' || perform.RecordType.Name == 'Finished',false,true)}">
+                <apex:inputField id="C10" value="{!perform.Q10_Comments__c}" styleClass="commentsField"/>
+            </apex:outputPanel>
+            
+            <apex:outputPanel rendered="{!if($Profile.Name=='LFA Portal User' || perform.RecordType.Name == 'Finished',true,false)}">
+                <apex:outputField id="C10_op" value="{!perform.Q10_Comments__c}" styleClass="commentsField"/>
+            </apex:outputPanel>
+       </td>
+    </tr>
+    <tr>
+        <td class="question">The LFA provides relevant and timely information on developments that could have an impact on the grant.</td>
+        
+        <td class="rating{!perform.Q11_Rating__c}">
+            <apex:inputField id="Q11" value="{!perform.Q11_Rating__c}" onChange="Calculate(); this.parentNode.className = 'rating' + this.value;"  rendered="{!if($Profile.Name=='LFA Portal User' || perform.RecordType.Name == 'Finished',false,true)}"/>
+            <apex:outputPanel rendered="{!if($Profile.Name=='LFA Portal User' || perform.RecordType.Name == 'Finished',true,false)}">        
+                <apex:outputField id="Q11_op" value="{!perform.Q11_Rating__c}" /> <!-- onChange="Calculate(); this.parentNode.className = 'rating' + this.value;" -->
+            </apex:outputPanel>
+        </td>
+    
+        <td class="comments">
+         
+        <apex:outputPanel rendered="{!if($Profile.Name=='LFA Portal User' || perform.RecordType.Name == 'Finished',false,true)}">
+            <apex:inputField id="C11" value="{!perform.Q11_Comments__c}" styleClass="commentsField"/>
+        </apex:outputPanel>
+    
+        <apex:outputPanel rendered="{!if($Profile.Name=='LFA Portal User' || perform.RecordType.Name == 'Finished',true,false)}">
+            <apex:outputField id="C11_op" value="{!perform.Q11_Comments__c}" styleClass="commentsField"/>
+        </apex:outputPanel>
+        </td>
+    </tr>
+
+   
+      <tr class="tableSubhead">
+    <td colspan="3">Other  </td>
+   </tr>
+   <td> <i>If no revisions/clarifications were needed, N/A should be selected. Otherwise, 1 or 2 should be selected.</i></td>
+  
+   
+        <tr>
+            <td class="question">There was a need to request the LFA to provide significant clarifications or perform significant revision of the deliverables due to poor quality of the original LFA products.            </td>
+            
+            <td class="rating{!perform.Q12_Rating__c}">
+                <apex:inputField id="Q12" value="{!perform.Q12_Rating__c}" onChange="Calculate(); this.parentNode.className = 'rating' + this.value;" rendered="{!if($Profile.Name=='LFA Portal User'|| perform.RecordType.Name == 'Finished',false,true)}"/>
+                
+                <apex:outputPanel rendered="{!if($Profile.Name=='LFA Portal User' || perform.RecordType.Name == 'Finished',true,false)}">        
+                    <apex:outputField id="Q12_op" value="{!perform.Q12_Rating__c}"/> <!--  onChange="Calculate(); this.parentNode.className = 'rating' + this.value;" -->
+                </apex:outputPanel>
+ 
+            </td>
+            <td class="comments">
+
+                <apex:outputPanel rendered="{!if($Profile.Name=='LFA Portal User' || perform.RecordType.Name == 'Finished',false,true)}">
+                    <apex:inputField id="C12" value="{!perform.Q12_Comments__c}" styleClass="commentsField"/> 
+                </apex:outputPanel>
+    
+                <apex:outputPanel rendered="{!if($Profile.Name=='LFA Portal User' || perform.RecordType.Name == 'Finished',true,false)}">
+                    <apex:outputField id="C12_op" value="{!perform.Q12_Comments__c}" styleClass="commentsField"/> 
+                </apex:outputPanel>
+    
+            </td>
+        </tr>
+       <!--
+        <tr>
+            <td class="leftLabel">Calculated Average</td>
+            <td style="text-align:center;height:60px" class="rating{!floor(CalAvg)}" ><apex:outputText value="{!CalAvg}" id="CalAvg" /></td>
+            <td>&nbsp;</td>
+        </tr>-->
+          
+        <!-- <apex:outputPanel rendered="{!If($Profile.Name=='LFA Portal User'|| perform.RecordType.Name == 'Finished',false,true)}"> -->
+        <!-- rendered="{!If(perform.Status__c='In-Progress',false,if($Profile.Name=='LFA Portal User',false,true))}" --->
+         
+        <tr class="tableSubhead" style="display:{!if($Profile.Name=='LFA Portal User','none','')}">
+            <td colspan="3">Optional Internal Comment  </td>
+        </tr>
+        
+        <tr style="display:{!if($Profile.Name=='LFA Portal User','none','')}">
+           
+            <td>
+                <apex:inputField id="internal" value="{!perform.Internal_Comments__c}" styleClass="commentsField" />
+                <apex:outputText >This comment box has been provided for internal users and cannot be viewed by the LFA. </apex:outputText>
+            </td>
+        </tr>
+    <!--</apex:outputPanel>-->
+    </table>
+</div>
+
+<br/>
+    <div id="technical" style="display:{!If(lstResp.size > 0,'visible','none')};" >
+    <h3 style="font-size:99%;font-weight:bold">Evaluation of the LFA Team Technical Expertise </h3><br/>
+    <table>
+        <thead>
+            <th style="text-align:center">Rating</th>
+            <th>Comments</th>
+        </thead>
+        
+        <apex:repeat id="evaluations" value="{!lstResp}" var="response">
+            <tr class="tableSubhead"> <td colspan="2"> {!response.Type__c} </td></tr>
+            <tr>
+                <td class="rating{!response.Rating__c}" width="100"><apex:outputField value="{!response.Rating__c}" id="rating" styleClass=""/></td>
+                <td class="comments" width="400px" style="word-wrap: break-word;">
+        
+                    <div style="width:400px;">
+                        <!-- <apex:outputText style="word-wrap: break-word;" >{!response.Comments__c} </apex:outputText>-->
+                        <apex:outputField value="{!response.Comments__c}" id="comment" style="word-wrap: break-word;"/>
+                    </div>
+                </td>
+                
+                <td class="rating" style="display:none" width="100">
+                    <apex:inputField value="{!response.Rating_to_LFA__c}" onChange="Calculate(); this.parentNode.className = 'rating' + this.value;" id="lfarating"/>
+          
+                </td>
+                <td class="comments" style="display:none" width="380"><apex:inputField value="{!response.Comments_to_LFA__c}" id="lfacomment" styleClass="commentsField" /></td>
+            </tr>
+       
+        </apex:repeat>
+    </table>
+    </div>
+  
+<br/>
+
+<div class="clearfix"></div>
+  
+    <apex:outputPanel >
+    
+    <!-- style="display:{!If(Performance_Evaluation__c.Status__c='In-Progress','none','visible')}"-->
+    <div id="overall" class="overall" style="display:{!If(perform.Display_final_rating_box__c,'visible','none')}">
+    
+        <h3 style="font-size:99%;font-weight:bold">Initial Rating and Comments</h3>
+          
+        <table>
+                <tr Style="border:none;">
+                    <td width="270" class="leftLabel"> Calculated Average</td>
+                    
+                    <td class="rating{!floor(CalAvgOverall)}">
+                        <apex:outputText value="{!CalAvgOverall}" id="CalAvgOverall" />
+                            <apex:inputHidden id="hdnCalAvgOverall" value="{!CalAvgOverall}"/>
+
+                        <!--<apex:outputField value="{!Performance_Evaluation__c.Rating__c}" />-->
+                    </td>
+                    
+                    <td rowspan="3" style="word-wrap: break-word;">
+                    
+                    <div style="width:390px;">
+                        <apex:outputPanel rendered="{!if($Profile.Name!='LFA Portal User' || perform.RecordType.Name == 'Finished',true,false)}"> <!----->
+                            <apex:inputField value="{!perform.Comments__c}" styleClass="commentsField" style="height:120px;" rendered="{!if(perform.RecordType.Name != 'Finished',true,false)}"/>
+                            <apex:outputField value="{!perform.Comments__c}" styleClass="commentsField" rendered="{!if(perform.RecordType.Name == 'Finished',true,false)}"/>
+                        </apex:outputPanel>
+               
+                        <apex:outputPanel rendered="{!if($Profile.Name=='LFA Portal User',true,false)}">
+                            <apex:outputField value="{!perform.Comments__c}" styleClass="commentsField" />
+                        </apex:outputPanel>
+        
+                        <br/>
+                        <span style="display:{!if($Profile.Name=='LFA Portal User','none','visible')}">  Comments on overall LFA performance to be provided here, including areas for improvement and if the calculated rating was manually adjusted also provide an explanation.</span>
+                    </div>
+                    
+                    </td>
+                </tr>
+                <tr Style="border:none;">
+                    <td class="leftLabel">Adjusted Average</td>
+                    <td class="rating" style="width:50px">
+                   
+                        <apex:outputPanel rendered="{!if($Profile.Name!='LFA Portal User' || perform.RecordType.Name == 'Finished',true,false)}">
+                            <apex:outputField id="adjustAvg" value="{!perform.Rating__c}" rendered="{!if(perform.RecordType.Name == 'Finished',true,false)}"/>
+                            <apex:inputField value="{!perform.Rating__c}" style="width:50px"  onkeyup="return onlyNos(event,this);" onchange="this.parentNode.className = 'rating' + this.value;" rendered="{!if(perform.RecordType.Name != 'Finished',true,false)}"/>
+                        </apex:outputPanel>
+                           
+                        <apex:outputPanel rendered="{!if($Profile.Name=='LFA Portal User',true,false)}"> <!--|| perform.RecordType.Name == 'Finished'-->
+                            <apex:outputField value="{!perform.Rating__c}" rendered="{!if(perform.RecordType.Name == 'Finished',false,true)}" style="width:50px" id="adjustAvg_op" />
+                        </apex:outputPanel>
+           
+                    </td>
+                </tr>
+                
+                <tr Style="border:none;">
+                    <td></td>
+                    <td></td>
+                    
+                </tr>
+           
+              
+<!--            <apex:outputPanel rendered="{!if($Profile.Name=='LFA Portal User' || perform.RecordType.Name == 'Finished',false,if(perform.Status__c = 'Submitted to LFA',true, if(Performance_Evaluation__c.Status__c = 'LFA Response Complete', true, if(Performance_Evaluation__c.Status__c = 'Finalized',true,false))))}">-->
+              
+                <tr class="tableSubhead" Style="border:none;display:{!if($Profile.Name=='LFA Portal User' ,'none',if(perform.Status__c = 'Submitted to LFA','', if(Performance_Evaluation__c.Status__c = 'LFA Response Complete' || perform.RecordType.Name == 'Finished', '', if(Performance_Evaluation__c.Status__c = 'Finalized','','none'))))}">
+                    <td colspan="3">LFA Response  </td>
+                </tr>
+                
+                <tr Style="border:none;display:{!if($Profile.Name=='LFA Portal User'  ,'none',if(perform.Status__c = 'Submitted to LFA','', if(Performance_Evaluation__c.Status__c = 'LFA Response Complete' || perform.RecordType.Name == 'Finished', '', if(Performance_Evaluation__c.Status__c = 'Finalized','','none'))))}">
+                    <td colspan="2"></td>
+                    
+                    <td width="390px" style="word-wrap: break-word;">
+                        <div style="width:390px;">
+                            <apex:outputField value="{!perform.LFA_Comments__c}"  style="word-wrap: break-word;"/>
+                        </div>
+                    </td>
+                </tr>
+                  
+        <!--    </apex:outputPanel>-->
+            
+<!--            <apex:outputPanel rendered="{!if($Profile.Name=='LFA Portal User',true, false)}">-->
+               
+                <tr class="tableSubhead" Style="border:none;display:{!if($Profile.Name=='LFA Portal User','', 'none')}">
+                    <td colspan="3">LFA Response  </td>
+                </tr>
+                
+                <tr style="display:{!if($Profile.Name=='LFA Portal User','', 'none')}">
+                    <td colspan="2"></td>
+                    
+                    <td><apex:inputField value="{!perform.LFA_Comments__c}" style="width:390px"/></td>
+                </tr>
+               
+           <!-- </apex:outputPanel>-->
+            
+        </table>
+       
+    </div>
+    </apex:outputPanel>
+
+<br/>
+    <!-- Display_overall_rating_box__c=true -->
+    <apex:outputPanel rendered="{!perform.Display_overall_rating_box__c}" >
+    <!--<div id="final" >
+    <table>
+    <tr class="tableSubhead" style="border:none;">
+    <td colspan="3">Initial Rating</td></tr>
+    <tr Style="border:none;">
+    <td rowspan="2" class="comments">
+     <tr Style="border:none;">
+    <td class="leftLabel" width="50">Final Rating </td>
+    <td class="rating">
+         <apex:inputField value="{!perform.Final_Adjusted_Rating__c}" style=""/>
+         
+         <apex:inputField value="{!perform.Final_Comments__c}" style="resize:vertical;" styleClass="commentsField"/>
+     </td>
+   </tr>
+    </td>
+   </tr>
+   
+  </table>
+  
+  </div>-->
+  <div id="final" >
+  <table>
+    <tr class="tableSubhead" style="border:none;">
+    <td colspan="3">Final Rating and Comments</td></tr>
+    <tr Style="border:none;">
+    <td class="leftLabel" width="270">Final Rating </td>
+    <td  class="rating">
+        <apex:outputField id="outFinalRating1" value="{!perform.Final_Rating__c}" rendered="{!If((perform.Final_Rating__c == Null),false,true)}"/>
+        <apex:outputField id="outFinalRating2" value="{!perform.Rating__c}" rendered="{!If(perform.Final_Rating__c == Null && perform.Rating__c!=null,true,false)}"/>
+        <!-- <apex:outputField value="{!CalAvgOverall}" rendered="{!If((perform.Final_Rating__c == Null) && (CalAvgOverall != Null),true,false)}"/>
+      -->  
+      <apex:outputText id="outFinalRating3" value="{!CalAvgOverall}" rendered="{!If(perform.Final_Rating__c == Null && perform.Rating__c==null,true,false)}" />
+      
+    </td>
+    <td rowspan="2" class="comments" valign="top">
+        <!--<apex:outputField value="{!perform.Final_Comments__c}" styleClass="commentsField"/>-->
+         <apex:inputField value="{!perform.Final_Comments__c}" style="resize:vertical;" styleClass="commentsField" />
+     
+    </td>
+   </tr>
+   <tr Style="border:none;">
+    <td class="leftLabel" width="270">Adjusted Rating </td>
+    <td class="rating">
+        <!--<apex:inputText rendered="{!If(perform.Final_Adjusted_Rating__c != Null,false,true)}" value="{!CalAvgOverall}" style="width:50px" onkeyup="return onlyNos(event,this);"/>-->
+        <apex:inputField value="{!perform.Final_Adjusted_Rating__c}" style="width:50px" onkeyup="return onlyNos(event,this);" />
+       
+        <!-- <apex:inputField value="{!perform.Final_Adjusted_Rating__c}"  onkeyup="return onlyNos(event,this);" style="width:50px"/> -->
+    </td>
+   </tr>
+   
+  </table>
+  
+  </div>
+  </apex:outputPanel>
+  <br/> 
+
+  <div class="clearfix"></div>
+  <div id="divProcessing" style="display:none;">
+            <div class="ProcessingBackground"></div>
+            <div class="Processing">
+                <apex:image alt="Processing" url="{!$Resource.LoadingCircle}" />
+            </div>
+        </div>  
+        <apex:actionStatus id="Processing" onstart="document.getElementById('divProcessing').style.display = '';" onstop="document.getElementById('divProcessing').style.display = 'none';">                            
+        </apex:actionStatus> 
+
+    <apex:commandButton id="submit7" value="Quick Save" action="{!quicksave}" reRender="frm" status="Processing" />
+   
+    <apex:commandButton id="submit" value="Save and Finish Later"  action="{!OnlySave}" reRender="frm" status="Processing" rendered="{!If(!btnFlag1,true,false)}"/>
+    <apex:commandButton id="submit5" value="Save and Finalize Later" action="{!save}" reRender="frm" status="Processing" rendered="{!If(!btnFlag1,false,if($Profile.Name=='LFA Portal User',false,true))}" /> 
+    
+    <apex:commandButton id="fin" value="Finish" action="{!FinishPET}"  status="Processing" rendered="{!If(btnFlag,false,if(btnFlag1,false,if($Profile.Name=='LFA Portal User',false,true)))}" reRender="frm" />  <!-- oncomplete="refresh();" -->
+    <apex:commandButton id="cancel" value="Cancel" action="{!cancel}" reRender="frm" status="Processing" />
+    
+    <apex:outputPanel rendered="{!If(perform.Display_Send_to_LFA__c,true,false)}">
+    
+    <apex:commandButton id="submit2" value="Send to LFA" action="{!SendToLFA}" reRender="frm" status="Processing" rendered="{!If($Profile.Name=='LFA Portal User',false,true)}" /> <!--Performance_Evaluation__c.Status__c rendered="{!If(!btnFlag,false,if($Profile.Name=='LFA Portal User',false,true))}" />-->
+
+</apex:outputPanel>
+
+<apex:commandButton id="submit3" value="Send to FPM" action="{!SendToFPM}" reRender="frm" status="Processing" rendered="{!if($Profile.Name=='LFA Portal User',true,false)}" /> 
+<apex:commandButton id="submit4" value="Finalize" action="{!Finalize}" reRender="frm" status="Processing" rendered="{!If(!btnFlag1,false,if($Profile.Name=='LFA Portal User',false,true))}"/> 
+
+<apex:pageMessages >
+</apex:pageMessages>
+
+<script>
+
+function Calculate()
+{
+    var strRatingId = "page:frm:pb:Q";
+    var strPostfix = "";
+    var strRatingTDId = "page:frm:pb:C";
+   
+    var intTotalRating=0;
+    var objRatingQue;
+    var objTDRatingQue;
+    var count=1;
+    objRatingQue = document.getElementById(strRatingId+count+strPostfix);
+    if(objRatingQue == null){
+        strPostfix = "_op";
+        objRatingQue = document.getElementById(strRatingId+count+strPostfix);
+    }
+    objTDRatingQue = document.getElementById(strRatingTDId+count+strPostfix);
+    var intRatQuecount=0;
+    var intlstsize = {!lstResp.size};
+    var CalAvg ;
+   
+   while(objRatingQue !=  null){
+   
+        if(strPostfix != ""){
+            if(objRatingQue.innerHTML != "N/A" && objRatingQue.innerHTML != ""){
+                intRatQuecount++;
+            }
+            if(objRatingQue.innerHTML != "N/A" && objRatingQue.innerHTML != "" && isNaN(objRatingQue.innerHTML )==false){
+                intTotalRating += parseInt(objRatingQue.innerHTML );
+                //alert("intTotalRating  === "+intTotalRating );
+            }
+            if(objRatingQue.innerHTML == '1' || objRatingQue.innerHTML == '2') 
+            {
+                objTDRatingQue.className = 'commentsRequired';
+            } else {
+                objTDRatingQue.className = 'commentsField';
+            }   
+        }else{
+            if(objRatingQue.value != "N/A" && objRatingQue.value != ""){
+                intRatQuecount++;
+            }
+            if(objRatingQue.value != "N/A" && objRatingQue.value != "" && isNaN(objRatingQue.value)==false){
+                intTotalRating += parseInt(objRatingQue.value);
+            }
+            if(objRatingQue.value == '1' || objRatingQue.value == '2') 
+            {
+                objTDRatingQue.className = 'commentsRequired';
+            } else {
+                objTDRatingQue.className = 'commentsField';
+            } 
+        }
+        count++;
+        objRatingQue = document.getElementById(strRatingId+count+strPostfix);
+        objTDRatingQue = document.getElementById(strRatingTDId+count+strPostfix);
+            
+    }
+
+    if(intlstsize > 0){
+        for(var j=0;j<intlstsize;j++){
+            var objRating = document.getElementById('page:frm:pb:evaluations:'+j+':rating');
+            if(objRating.innerHTML != 'N/A' && objRating.innerHTML != "" && isNaN(objRating.innerHTML)==false){
+                intTotalRating += parseInt(objRating.innerHTML );
+                intRatQuecount++;
+            }
+        }
+    }
+    
+    CalAvg = (intTotalRating/intRatQuecount).toFixed(1);
+    document.getElementById('page:frm:pb:CalAvgOverall').innerHTML = CalAvg;
+    document.getElementById('page:frm:pb:CalAvgOverall').parentNode.className= 'rating' + Math.round(CalAvg);
+    
+    var strRatingID="";
+    if(document.getElementById('page:frm:pb:outFinalRating3')!=null){
+        document.getElementById('page:frm:pb:outFinalRating3').innerHTML = CalAvg;
+        strRatingID="page:frm:pb:outFinalRating3";
+    }else if(document.getElementById('page:frm:pb:outFinalRating2')!=null){
+        strRatingID="page:frm:pb:outFinalRating2";
+    }else if(document.getElementById('page:frm:pb:outFinalRating1')!=null){
+        strRatingID="page:frm:pb:outFinalRating1";
+    }  
+   
+    if(document.getElementById(strRatingID)!=null && isNaN(document.getElementById(strRatingID).innerHTML)==false){
+        var intValue = document.getElementById(strRatingID).innerHTML;
+       
+        document.getElementById(strRatingID).parentNode.className = 'rating' + Math.round(intValue);
+    }
+}
+    function onLoad()
+    {
+        Calculate();
+    }
+    function refresh()
+    {
+        afRefresh();
+    }
+</script>
+</apex:pageBlock>
+
+<style type="text/css">
+         .custPopup{
+            background-color: white;
+            border-width: 0px;
+            border-radius:10px;
+            border-style: solid;
+            /*z-index: 9999;*/
+            z-index: 51;
+            left: 22%;
+            padding:10px;
+            position: absolute;
+            top:10%;
+            width:55%;
+        }
+        .popupBackground{
+            background-color:black;
+            opacity: 0.20;
+            filter: alpha(opacity = 20);
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            /*z-index: 9998;*/
+            z-index: 50;
+            top: 0;
+            left: 0;
+           
+        }
+            
+    </style>
+
+ <apex:outputPanel id="tstpopup" >
+      <apex:outputPanel id="popupBackground" styleClass="popupBackground" rendered="{!blnHasChild}"/>
+      <apex:outputPanel id="custPopup" styleClass="custPopup"  rendered="{!blnHasChild}">
+                
+                
+
+    <apex:actionfunction name="actCollepseAllServiceType" action="{!CollepseAllServiceType}" reRender="frm" status="Processing"/>
+        <apex:actionfunction name="actExapndAllServiceType" action="{!ExapndAllServiceType}" reRender="frm" status="Processing"/>  
+        <apex:inputhidden value="{!intTemp}" id="hdnintTemp"/>
+          
+        <apex:inputHidden value="{!intIndex}" id="hdnIndex"/>
+        <apex:inputHidden value="{!intIndexST}" id="hdnIndexST"/>
+        <apex:inputHidden value="{!blnShowCTPlanned}" id="hdnblnShowCTPlanned"/>
+        <apex:inputHidden value="{!blnShowTGF}" id="hdnblnShowTGF"/>
+        <apex:inputHidden value="{!intOffsetHeight}" id="hdnintOffsetTop"/>
+        <apex:inputHidden value="{!intHeight}" id="hdnsetTop"/>
+      
+        <apex:pageBlock id="pageB">           
+            <center> <apex:outputLabel style="font-size:120%;font-weight:bold" value="Services Associated with this Performance Evaluation"></apex:outputLabel> 
+           &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<apex:commandButton value="Close" action="{!HideService}" reRender="tstpopup" status="Processing"/> 
+          
+           </center>
+            <br/><apex:outputLabel value="Additional Services/Comments: "></apex:outputLabel>
+            <apex:outputField value="{!perform.Add_Services_Comment__c}"/>
+           <apex:pageblockButtons style="text-align:right !important;padding-right: 45px;" location="bottom">
+              <apex:commandButton value="Close" action="{!HideService}" reRender="tstpopup" status="Processing"/>
+            </apex:pageblockButtons>
+            <table width="100%" cellspacing="0" cellpadding="0" border="0"><tr><td valign="top">
+            <table width="100%" id="ServiceTable" cellspacing="0" cellpadding="0" border="0" class="list" style="display:{!if($Profile.Name == 'LFA Portal User','','none')}">
+                <thead class="rich-table-thead">
+                    <tr class="headerRow">
+                        <th width="22%" class="headerRowLower" style="border-left:0px !important;">Service</th>
+                        <th width="16%" class="headerRowLower" style="border-left:0px !important;border-right:0px !important;" colspan="2">Grant</th>
+                   
+                    </tr>
+                </thead>
+                <apex:variable var="CountST" value="{!0}" />                
+                <apex:repeat value="{!lstJunction}" var="wrap">
+                    <tr>
+                        <td class="dataCell" style="border-top:1px solid #838282;font-weight:bold;">
+                                            
+                            <apex:outputField value="{!wrap.Name}"/>
+                            
+                            <!-- {!lstJunction.Performance_Evaluation__r.Add_Services_Comment__c}-->
+                        </td>
+                        <td class="dataCell" style="border-top:1px solid #838282;font-weight:bold;" colspan="2">
+                            <apex:outputtext value="{!wrap.Grant_Number__c}"/>
+                        </td>
+                    </tr>
+                </apex:repeat>
+            </table>
+            <table width="100%" id="ServiceTable" cellspacing="0" cellpadding="0" border="0" class="list" style="display:{!if($Profile.Name != 'LFA Portal User','','none')}">
+                <thead class="rich-table-thead">
+                    
+                    <tr class="headerRow">
+                        <th style="background-color:#F8F8F8;border-bottom:0px;" colspan="7">
+                            <apex:image styleClass="CollapseExpandAllImage" url="{!$Resource.ExpandAll1}" title="Expand All" onclick="actExapndAllServiceType();" rendered="{!blnCollapseAll}"/>
+                            <apex:outputText styleClass="CollapseExpandAllText" value="Expand all" rendered="{!blnCollapseAll}"></apex:outputText>
+                            <apex:image styleClass="CollapseExpandAllImage" url="{!$Resource.CollapseAll1}" title="Collapse All" onclick="actCollepseAllServiceType();" rendered="{!blnExpandAll}"/>
+                            <apex:outputText styleClass="CollapseExpandAllText" value="Collapse all" rendered="{!blnExpandAll}"></apex:outputText>
+                        </th>
+                        
+                    </tr>  
+                    <tr class="headerRow">
+                        <th width="4%" class="headerRowLower">
+                            <!--<apex:inputCheckbox id="checkAll" onclick="checkAll(this);"/>-->
+                        </th>
+                        <th width="22%" class="headerRowLower" style="border-left:0px !important;">Service</th>
+                        <th width="16%" class="headerRowLower" style="border-left:0px !important;border-right:0px !important;" colspan="2">Grant</th>
+                        <th width="10%" class="headerRowLower" style="border-right:0px !important;">Submission Date</th>
+                        <th width="10%" class="headerRowLower" style="border-right:0px !important;">Details</th>
+                        <th width="7%" class="headerRowLower"><apex:outputtext value="Previously Selected for PET?"/></th>
+                       
+                    </tr>  
+                </thead>
+                
+                
+                <apex:variable var="CountST" value="{!0}" />                
+                <apex:repeat id="repeatUpper" value="{!lstwrapServicesType}" var="wrapST">
+                   <!--- <tr class="totalRow">
+                        <th class="totalRow">
+                           
+                            <apex:inputHidden id="CollapseStatus" value="{!wrapST.blnExpandSection}" />
+                            <apex:outputpanel id="collapseimage" style="display:{!if(wrapST.blnExpandSection == true,'none','')};" rendered="{!if(wrapST.lstwrapServices.size > 0,true,false)}">
+                                <apex:image styleClass="Image" url="{!$Resource.Collepse}" onclick="switchMenu('inlinetablesec{!CountST}','{!$Component.Expandimage}','{!$Component.collapseimage}','{!$Component.CollapseStatus}','true')" title="Expand"/>
+                            </apex:outputpanel>
+                            <apex:outputpanel id="Expandimage" style="display:{!if(wrapST.blnExpandSection == true,'','none')};" rendered="{!if(wrapST.lstwrapServices.size > 0,true,false)}">
+                                  <apex:image styleClass="Image" url="{!$Resource.Expand}" onclick="switchMenu('inlinetablesec{!CountST}','{!$Component.collapseimage}','{!$Component.Expandimage}','{!$Component.CollapseStatus}','false')" title="Collapse"/>
+                            </apex:outputpanel>
+                            
+                        </th>
+                        <th class="totalRow " colspan="6">
+                            <apex:outputText value="{!wrapST.ServiceType}"/>
+                        </th>
+                       
+                    </tr>--->
+                    
+                    <tbody id="inlinetablesec{!CountST}" ><!-- style="display:{!if(wrapST.blnExpandSection == true,'','none')};">-->
+                        <apex:variable var="Count" value="{!0}" />
+                        <apex:repeat id="repeat" value="{!wrapST.lstwrapServices}" var="Service">   
+                            <tr>
+                                <td class="dataCell" style="white-space: nowrap;border-top:1px solid #838282;border-left:1px solid #E0E3E5;">
+                                    <apex:inputhidden id="ServiceSubType" value="{!Service.objService.Service_Sub_Type__c}"/>
+                                    
+                                    <apex:inputHidden id="CollapseStatusResource" value="{!Service.blnExpandResourceSection}" />
+                                    <apex:outputpanel id="collapseimageResource" style="display:{!if(blnAccessWorkPlan == false,if(Service.blnExpandResourceSection == true,'none',''),'none')};" rendered="{!if(Service.lstwrapResource.size > 0,true,false)}">
+                                        <apex:image styleClass="ImageResource" url="{!$Resource.Collepse}" onclick="switchMenuResource('Total{!Count}','inlinetablesecResource{!CountST}{!Count}','ResourceHeader{!CountST}{!Count}','{!$Component.ExpandimageResource}','{!$Component.collapseimageResource}','{!$Component.CollapseStatusResource}','true')" title="Expand"/>
+                                    </apex:outputpanel>
+                                    <apex:outputpanel id="ExpandimageResource" style="display:{!if(blnAccessWorkPlan == false,if(Service.blnExpandResourceSection == true,'','none'),'none')};" rendered="{!if(Service.lstwrapResource != null,true,false)}">
+                                          <apex:image styleClass="ImageResource" url="{!$Resource.Expand}" onclick="switchMenuResource('Total{!Count}','inlinetablesecResource{!CountST}{!Count}','ResourceHeader{!CountST}{!Count}','{!$Component.collapseimageResource}','{!$Component.ExpandimageResource}','{!$Component.CollapseStatusResource}','false')" title="Collapse"/>
+                                    </apex:outputpanel>
+                                    </td>
+                                <td class="dataCell" style="border-top:1px solid #838282;font-weight:bold;">
+                                    
+                                    <apex:outputField value="{!Service.objService.Name}" rendered="{!if(Service.objService.id != null,true,false)}" style="float:left;"/>
+                                    
+                                    
+                                </td>
+                                <td class="dataCell" style="border-top:1px solid #838282;font-weight:bold;" colspan="2">
+                                    <apex:outputLink target="_Blank" value="/{!Service.objService.Grant__c}" rendered="{!if(Service.objService.id != null && Service.objService.Grant__c != null,true,false)}">
+                                        <apex:outputField value="{!Service.objService.Grant__c}"/>                                
+                                    </apex:outputLink>
+                                    <apex:outputtext value="Multiple Grants" rendered="{!if(Service.objService.id != null && Service.objService.Grant__c == null,true,false)}"/>
+                                    <apex:selectList value="{!Service.objService.Grant__c}" style="width:100px;"  rendered="{!if(Service.objService.id == null,true,false)}" size="1">
+                                        <apex:selectOptions value="{!GrantOptions}"></apex:selectOptions>
+                                    </apex:selectList>
+                                </td>
+                                <td class="dataCell" style="border-top:1px solid #838282;font-weight:bold;">
+                                    <apex:outputField id="SubmissionDate" value="{!Service.objService.Submission_Date__c}"/>
+                                </td>
+                                <td class="dataCell" style="border-top:1px solid #838282;font-weight:bold;">
+                                    <apex:outputField id="PUDRnumber" value="{!Service.objService.PU_DR_Number__c}"/>
+                                </td>
+                                <td class="dataCell" style="border-top:1px solid #838282;font-weight:bold;">
+                                    <apex:outputField value="{!Service.objService.Previously_Selected_for_PET__c}"/>
+                                </td>
+                                
+                            </tr>
+                            <tr id="ResourceHeader{!CountST}{!Count}" style="display:{!if(Service.blnExpandResourceSection == true,'','none')};">
+                                <th style="border:none"></th>
+                                <th class="headerRowResource">Role</th>
+                                <th class="headerRowResource">Person</th>
+                                <th class="headerRowResource">Budgeted LOE</th>
+                                <th class="headerRowResource">Actual LOE</th>
+                              
+                            </tr>
+                            <apex:repeat value="{!Service.lstwrapResource}" var="ServiceResource">
+                                <tr id="inlinetablesecResource{!CountST}{!Count}" style="display:{!if(Service.blnExpandResourceSection == true,'','none')};">
+                                    <td class="dataCell" style="border:none;">
+                                    </td>
+                                    <td class="dataCell" style="border-bottom:1px solid #E0E3E5;">
+                                        <apex:outputText value="{!ServiceResource.RoleName}" />
+                                    </td>
+                                    <td class="dataCell" style="border-bottom:1px solid #E0E3E5;">
+                                        <apex:outputText value="{!ServiceResource.ContactName}" />
+                                    </td>
+                                    <td class="dataCell" style="border-bottom:1px solid #E0E3E5;">
+                                        <apex:outputField value="{!ServiceResource.objResource.LOE__c}"/>
+                                    </td>    
+                                   <!-- <td class="dataCell" style="border-bottom:1px solid #E0E3E5;">
+                                        <apex:outputField value="{!ServiceResource.objResource.LFA_Proposed_LOE__c}" />
+                                    </td>--->
+                                    <td class="dataCell" style="border-bottom:1px solid #E0E3E5;">
+                                        <apex:outputField value="{!ServiceResource.objResource.Actual_LOE__c}"/>
+                                    </td>
+                                    
+                                </tr>
+                            </apex:repeat>
+                            <tr id="Total{!Count}" style="display:{!if(Service.blnExpandResourceSection == true,'','none')};">
+                                <th ></th>
+                                <th class="totalRow"></th>
+                                <th class="totalRow" >
+                                    Total
+                                </th>
+                                <th class="totalRow">
+                                    <apex:outputField value="{!Service.objService.LOE__c}"/>
+                                </th>
+                              
+                                <th class="totalRow">
+                                    <apex:outputField value="{!Service.objService.Actual_LOE__c}"/>
+                                </th>
+                            </tr>
+                            <apex:variable var="Count" value="{!Count+1}" />
+                        </apex:repeat>
+                    </tbody>
+                    <apex:variable var="CountST" value="{!CountST+1}" />     
+                </apex:repeat>
+                
+            </table>
+            </td>
+            
+            </tr>
+            </table>
+            
+        </apex:pageBlock>
+      
+                
+            </apex:outputPanel>
+        </apex:outputPanel>
+        
+        <apex:includeScript value="{!URLFOR($Resource.ScrollJS,'Scrolljs/jquery.min.js')}" />
+<apex:includeScript value="{!URLFOR($Resource.ScrollJS,'Scrolljs/jquery.nicescroll.min.js')}" />
+    <style>
+     
+        body .bRelatedList .pbBody table.list, body .apexp .pbBody table.list {
+            border: 0px solid #000000;
+            padding:0px;
+        }
+        .headerRowUpperCE{
+            border:1px solid #E0E3E5 !important;
+            font-weight:bold;
+            background-color:#7f7f7f !important;
+            color:white !important;
+        }
+        .headerRowUpper{
+            border:1px solid #E0E3E5 !important;
+            font-weight:bold;
+            background-color:#7f7f7f !important;
+            color:white !important;
+        }
+        
+        .headerRowLower{
+            border:1px solid #E0E3E5 !important;
+            font-weight:bold;
+            background-color:#0066BB !important;
+            color:white !important;
+            white-space: normal !important;
+        }
+        .headerRowResource{
+            border:1px solid #E0E3E5 !important;
+            font-weight:bold;
+            background-color:orange !important;
+        }
+        .totalRow{
+            border-top:1px;
+            font-weight:bold !important;
+        }
+        .totalRowMinMaxAvg{
+            border-top:1px;
+            text-align:right;
+            padding-right:10px;
+        }
+        .noBorder ,table.noBorder tr td,table.noBorder td{
+            border: 0px !important;
+            padding: 0px;
+        }
+        .headerColor{
+            background-color:#4f81bd !important;
+            color:white !important;
+            font-weight:bold;
+        }
+        .headerColorSearchGrid{
+            background-color:#4f81bd !important;
+            border:1px solid #E0E3E5 !important;
+            background-color:#558ed5 !important;
+            color:white !important;
+            font-weight:bold;
+            white-space: pre-wrap !important;
+        }
+        .resourcetTable{
+            vertical-align:top;
+        }
+        .blankCell{
+            width:5px;
+        }
+        .picklist{
+            width:200px !important;
+        }
+        .yearPicklist{
+            width:70px;
+        }
+        .AddLink{
+            padding-left:18px;
+        }
+        .Image{
+            cursor:pointer;
+            padding-left:8px;
+            height:13px;
+            width:13px;
+            vertical-align:middle;
+        }
+        .ImageResource{
+            cursor:pointer;
+            padding-bottom: 5px;
+            padding-left: 8px;
+            height:13px;
+            width:13px;
+        }
+        .ImageSearch{
+            cursor:pointer;
+            float:left;
+            height:13px;
+            width:13px;
+            vertical-align:middle;
+        }
+        .CollapseExpandAllText{
+            font-size: 12px;
+            font-weight: normal;
+            vertical-align:top;
+        }
+        .CollapseExpandAllImage{
+            cursor:pointer;
+            height:20px;
+            width:20px;
+        }
+        .HeaderFreez{  
+            position:relative ;   
+            top:expression(this.offsetParent.scrollTop);  
+            z-index: 10;  
+        }
+    
+    </style>
+    
+     <script>
+       
+        
+   
+        function switchMenu(obj,obj1,obj2,hdn,val) 
+        {   
+            document.getElementById(hdn).value=val; 
+            var el = document.getElementById(obj); 
+                            
+            if(el.style.display != 'none' ) {
+                el.style.display = 'none';
+            }
+            else {
+                el.style.display = '';
+            }
+            var e2 = document.getElementById(obj1);                                       
+            if ( e2.style.display != 'none' ) {
+                e2.style.display = 'none';
+            }
+            else {
+                e2.style.display = '';
+            }
+            var e3 = document.getElementById(obj2);                                       
+            if ( e2.style.display != 'none' ) {
+                e3.style.display = 'none';
+            }
+            else {
+                e3.style.display = '';
+            }
+        }
+        function switchMenuResource(Total,obj,HeaderId,obj1,obj2,hdn,val) 
+        {   
+            document.getElementById(hdn).value=val; 
+            
+            if(document.getElementById(Total).style.display == 'none'){
+                document.getElementById(Total).style.display = ''; 
+            }else{
+                document.getElementById(Total).style.display = 'none'; 
+            }
+            
+            var el = document.getElementById(obj); 
+            if(el.style.display != 'none' ) {
+                var node = el.parentNode.childNodes;
+                for (var i = 0; i < node.length;  i++){
+                    if(node[i].id == el.id){
+                        node[i].style.display = 'none';
+                    }
+                }
+            }else{
+                var node = el.parentNode.childNodes;
+                for (var i = 0; i < node.length;  i++){
+                    if(node[i].id == el.id){
+                        node[i].style.display = '';
+                    }
+                }
+            } 
+            
+            var header = document.getElementById(HeaderId); 
+            if(header.style.display != 'none' ) {
+                var node = header.parentNode.childNodes;
+                for (var i = 0; i < node.length;  i++){
+                    if(node[i].id == header.id){
+                        node[i].style.display = 'none';
+                    }
+                }
+            }else{
+                var node = header.parentNode.childNodes;
+                for (var i = 0; i < node.length;  i++){
+                    if(node[i].id == header.id){
+                        node[i].style.display = '';
+                    }
+                }
+            } 
+            
+            var e2 = document.getElementById(obj1);                                       
+            if ( e2.style.display != 'none' ) {
+                e2.style.display = 'none';                
+            }
+            else {
+                e2.style.display = '';
+            }
+            var e3 = document.getElementById(obj2);                                       
+            if ( e2.style.display != 'none' ) {
+                e3.style.display = 'none';
+            }
+            else {
+                e3.style.display = '';
+            }
+            
+        }
+     
+    
+        function ColumnExpandCollepse(tdId,thId,Mainth,sideTh,hdn,Status){
+            var AllTD = document.getElementsByTagName("td");
+            var AllTH = document.getElementsByTagName("th");
+            
+            if(tdId == 'CTtd')
+                document.getElementById('page:frm:pb:hdnblnShowCTPlanned').value = Status;
+            if(tdId == 'TGFtd')
+                document.getElementById('page:frm:pb:hdnblnShowTGF').value = Status;
+            for(var i=0;i<AllTD.length;i++){
+                if(AllTD[i].id == tdId){
+                    if(Status == 'false'){
+                        AllTD[i].style.display = 'none';
+                    }else{
+                        AllTD[i].style.display = '';
+                    }
+                }
+            }
+            for(var i=0;i<AllTH.length;i++){
+                if(AllTH[i].id == thId){
+                    if(Status == 'false'){
+                        AllTH[i].style.display = 'none';
+                    }else{
+                        AllTH[i].style.display = '';
+                    }
+                }
+            }
+            if(Status == 'false'){
+                document.getElementById(Mainth).style.display = 'none';
+                document.getElementById(sideTh).style.display = '';
+            }else{
+                document.getElementById(sideTh).style.display = 'none';
+                document.getElementById(Mainth).style.display = '';
+            }
+        }
+     
+          </script>
+    <script>
+        function setFocusOnLoad() {}
+    </script>
+    
+    <style type="text/css">
+        span.dateInput span.dateFormat{
+            display:none;
+        }
+        
+       
+    </style>
+     
+   <script>
+     
+      
+        function onlyNos(event, inpValue) {
+            var textValue  = inpValue.value;
+            try {
+              if (event) {
+                    var charCode = event.which;
+                    if(charCode != null) {                        
+                        if(textValue.indexOf(".") != -1) {
+                            var strSplit  = textValue.split(".");
+                            if (strSplit[1].length > 1){// && (charCode < 45 || charCode > 59) && (charCode != 8) ) {
+                                inpValue.value=strSplit[0]+"."+strSplit[1].substring(0,1);
+                                return false;
+                            }
+                        } 
+                    }
+                }
+            }
+            catch (err) {
+                alert(err.Description);
+            }
+            return true; 
+        }
+         
+
+   onLoad();
+// Calculate();
+
+    </script>
+
+</apex:form>
+</apex:page>

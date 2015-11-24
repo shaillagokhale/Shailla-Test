@@ -1,0 +1,4 @@
+<apex:page standardController="Grant_Intervention__c" extensions="editController" action="{!reDirect}">
+    <apex:pageMessages />
+    <a href="{!getBackUrl }">Back</a>
+</apex:page>

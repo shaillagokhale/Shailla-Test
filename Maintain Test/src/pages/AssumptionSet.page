@@ -1,0 +1,1524 @@
+<apex:page id="page" standardController="Implementation_Period__c" extensions="ctrlAssumptionSet" showHeader="true" sidebar="false">
+    <apex:stylesheet value="{!URLFOR($Resource.GoalsJs, 'assets/css/bootstrap.css')}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.GoalsJs, 'assets/css/bootstrap-responsive.css')}"/>
+    <apex:includeScript value="{!$Resource.jquery142}" />
+    <style>
+        .headerRowUpper{
+            border:1px solid #E0E3E5 !important;
+            font-weight:bold !important;                     
+        }       
+        .headerRowLower{
+            border:1px solid #E0E3E5 !important;
+            font-weight:bold !important;
+            background-color:#0066BB !important;
+            color:white !important;
+            white-space: normal !important;            
+        }
+        .totalRow{
+            border-top:1px;
+            font-weight:bold !important;
+        }
+        .TDstyle{
+            border:1px solid #E0E3E5 !important;
+            vertical-align: top;
+        }
+        input{
+            width: 50px;
+        }
+        label {
+            font-weight: bold;
+            display: inherit;
+        }
+        .pageContent {
+            color: #4A4A56; 
+            font-size: 0.9em; 
+            font-weight: bold; 
+            padding-left: 1px;
+        }
+        .pageTitleIcon {
+            margin-top: 5px;
+            background-image: url("/img/sprites/master.png");
+            background-position: 0 -1058px;
+            height: 32px;
+            width: 32px;
+            display: inline;
+            float: left;
+            margin-right: 5px;
+            margin-left: 10px;
+        }
+        .pageDescription{
+            font-size: 1.8em; 
+            font-weight: normal;
+            line-height: 1.1em;
+        }
+        .sidebarMenu{
+            width : 270px;
+        }
+        .custPopup{
+            background-color: #ededed;
+            border-width: 0px;
+            border-radius:10px;
+            border-style: solid;
+            z-index: 9999;
+            left: 50%;
+            margin-top:-60px;
+            padding:10px;
+            position: absolute;
+            width:300px;
+            height:130px;
+        }
+        .popupBackground{
+            background-color:black;
+            opacity: 0.50;
+            filter: alpha(opacity = 20);
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            z-index: 9998;
+            top: 0;
+            left: 0;
+        }
+        
+        .custPopupApply{
+            background-color: #ededed;
+            border-width: 0px;
+            border-radius:10px;
+            border-style: solid;
+            z-index: 9999;
+            left: 50%;
+            margin-top:-60px;
+            padding:10px;
+            position: absolute;
+            width:366px;
+            height:163px;
+        }        
+        .popupButtonYes{
+            background-color: #49C739 !important;
+            background-image: none !important;
+            color: white !important;
+            font-size: 12.9pt !important;
+            font-weight: bold !important;
+            height: 30px !important;;
+            width: 90px !important;;
+        }
+        .popupButtonCancel{
+            background-color: #d82516 !important;
+            background-image: none !important;
+            color: white !important;
+            font-size: 12.9pt !important;
+            font-weight: bold !important;
+            height: 30px !important;;
+            width: 90px !important;;
+        }
+        .deletePopup{
+            background-color: #EDEDED !important;
+            border-top: 0px !important;
+            text-align:center !important;
+        }
+        .deletePopupCancel{
+            background-color: #EDEDED !important;
+            border-top: 0px !important;
+            text-align:left !important;
+        }
+        .TGFbtn-mini{
+            margin-top:6px;
+        }
+        h3{
+            font-size:24px;
+        }
+        .chatterFeedPanel{
+            height: 225px !important;
+        }  
+        .webkitright {
+            text-align: right;
+            white-space: nowrap;
+        };
+        .headerSearchContainer {
+            margin-top: -20px !important;
+        }    
+        .phHeaderCustomLogo .headerSearchLeftRoundedCorner {
+            margin-top: -20px !important;
+        } 
+    </style>
+    <script>
+      $(document).ready(function () {
+          $('label.tree-toggler').click(function () {
+              $(this).parent().children('ul.tree').toggle(300);
+          });
+          
+           if ( $.browser.webkit ) {
+            $("#phHeaderLogoImage").parents("table").find("td").eq(2).removeClass("right").addClass("webkitright");  
+           };
+      });
+    </script>
+        
+    <div class="margin20">
+    <!--<ul class="breadcrumb">
+        <li>
+            <a href="{!if($Profile.Name=='PR Standard Portal User','/GM','')}/apex/OpenConceptNotesH" class="link">{!strConceptNotes }</a>
+            <span class="divider">/</span>
+        </li>
+        <li>
+            <a href="{!if($Profile.Name=='PR Standard Portal User','/GM','')}/apex/openconceptnotesH?id={!Page__c.Concept_Note__r.CCM_new__r.Country__c}" class="link">{!Page__c.Concept_Note__r.CCM_new__r.Country__r.Name}</a>
+            <span class="divider">/</span>
+        </li>
+        <li>
+            {!Module__c.Implementation_Period__r.Name}                    
+        </li>
+    </ul>-->
+    <h3>
+        Detailed Assumption Set - {!Implementation_Period__c.Name}
+    </h3>
+    
+    <chatter:feedWithFollowers id="chatterFeed" entityId="{!Implementation_Period__c.Id}"/>
+    </div>
+    
+    <br/>
+    <apex:form id="frm">
+
+        <!--<apex:inputHidden value="{!intIndex}" id="hdnIndex"/>-->
+        <apex:inputHidden value="{!strLocalCurrencyRate}" id="hdnstrLocalCurrencyRate"/>
+        <apex:inputHidden value="{!strGrantCurrencyRate}" id="hdnstrGrantCurrencyRate"/>
+        <apex:inputHidden value="{!strOtherCurrencyRate}" id="hdnstrOtherCurrencyRate"/>
+              <apex:actionFunction action="{!SaveBudgetLines}" reRender="frm" status="Processing" name="actSaveBudgetLines">
+                    <apex:param value="" name="SaveIndex" id="SaveIndex"/>
+              </apex:actionFunction>                                                      
+               <apex:actionFunction name="actSaveAssumption" action="{!SaveAssumption}" status="Processing" rerender="frm"/>
+               <apex:actionFunction name="actSaveAssumptionNew" action="{!SaveAssumptionNew}" status="Processing" rerender="frm" />
+               <apex:actionFunction name="actChangeCurrencyRateFromCode" action="{!ChangeCurrencyRateFromCode}" status="Processing" rerender="frm">
+                      <apex:param value="" name="Code" id="Code"/>
+                      <apex:param value="" name="ChangeIndex" id="ChangeIndex"/>
+               </apex:actionFunction>
+                <apex:actionFunction name="actChangeCurrencyRateFromCodeNew" action="{!ChangeCurrencyRateFromCodeNew}" status="Processing" rerender="frm" oncomplete="showRows();">
+                      <apex:param value="" name="Code" id="Code1"/>
+                </apex:actionFunction>
+        <div class="containerTGF">
+            <br/>
+            <apex:commandLink id="cmdLinkSaveGoal" styleClass="TGFbtn TGFbtn-mini TGFbtn-success" action="/apex{!if($Profile.Name=='PR Standard Portal User','/GM','')}/GMDetailedBudget?id={!strModuleId}">
+                <strong>Back to Detail Budget</strong>                                            
+            </apex:commandLink><br/>   
+            <table width="100%">
+                <tr>
+                    <td valign="top" align="left">
+                    <!--<div class="side_menu sidebarMenu">
+                            <div class="well" style=" padding: 8px 0;">
+                                <div>
+                                    <ul class="nav nav-list">
+                                        <li>
+                                            <div class="tree-toggler nav-header">
+                                                <a href="{!if($Profile.Name=='PR Standard Portal User','/GM','')}/apex/grantmakingoverview?id={!strImplementationPeriodId}" class="link">Summary</a>
+                                            </div>
+                                        </li>
+                                        <li class="divider">
+                                        </li>
+                                        <apex:repeat id="page" value="{!lstPageTodisplay}" var="P">                                        
+                                            <li>
+                                                <div class="tree-toggler nav-header {!if(P.Id = Module__c.Id,' active ','')} ">
+                                                    <a href="/apex/{!P.URL_prefix__c}?id={!P.Id}" class="link">{!P.Name}</a>
+                                                </div>
+                                            </li>
+                                            <li class="divider">
+                                            </li>
+                                        </apex:repeat>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>-->
+                    </td>
+                    <td valign="top" class="indicatorSide">      
+                         <table class="table table-striped">
+                             <thead>
+                                <tr class="headerRow">
+                                    <th class="headerRowLower" width="10%">
+                                        <apex:outputlabel value="Actions"/>
+                                    </th>                
+                                    <th class="headerRowLower" width="20%" >
+                                        <apex:outputlabel value="Assumption Set Name"/>
+                                    </th>                
+                                    <th class="headerRowLower" width="24%">
+                                        <apex:outputlabel value="Cost Input"/>
+                                    </th>                
+                                    <th class="headerRowLower" width="23%">
+                                        <apex:outputlabel value="Number of Budget Lines Using Set"/>
+                                    </th>
+                                    <th class="headerRowLower" width="13%">
+                                        <apex:outputlabel value="Number of Assumptions in Set"/>
+                                    </th>
+                                    <th style="border:none;" width="10%"></th>                       
+                                </tr>
+                            </thead>
+
+                            
+                            <apex:variable value="{!1}" var="Count"/>
+                            <apex:repeat id="rptBudgetLine" value="{!lstwrapAssumptionSet}" var="objBL">
+                                <tr>
+                                    <td class="dataCell TDstyle" >
+                                        <apex:commandLink id="cmdLinkEditGoal" action="{!EditAssumptionRecords}" reRender="frm" Status="Processing" styleClass="TGFbtn TGFbtn-mini TGFbtn-primary" style="width:30px;height:25px;" >
+                                            <i class="icon-edit icon-white" style="margin-top:6px"></i>
+                                            <apex:param value="{!Count-1}" name="EditIndex" id="EditIndex"/>                                            
+                                        </apex:commandLink>
+<!------------Start Assumption Popup--------------->
+                                        <apex:outputPanel id="tstpopup1">
+                                           <apex:outputPanel id="popupBackground1" styleClass="popupAssumptionBackground" rendered="{!objBL.blnHasChild}"/> 
+                                            <apex:outputPanel id="custPopup1" styleClass="custAssumptionPopup" rendered="{!objBL.blnHasChild}">
+                                               <apex:inputHidden value="{!strSelectedYearAssumption}" id="hdnSelectedYearA"/> 
+                                               <table width="100%" cellspacing="0" cellsspacing="0" border="0" class="list">
+                                                    <thead class="rich-table-thead">
+                                                        <tr class="headerRow">
+                                                            <th width="50%"></th>
+                                                            <th class="headerRowUpper" id="MainThYear1A" style="color:{!if(strSelectedYearAssumption == 'Year1','#FFFFFF','#00688B')};text-decoration:{!if(strSelectedYearAssumption != 'Year1','underline','')};background-color:{!if(strSelectedYearAssumption == 'Year1','#434445','#DFEFF0')};" onclick="displayYearToggleAssumption('MainThYear1A','{!$Component.hdnSelectedYearA}','Year1','Year1thA','Year1tdA');">
+                                                                <apex:outputlabel value="{!YEAR(GIPstartdate)}" styleclass="link"/>
+                                                            </th>                
+                                                            <th class="headerRowUpper" id="MainThYear2A" style="color:{!if(strSelectedYearAssumption == 'Year2','#FFFFFF','#00688B')};text-decoration:{!if(strSelectedYearAssumption != 'Year2','underline','')};background-color:{!if(strSelectedYearAssumption == 'Year2','#7D9C9F','#E7F2D5')};" onclick="displayYearToggleAssumption('MainThYear2A','{!$Component.hdnSelectedYearA}','Year2','Year2thA','Year2tdA');">
+                                                                <apex:outputlabel value="{!YEAR(GIPstartdate)+1}" styleclass="link"/>
+                                                            </th>                
+                                                            <th class="headerRowUpper" id="MainThYear3A" style="color:{!if(strSelectedYearAssumption == 'Year3','#FFFFFF','#00688B')};text-decoration:{!if(strSelectedYearAssumption != 'Year3','underline','')};background-color:{!if(strSelectedYearAssumption == 'Year3','#7D9C9F','#FAF3CA')};" onclick="displayYearToggleAssumption('MainThYear3A','{!$Component.hdnSelectedYearA}','Year3','Year3thA','Year3tdA');">
+                                                                <apex:outputlabel value="{!YEAR(GIPstartdate)+2}" styleclass="link"/>
+                                                            </th>               
+                                                            <th class="headerRowUpper" id="MainThYear4A" style="color:{!if(strSelectedYearAssumption == 'Year4','#FFFFFF','#00688B')};text-decoration:{!if(strSelectedYearAssumption != 'Year4','underline','')};background-color:{!if(strSelectedYearAssumption == 'Year4','#7D9C9F','#F0E1E2')}; display:{!if(strLengthYears != null && strLengthYears == '4','','none')}" onclick="displayYearToggleAssumption('MainThYear4A','{!$Component.hdnSelectedYearA}','Year4','Year4thA','Year4tdA');">
+                                                                <apex:outputlabel value="{!YEAR(GIPstartdate)+3}" styleclass="link"/>
+                                                            </th>
+                                                        </tr>
+                                                    </thead>
+                                                </table>                                                
+                                                <apex:outputpanel >
+                                                <table class="table table-striped">
+                                                     <thead>
+                                                        <tr class="headerRow">
+                                                            <th width="5%"></th>
+                                                            <th class="headerRowLower" width="11%">
+                                                                <apex:outputlabel value="Item Description"/>
+                                                            </th>                
+                                                            <th class="headerRowLower" width="15%">
+                                                                <apex:outputlabel value="Currency"/>
+                                                            </th>                
+                                                            <th class="headerRowLower" width="10%">
+                                                                <apex:outputlabel value="Unit of Measure"/>
+                                                            </th>                                                                          
+                                                            <th id="Year1thA" style="display:{!if(strSelectedYearAssumption == 'Year1','','none')};" class="headerRowLower" width="13%">
+                                                                <apex:outputlabel value="Y1 Unit Cost"/>
+                                                            </th>                                                            
+                                                            <th id="Year1thA" style="display:{!if(strSelectedYearAssumption == 'Year1','','none')};" class="headerRowLower" width="13%">
+                                                                <apex:outputlabel value="Y1 Quantity"/>
+                                                            </th>                
+                                                            <th id="Year1thA" style="display:{!if(strSelectedYearAssumption == 'Year1','','none')};" class="headerRowLower" width="13%">
+                                                                <apex:outputlabel value="Y1 Total Cost"/>
+                                                            </th>  
+                                                            
+                                                            <th id="Year2thA" style="display:{!if(strSelectedYearAssumption == 'Year2','','none')};" class="headerRowLower" width="13%">
+                                                                <apex:outputlabel value="Y2 Unit Cost"/>
+                                                            </th>                                                            
+                                                            <th id="Year2thA" style="display:{!if(strSelectedYearAssumption == 'Year2','','none')};" class="headerRowLower" width="13%">
+                                                                <apex:outputlabel value="Y2 Quantity"/>
+                                                            </th>                
+                                                            <th id="Year2thA" style="display:{!if(strSelectedYearAssumption == 'Year2','','none')};" class="headerRowLower" width="13%">
+                                                                <apex:outputlabel value="Y2 Total Cost"/>
+                                                            </th>
+                                                            
+                                                            <th id="Year3thA" style="display:{!if(strSelectedYearAssumption == 'Year3','','none')};" class="headerRowLower" width="13%">
+                                                                <apex:outputlabel value="Y3 Unit Cost"/>
+                                                            </th>                                                            
+                                                            <th id="Year3thA" style="display:{!if(strSelectedYearAssumption == 'Year3','','none')};" class="headerRowLower" width="13%">
+                                                                <apex:outputlabel value="Y3 Quantity"/>
+                                                            </th>                
+                                                            <th id="Year3thA" style="display:{!if(strSelectedYearAssumption == 'Year3','','none')};" class="headerRowLower" width="13%">
+                                                                <apex:outputlabel value="Y3 Total Cost"/>
+                                                            </th>
+                                                            
+                                                            <th id="Year4thA" style="display:{!if(strSelectedYearAssumption == 'Year4','','none')};" class="headerRowLower" width="13%">
+                                                                <apex:outputlabel value="Y4 Unit Cost"/>
+                                                            </th>                                                            
+                                                            <th id="Year4thA" style="display:{!if(strSelectedYearAssumption == 'Year4','','none')};" class="headerRowLower" width="13%">
+                                                                <apex:outputlabel value="Y4 Quantity"/>
+                                                            </th>                
+                                                            <th id="Year4thA" style="display:{!if(strSelectedYearAssumption == 'Year4','','none')};" class="headerRowLower" width="13%">
+                                                                <apex:outputlabel value="Y4 Total Cost"/>
+                                                            </th>                                                                          
+                                                            <th class="headerRowLower" width="10%">
+                                                                <apex:outputlabel value="Assumptions to Support Unit Cost"/>
+                                                            </th>
+                                                            <th class="headerRowLower" width="10%">
+                                                                <apex:outputlabel value="Justification/Comments"/>
+                                                            </th>
+                                                        </tr>
+                                                    </thead>
+                                                    <apex:variable value="{!0}" var="CountAssumption"/>
+                                                    <apex:repeat id="rptBudgetLine" value="{!objBL.lstAssumptions}" var="objA">
+                                                        <tr>
+                                                            <td>
+                                                                <apex:commandLink styleClass="TGFbtn TGFbtn-mini TGFbtn-danger" style="width:30px;height:25px;margin-top:6px;" onclick="return openAssumptionDeletePopup('{!$Component.tstpopup1}');">
+                                                                    <i class="icon-trash icon-white" style="margin-top:6px"></i> 
+                                                                </apex:commandLink>
+                                                                <apex:outputPanel id="tstpopup1" style="display:none;">
+                                                                    <apex:outputPanel id="popupBackground1" styleClass="popupBackground"/>
+                                                                    <apex:outputPanel id="custPopup1" styleClass="custPopup">
+                                                                        <table width="100%" cellspacing="0" cellpadding="0" border="0" >
+                                                                            <tr>
+                                                                                <td colspan="3" class="deletePopup">
+                                                                                    <apex:outputtext style="color:#6590c4; font-size: 13.9pt;font-weight: bold;" value="Are you sure?"/>
+                                                                                </td>
+                                                                            </tr>
+                                                                            <tr>
+                                                                                <td colspan="3" class="deletePopup">
+                                                                                    <apex:outputtext style="color:#6590c4; font-size: 13.9pt;font-weight: bold;" value="This Assumption will be deleted."/>
+                                                                                </td>
+                                                                            </tr>
+                                                                            <tr>
+                                                                                <td width="47%" class="deletePopup">
+                                                                                    <apex:commandButton styleClass="popupButtonYes" value="Yes" action="{!DeleteAssumption}" reRender="frm" status="Processing">
+                                                                                        <apex:param value="{!CountAssumption}" name="DeleteIndex"/>
+                                                                                    </apex:commandButton>
+                                                                                </td>
+                                                                                <td width="6%" class="deletePopup"></td>
+                                                                                <td width="47%" align="left" class="deletePopupCancel">
+                                                                                    <apex:commandButton styleClass="popupButtonCancel" value="Cancel" onclick="return CloseAssumptionPopup('{!$Component.tstpopup1}');"/>
+                                                                                </td>
+                                                                            </tr>
+                                                                        </table>
+                                                                    </apex:outputPanel>
+                                                                </apex:outputPanel>
+                                                            </td>
+                                                            <td class="dataCell TDstyle">
+                                                                <apex:inputField value="{!objA.objAssumption.Item_Description__c}" style="height: 19px;resize:none"/>
+                                                            </td>
+                                                            <td class="dataCell TDstyle">
+                                                                <apex:selectList id="txtCurrencyUsed" value="{!objA.strCurrencyUsedAssumption}" size="1" style="width:101px" onchange="return ChangeCurrencyRate(this.value,'{!CountAssumption}');">
+                                                                    <apex:selectOptions value="{!AllIPCurrencyOptions}"></apex:selectOptions>
+                                                                </apex:selectList>
+                                                            </td>
+                                                            <td class="dataCell TDstyle">
+                                                                <apex:inputField value="{!objA.objAssumption.Unit_of_Measure__c}" style="height: 19px;resize:none;width:130px;"/>
+                                                            </td>                                                                                        
+                                                            <td id="Year1tdA" class="dataCell TDstyle" style="display:{!if(strSelectedYearAssumption == 'Year1','','none')};">
+                                                                <apex:inputField id="txtY1UnitCost" value="{!objA.objAssumption.Y1_Unit_Cost_Payment_Currency__c}" onchange="CalculateTotalCost('1','{!$Component.txtY1UnitCost}','{!$Component.txtY1Quantity}','{!$Component.txtTotalCostY1}','{!$Component.txtRateY1}','{!$Component.txtCurrencyUsed}','{!Count-1}',{!objBL.lstAssumptions.size});"/>
+                                                            </td>                                                            
+                                                            <td id="Year1tdA" class="dataCell TDstyle" style="display:{!if(strSelectedYearAssumption == 'Year1','','none')};">
+                                                                <apex:inputField id="txtY1Quantity" value="{!objA.objAssumption.Y1_Quantity__c}" onchange="CalculateTotalCost('1','{!$Component.txtY1UnitCost}','{!$Component.txtY1Quantity}','{!$Component.txtTotalCostY1}','{!$Component.txtRateY1}','{!$Component.txtCurrencyUsed}','{!Count-1}',{!objBL.lstAssumptions.size});"/>
+                                                            </td>
+                                                            <td id="Year1tdA" class="dataCell TDstyle" style="display:{!if(strSelectedYearAssumption == 'Year1','','none')};">
+                                                                <apex:outputText id="txtTotalCostY1" value="{!objA.TotalCostY1}"/>
+                                                                <br/><apex:outputText id="txtRateY1" value="{!objA.CurrencyRateInUSDY1}"/>
+                                                            </td>
+                                                            
+                                                            <td id="Year2tdA" class="dataCell TDstyle" style="display:{!if(strSelectedYearAssumption == 'Year2','','none')};">
+                                                                <apex:inputField id="txtY2UnitCost" value="{!objA.objAssumption.Y2_Unit_Cost_Payment_Currency__c}" onchange="CalculateTotalCost('2','{!$Component.txtY2UnitCost}','{!$Component.txtY2Quantity}','{!$Component.txtTotalCostY2}','{!$Component.txtRateY2}','{!$Component.txtCurrencyUsed}','{!Count-1}',{!objBL.lstAssumptions.size});"/>
+                                                            </td>                                                            
+                                                            <td id="Year2tdA" class="dataCell TDstyle" style="display:{!if(strSelectedYearAssumption == 'Year2','','none')};">
+                                                                <apex:inputField id="txtY2Quantity" value="{!objA.objAssumption.Y2_Quantity__c}" onchange="CalculateTotalCost('2','{!$Component.txtY2UnitCost}','{!$Component.txtY2Quantity}','{!$Component.txtTotalCostY2}','{!$Component.txtRateY2}','{!$Component.txtCurrencyUsed}','{!Count-1}',{!objBL.lstAssumptions.size});"/>
+                                                            </td>
+                                                            <td id="Year2tdA" class="dataCell TDstyle" style="display:{!if(strSelectedYearAssumption == 'Year2','','none')};">
+                                                                <apex:outputText id="txtTotalCostY2" value="{!objA.TotalCostY2}"/>
+                                                                <br/><apex:outputText id="txtRateY2" value="{!objA.CurrencyRateInUSDY2}"/>
+                                                            </td>                                                            
+                                                            
+                                                            <td id="Year3tdA" class="dataCell TDstyle" style="display:{!if(strSelectedYearAssumption == 'Year3','','none')};">
+                                                                <apex:inputField id="txtY3UnitCost" value="{!objA.objAssumption.Y3_Unit_Cost_Payment_Currency__c}" onchange="CalculateTotalCost('3','{!$Component.txtY3UnitCost}','{!$Component.txtY3Quantity}','{!$Component.txtTotalCostY3}','{!$Component.txtRateY3}','{!$Component.txtCurrencyUsed}','{!Count-1}',{!objBL.lstAssumptions.size});"/>
+                                                            </td>                                                            
+                                                            <td id="Year3tdA" class="dataCell TDstyle" style="display:{!if(strSelectedYearAssumption == 'Year3','','none')};">
+                                                                <apex:inputField id="txtY3Quantity" value="{!objA.objAssumption.Y3_Quantity__c}" onchange="CalculateTotalCost('3','{!$Component.txtY3UnitCost}','{!$Component.txtY3Quantity}','{!$Component.txtTotalCostY3}','{!$Component.txtRateY3}','{!$Component.txtCurrencyUsed}','{!Count-1}',{!objBL.lstAssumptions.size});"/>
+                                                            </td>
+                                                            <td id="Year3tdA" class="dataCell TDstyle" style="display:{!if(strSelectedYearAssumption == 'Year3','','none')};">
+                                                                <apex:outputText id="txtTotalCostY3" value="{!objA.TotalCostY3}"/>
+                                                                <br/><apex:outputText id="txtRateY3" value="{!objA.CurrencyRateInUSDY3}"/>
+                                                            </td>                                                            
+                                                            
+                                                            <td id="Year4tdA" class="dataCell TDstyle" style="display:{!if(strSelectedYearAssumption == 'Year4','','none')};">
+                                                                <apex:inputField id="txtY4UnitCost" value="{!objA.objAssumption.Y4_Unit_Cost_Payment_Currency__c}" onchange="CalculateTotalCost('4','{!$Component.txtY4UnitCost}','{!$Component.txtY4Quantity}','{!$Component.txtTotalCostY4}','{!$Component.txtRateY4}','{!$Component.txtCurrencyUsed}','{!Count-1}',{!objBL.lstAssumptions.size});"/>
+                                                            </td>                                                            
+                                                            <td id="Year4tdA" class="dataCell TDstyle" style="display:{!if(strSelectedYearAssumption == 'Year4','','none')};">
+                                                                <apex:inputField id="txtY4Quantity" value="{!objA.objAssumption.Y4_Quantity__c}" onchange="CalculateTotalCost('4','{!$Component.txtY4UnitCost}','{!$Component.txtY4Quantity}','{!$Component.txtTotalCostY4}','{!$Component.txtRateY4}','{!$Component.txtCurrencyUsed}','{!Count-1}',{!objBL.lstAssumptions.size});"/>
+                                                            </td>
+                                                            <td id="Year4tdA" class="dataCell TDstyle" style="display:{!if(strSelectedYearAssumption == 'Year4','','none')};">
+                                                                <apex:outputText id="txtTotalCostY4" value="{!objA.TotalCostY4}"/>
+                                                                <br/><apex:outputText id="txtRateY4" value="{!objA.CurrencyRateInUSDY4}"/>
+                                                            </td>                                                                                                                      
+                                                            <td class="dataCell TDstyle">
+                                                                <apex:inputField value="{!objA.objAssumption.Assumptions_to_Support_Unit_Cost__c}" style="width:180px;"/>
+                                                            </td>
+                                                            <td class="dataCell TDstyle">
+                                                                <apex:inputField value="{!objA.objAssumption.Justifications_Comments__c}" style="height: 19px;resize:none;width:130px;"/>
+                                                            </td>
+                                                        </tr>
+                                                        <apex:variable value="{!CountAssumption+1}" var="CountAssumption"/>
+                                                    </apex:repeat>
+                                                    <tr id="NewAssumptionTR{!Count}" style="display:none;">
+                                                        <td>
+                                                            <apex:commandLink styleClass="TGFbtn TGFbtn-mini TGFbtn-danger" style="width:30px;height:25px;margin-top:6px;" onclick="return CancelAssumption('NewAssumptionTR{!Count}','AddButtonTD{!Count}','AddButtonTDHide{!Count}');">
+                                                                <i class="icon-trash icon-white" style="margin-top:6px"></i> 
+                                                            </apex:commandLink>
+                                                        </td>
+                                                        <td class="dataCell TDstyle">
+                                                            <apex:inputField value="{!objNewAssumption.objAssumption.Item_Description__c}" style="height: 19px;resize:none"/>
+                                                        </td>
+                                                        <td class="dataCell TDstyle">
+                                                            <apex:selectList id="txtCurrencyUsedNew" value="{!objNewAssumption.strCurrencyUsedAssumption}" size="1" style="width:101px" onchange="ChangeCurrencyRateNew(this.value);,'AddButtonTDHide{!Count}'">
+                                                                <apex:selectOptions value="{!AllIPCurrencyOptions}"></apex:selectOptions>
+                                                            </apex:selectList>
+                                                        </td>
+                                                        <td class="dataCell TDstyle">
+                                                            <apex:inputField value="{!objNewAssumption.objAssumption.Unit_of_Measure__c}" style="height: 19px;resize:none;width:130px;"/>
+                                                        </td>
+                                                        
+                                                        <td id="Year1tdA" class="dataCell TDstyle">
+                                                            <apex:inputField id="txtY1UnitCostNew" style="display:{!if(strSelectedYearAssumption == 'Year1','','none')};" value="{!objNewAssumption.objAssumption.Y1_Unit_Cost_Payment_Currency__c}" onchange="CalculateTotalCostNew('1','{!$Component.txtY1UnitCostNew}','{!$Component.txtY1QuantityNew}','{!$Component.txtTotalCostY1New}','{!$Component.txtCurrencyUsedNew}','{!$Component.txtRateY1New}','{!Count-1}',{!if(objBL.lstAssumptions != null && objBL.lstAssumptions.size > 0,objBL.lstAssumptions.size,0)});"/>
+                                                        </td>                                                      
+                                                        <td id="Year1tdA" class="dataCell TDstyle" style="display:{!if(strSelectedYearAssumption == 'Year1','','none')};">
+                                                            <apex:inputField id="txtY1QuantityNew"  value="{!objNewAssumption.objAssumption.Y1_Quantity__c}" onchange="CalculateTotalCostNew('1','{!$Component.txtY1UnitCostNew}','{!$Component.txtY1QuantityNew}','{!$Component.txtTotalCostY1New}','{!$Component.txtCurrencyUsedNew}','{!$Component.txtRateY1New}','{!Count-1}',{!if(objBL.lstAssumptions != null && objBL.lstAssumptions.size > 0,objBL.lstAssumptions.size,0)});"/>
+                                                        </td>
+                                                        <td  id="Year1tdA" class="dataCell TDstyle" style="display:{!if(strSelectedYearAssumption == 'Year1','','none')};">
+                                                            <apex:outputText id="txtTotalCostY1New"  value="{!objNewAssumption.TotalCostY1}"/>
+                                                            <br/><apex:outputText id="txtRateY1New" value="{!objNewAssumption.CurrencyRateInUSDY1}"/>
+                                                        </td>  
+                                                        
+                                                        <td id="Year2tdA" class="dataCell TDstyle" style="display:{!if(strSelectedYearAssumption == 'Year2','','none')};" >
+                                                            <apex:inputField id="txtY2UnitCostNew" value="{!objNewAssumption.objAssumption.Y2_Unit_Cost_Payment_Currency__c}" onchange="CalculateTotalCostNew('2','{!$Component.txtY2UnitCostNew}','{!$Component.txtY2QuantityNew}','{!$Component.txtTotalCostY2New}','{!$Component.txtCurrencyUsedNew}','{!$Component.txtRateY2New}','{!Count-1}',{!if(objBL.lstAssumptions != null && objBL.lstAssumptions.size > 0,objBL.lstAssumptions.size,0)});"/>
+                                                        </td>                                                        
+                                                        <td id="Year2tdA" class="dataCell TDstyle" style="display:{!if(strSelectedYearAssumption == 'Year2','','none')};">
+                                                            <apex:inputField id="txtY2QuantityNew" value="{!objNewAssumption.objAssumption.Y2_Quantity__c}" onchange="CalculateTotalCostNew('2','{!$Component.txtY2UnitCostNew}','{!$Component.txtY2QuantityNew}','{!$Component.txtTotalCostY2New}','{!$Component.txtCurrencyUsedNew}','{!$Component.txtRateY2New}','{!Count-1}',{!if(objBL.lstAssumptions != null && objBL.lstAssumptions.size > 0,objBL.lstAssumptions.size,0)});"/>
+                                                        </td>
+                                                        <td id="Year2tdA" class="dataCell TDstyle" style="display:{!if(strSelectedYearAssumption == 'Year2','','none')};">
+                                                            <apex:outputText id="txtTotalCostY2New" value="{!objNewAssumption.TotalCostY2}" />
+                                                            <br/><apex:outputText id="txtRateY2New" value="{!objNewAssumption.CurrencyRateInUSDY2}"/>
+                                                        </td>    
+                                                        
+                                                        <td id="Year3tdA" class="dataCell TDstyle" style="display:{!if(strSelectedYearAssumption == 'Year3','','none')};">
+                                                            <apex:inputField id="txtY3UnitCostNew" value="{!objNewAssumption.objAssumption.Y3_Unit_Cost_Payment_Currency__c}" onchange="CalculateTotalCostNew('3','{!$Component.txtY3UnitCostNew}','{!$Component.txtY3QuantityNew}','{!$Component.txtTotalCostY3New}','{!$Component.txtCurrencyUsedNew}','{!$Component.txtRateY3New}','{!Count-1}',{!if(objBL.lstAssumptions != null && objBL.lstAssumptions.size > 0,objBL.lstAssumptions.size,0)});"/>
+                                                        </td>                                                   
+                                                        <td id="Year3tdA" class="dataCell TDstyle" style="display:{!if(strSelectedYearAssumption == 'Year3','','none')};">
+                                                            <apex:inputField id="txtY3QuantityNew" value="{!objNewAssumption.objAssumption.Y3_Quantity__c}" onchange="CalculateTotalCostNew('3','{!$Component.txtY3UnitCostNew}','{!$Component.txtY3QuantityNew}','{!$Component.txtTotalCostY3New}','{!$Component.txtCurrencyUsedNew}','{!$Component.txtRateY3New}','{!Count-1}',{!if(objBL.lstAssumptions != null && objBL.lstAssumptions.size > 0,objBL.lstAssumptions.size,0)});"/>
+                                                        </td>
+                                                        <td id="Year3tdA" class="dataCell TDstyle" style="display:{!if(strSelectedYearAssumption == 'Year3','','none')};">
+                                                            <apex:outputText id="txtTotalCostY3New" value="{!objNewAssumption.TotalCostY3}" />
+                                                            <br/><apex:outputText id="txtRateY3New" value="{!objNewAssumption.CurrencyRateInUSDY3}"/>
+                                                        </td>    
+                                                        
+                                                        <td id="Year4tdA" class="dataCell TDstyle" style="display:{!if(strSelectedYearAssumption == 'Year4','','none')};">
+                                                            <apex:inputField id="txtY4UnitCostNew" value="{!objNewAssumption.objAssumption.Y4_Unit_Cost_Payment_Currency__c}" onchange="CalculateTotalCostNew('4','{!$Component.txtY4UnitCostNew}','{!$Component.txtY4QuantityNew}','{!$Component.txtTotalCostY4New}','{!$Component.txtCurrencyUsedNew}','{!$Component.txtRateY4New}','{!Count-1}',{!if(objBL.lstAssumptions != null && objBL.lstAssumptions.size > 0,objBL.lstAssumptions.size,0)});"/>
+                                                        </td>                                                        
+                                                        <td id="Year4tdA" class="dataCell TDstyle" style="display:{!if(strSelectedYearAssumption == 'Year4','','none')};">
+                                                            <apex:inputField id="txtY4QuantityNew" value="{!objNewAssumption.objAssumption.Y4_Quantity__c}" onchange="CalculateTotalCostNew('4','{!$Component.txtY4UnitCostNew}','{!$Component.txtY4QuantityNew}','{!$Component.txtTotalCostY4New}','{!$Component.txtCurrencyUsedNew}','{!$Component.txtRateY4New}','{!Count-1}',{!if(objBL.lstAssumptions != null && objBL.lstAssumptions.size > 0,objBL.lstAssumptions.size,0)});"/>
+                                                        </td>
+                                                        <td id="Year4tdA" class="dataCell TDstyle" style="display:{!if(strSelectedYearAssumption == 'Year4','','none')};">
+                                                            <apex:outputText id="txtTotalCostY4New" value="{!objNewAssumption.TotalCostY4}" />
+                                                            <br/><apex:outputText id="txtRateY4New" value="{!objNewAssumption.CurrencyRateInUSDY4}"/>
+                                                        </td>
+                                                                                                      
+                                                        <td class="dataCell TDstyle">
+                                                            <apex:inputField value="{!objNewAssumption.objASsumption.Assumptions_to_Support_Unit_Cost__c}" style="width:180px;"/>
+                                                        </td>
+                                                        <td class="dataCell TDstyle">
+                                                            <apex:inputField value="{!objNewAssumption.objAssumption.Justifications_Comments__c}" style="height: 19px;resize:none;width:130px;"/>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td id="AddButtonTD{!Count}" colspan="2" style="text-align:center;">
+                                                            <apex:commandLink styleClass="TGFbtn TGFbtn-mini TGFbtn-success" onclick="return AddNewAssumption('NewAssumptionTR{!Count}','AddButtonTD{!Count}','AddButtonTDHide{!Count}');" rerender="tstpopup1">
+                                                                <i class="icon-plus-sign icon-white"></i>
+                                                                <strong>Add</strong>
+                                                            </apex:commandLink>
+                                                        </td>
+                                                        <td colspan="2" id="AddButtonTDHide{!Count}" style="display:none;"></td>
+                                                        <td></td>    
+                                                        <td></td>
+                                                        <td></td>
+                                                        <th>
+                                                            Total Unit Cost
+                                                        </th>
+                                                        <td class="dataCell TDstyle">
+                                                            <apex:outputText id="txtTotalUnitCostY1" value="{!objBL.TotalOfAllY1Cost}" style="display:{!if(strSelectedYearAssumption == 'Year1','','none')};"/>
+                                                            <apex:outputText id="txtTotalUnitCostY2" value="{!objBL.TotalOfAllY2Cost}" style="display:{!if(strSelectedYearAssumption == 'Year2','','none')};"/>
+                                                            <apex:outputText id="txtTotalUnitCostY3" value="{!objBL.TotalOfAllY3Cost}" style="display:{!if(strSelectedYearAssumption == 'Year3','','none')};"/>
+                                                            <apex:outputText id="txtTotalUnitCostY4" value="{!objBL.TotalOfAllY4Cost}" style="display:{!if(strSelectedYearAssumption == 'Year4','','none')};"/>
+                                                        </td>
+                                                        <td></td>
+                                                        <td></td>    
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="dataCell TDstyle" colspan="9" style="text-align:center;">                                                                                                                                                                                 
+                                                            <apex:commandLink styleClass="TGFbtn TGFbtn-mini TGFbtn-success" style="width:37px;align:right;" onclick="return SaveAssumptionRecords('NewAssumptionTR{!Count}');" rerender="frm">
+ 
+                                                                <strong>Save</strong>
+                                                            </apex:commandLink>
+                                                            <apex:commandLink styleClass="TGFbtn TGFbtn-mini TGFbtn-danger" style="align:left;" action="{!CancelAssumptionRecords}" reRender="frm" status="Processing" > 
+                                                                  <apex:param value="{!Count-1}" name="CancelIndex" id="CancelIndex1"/>
+                                                                <strong>Close</strong>
+                                                            </apex:commandLink>
+                                                        </td>
+                                                    </tr>
+                                                </table>
+                                                </apex:outputPanel>                                           
+                                            </apex:outputPanel>
+                                        </apex:outputPanel>
+<!------------End Assumption Popup----------------------->                                   
+                                        &nbsp;&nbsp;                                       
+                                        <apex:commandLink id="cmdLinkDeleteGoal" styleClass="TGFbtn TGFbtn-mini TGFbtn-danger" style="width:30px;height:25px;margin-top:6px;display:{!if(objBL.blnIsEditable != true,'none','')};" onclick="return OpenDeletePopup('{!$Component.tstpopup}')">
+                                            <i class="icon-trash icon-white" style="margin-top:6px"></i> 
+                                        </apex:commandLink>
+<!------------Start AssumptionSet Delete Popup-----------------------> 
+                                        <apex:outputPanel id="tstpopup" style="display:none;">
+                                            <apex:outputPanel id="popupBackground" styleClass="popupBackground"/>
+                                            <apex:outputPanel id="custPopup" styleClass="custPopup">
+                                                <table width="100%" cellspacing="0" cellpadding="0" border="0" >
+                                                    <tr>
+                                                        <td colspan="3" class="deletePopup">
+                                                            <apex:outputtext style="color:#6590c4; font-size: 13.9pt;font-weight: bold;" value="Are you sure?"/>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td colspan="3" class="deletePopup">
+                                                            <apex:outputtext style="color:#6590c4; font-size: 13.9pt;font-weight: bold;" value="This Budget line will be deleted."/>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td width="47%" class="deletePopup">
+                                                            <apex:commandButton styleClass="popupButtonYes" value="Yes" action="{!DeleteBudgetLine}" reRender="frm" status="Processing">
+                                                                <apex:param value="{!Count-1}" name="DeleteIndex" />
+                                                            </apex:commandButton>
+                                                        </td>
+                                                        <td width="6%" class="deletePopup"></td>
+                                                        <td width="47%" align="left" class="deletePopupCancel">
+                                                            <apex:commandButton styleClass="popupButtonCancel" value="Cancel" onclick="return ClosePopup('{!$Component.tstpopup}');"/>
+                                                        </td>
+                                                    </tr>
+                                                </table>
+                                            </apex:outputPanel>
+                                        </apex:outputPanel>
+<!------------End AssumptionSet Delete Popup----------------------->
+                                    </td>
+                                    <td class="dataCell TDstyle">
+                                        <apex:outputText value="{!objBL.objAssumptionSet.Name}"/>
+                                    </td>
+                                    <td class="dataCell TDstyle">
+                                        <apex:selectList value="{!objBL.objAssumptionSet.Cost_Input__c}" size="1" style="width:150px;" rendered="{!!objBL.blnIsEditable}" onchange="SelectUnitOfmeasure(this,'{!Count-1}','{!$Component.txtUnitMeasure}');">
+                                            <apex:selectOptions value="{!CostInputOptions}"></apex:selectOptions>
+                                        </apex:selectList>                                       
+                                        <apex:outputText value="{!objBL.strCostInputName}" rendered="{!objBL.blnIsEditable}"/> 
+                                    </td>
+                                    <td class="dataCell TDstyle">
+                                        <apex:outputText value="{!objBL.NumberOfBudgetLine}"/>    
+                                    </td>
+                                    <td class="dataCell TDstyle"> 
+                                        <apex:outputText value="{!objBL.NumberOfAssumption}"/>    
+                                    </td>
+                                    <td>
+                                        <apex:commandLink id="cmdLinkMassUpdate" styleClass="TGFbtn TGFbtn-mini TGFbtn-success">
+                                            <strong>Mass Update</strong>                                            
+                                        </apex:commandLink>
+                                    </td>                                     
+                                 </tr>
+                                 <apex:variable value="{!Count + 1}" var="Count"/>
+                             </apex:repeat>
+<!--CONTINUE BUDGET LINE TABLE-->                          
+                             <tr id="newBudgetLine1" style="display:none;">
+                                <td>                                    
+                                    <apex:commandLink id="cmdLinkDeleteGoal" styleClass="TGFbtn TGFbtn-mini TGFbtn-danger" style="width:30px;height:25px;margin-top:6px;" onclick="return CancelNewBudgetlineRow();">
+                                        <i class="icon-trash icon-white" style="margin-top:6px"></i> 
+                                    </apex:commandLink>                                   
+                                </td> 
+                                <td class="dataCell TDstyle" >
+                                        <apex:inputText id="txtAssumptionName" value="{!objAssumptionSetNewRow.Name}" style="width:180px;"/>
+                                </td>
+                                <td class="dataCell TDstyle">
+                                   <apex:selectList value="{!objAssumptionSetNewRow.Cost_Input__c}" size="1" style="width:180px;" >
+                                       <apex:selectOptions value="{!CostInputOptions}"/>
+                                   </apex:selectList>                                                  
+                                </td>
+                                <td colspan="2" style="border-bottom:0px !important;text-align:center;">
+                                    <apex:actionFunction name="actSaveBudgetLines1" action="{!SaveBudgetLines}" reRender="frm" status="Processing">
+                                        <apex:param value="{!if(lstwrapAssumptionSet.size > 0,lstwrapAssumptionSet.size+1,1)}" name="SaveIndex" id="SaveIndex1"/>
+                                    </apex:actionFunction>
+                                    <apex:commandLink styleClass="TGFbtn TGFbtn-success -left"  style="width:160px;" Status="Processing" onclick="return validateSaveNew('newBudgetLine1');" rerender="tstpopup1">
+                                        <i class="icon-plus icon-white"></i> 
+                                        <strong>Save</strong>
+                                    </apex:commandLink>                  
+                                </td>                                        
+                            </tr>
+ <!---Add New Row Assumption Set----------->
+                            <tr id="btnAddBudgetLine">
+                             <td style="border-bottom:0px !important;border-top:0px">
+                                 <apex:commandLink styleClass="TGFbtn TGFbtn-success pull-right" onclick="return DisplayNewBudgetlineRow();" style="width:160px;" rerender="frm">
+                                    <i class="icon-plus icon-white"></i> 
+                                    <strong>Add Assumption Set</strong>
+                                 </apex:commandLink>
+                             </td>
+                         </tr>                             
+                    </table>
+                </td>
+            </tr>
+        </table>
+    </div>
+    <style>
+        .ProcessingBackground
+        {
+            background-color: black;
+            opacity: 0.50;
+            filter: alpha(opacity = 50);
+            width: 100%;
+            height: 100%;
+            position: fixed;
+            z-index: 9999;
+            top:0;
+            left:0;
+        }
+        .Processing
+        {
+            z-index: 9999;
+            left: 50%;
+            top: 50%;
+            text-align: center;
+            position: fixed;
+        }        
+    </style>
+    <!------------Processing Div----------------->
+    <div id="divProcessing" style="display:none;">
+        <div class="ProcessingBackground"></div>
+        <div class="Processing">
+            <apex:image alt="Processing" url="{!$Resource.LoadingCircle}" />
+        </div>
+    </div>  
+    <apex:actionStatus id="Processing" onstart="document.getElementById('divProcessing').style.display = '';" onstop="document.getElementById('divProcessing').style.display = 'none';">                            
+    </apex:actionStatus> 
+    <script>
+        function displayYearToggle(thisTH,SelectedYear,NewYear,NewYearth,NewYeartd){
+            var AllTD = document.getElementsByTagName("td");
+            var AllTH = document.getElementsByTagName("th");
+            var hdnYear = document.getElementById(SelectedYear);
+            var thId;
+            var tdId;
+            if(hdnYear.value == 'Year1'){
+                thId = 'Year1th';
+                tdId = 'Year1td';
+            }else if(hdnYear.value == 'Year2'){
+                thId = 'Year2th';
+                tdId = 'Year2td';
+            }else if(hdnYear.value == 'Year3'){
+                thId = 'Year3th';
+                tdId = 'Year3td';
+            }else if(hdnYear.value == 'Year4'){
+                thId = 'Year4th';
+                tdId = 'Year4td';
+            }
+            if(hdnYear.value != NewYear){
+                for(var i=0;i<AllTD.length;i++){
+                    if(AllTD[i].id == tdId){
+                        AllTD[i].style.display = 'none';
+                    }else if(AllTD[i].id == NewYeartd){
+                        AllTD[i].style.display = '';
+                    }
+                }
+                for(var i=0;i<AllTH.length;i++){
+                    if(AllTH[i].id == thId){
+                        AllTH[i].style.display = 'none';
+                    }else if(AllTH[i].id == NewYearth){
+                        AllTH[i].style.display = '';
+                    }
+                }                  
+                document.getElementById(thisTH).style.background = '#434445';
+                document.getElementById(thisTH).style.color = '#FFFFFF';
+                if(hdnYear.value == 'Year1'){
+                    document.getElementById('MainThYear1').style.background = '#DFEFF0';
+                    document.getElementById('MainThYear1').style.color = '#00688B';
+                }else if(hdnYear.value == 'Year2'){
+                    document.getElementById('MainThYear2').style.background = '#E7F2D5';
+                    document.getElementById('MainThYear2').style.color = '#00688B';
+                }else if(hdnYear.value == 'Year3'){
+                    document.getElementById('MainThYear3').style.background = '#FAF3CA';
+                    document.getElementById('MainThYear3').style.color = '#00688B';
+                }else if(hdnYear.value == 'Year4'){
+                    document.getElementById('MainThYear4').style.background = '#F0E1E2';
+                    document.getElementById('MainThYear4').style.color = '#00688B';
+                }
+                document.getElementById(SelectedYear).value = NewYear;
+            }
+        }
+        
+       function displayYearToggleAssumption(thisTH,SelectedYear,NewYear,NewYearth,NewYeartd){
+            var AllTD = document.getElementsByTagName("td");
+            var AllTH = document.getElementsByTagName("th");
+            
+            var hdnYear = document.getElementById(SelectedYear);
+            var thId;
+            var tdId;
+            var DthId;
+            var DtdId;
+            var NewYearthD;
+            var NewYeartdD;
+            if(hdnYear.value == 'Year1'){
+                thId = 'Year1thA';
+                tdId = 'Year1tdA';
+                DthId = 'DurationTh1';
+                DtdId = 'DurationTd1';
+            }else if(hdnYear.value == 'Year2'){
+                thId = 'Year2thA';
+                tdId = 'Year2tdA';
+                DthId = 'DurationTh2';
+                DtdId = 'DurationTd2';
+            }else if(hdnYear.value == 'Year3'){
+                thId = 'Year3thA';
+                tdId = 'Year3tdA';
+                DthId = 'DurationTh3';
+                DtdId = 'DurationTd3';
+            }else if(hdnYear.value == 'Year4'){
+                thId = 'Year4thA';
+                tdId = 'Year4tdA';
+                DthId = 'DurationTh4';
+                DtdId = 'DurationTd4';
+            }
+            if(NewYear == 'Year1'){
+                NewYearthD = 'DurationTh1';
+                NewYeartdD = 'DurationTd1';
+            }else if(NewYear == 'Year2'){
+                NewYearthD = 'DurationTh2';
+                NewYeartdD = 'DurationTd2';
+            }else if(NewYear == 'Year3'){
+                NewYearthD = 'DurationTh3';
+                NewYeartdD = 'DurationTd3';
+            }else if(NewYear == 'Year4'){
+                NewYearthD = 'DurationTh4';
+                NewYeartdD = 'DurationTd4';
+            }
+            if(hdnYear.value != NewYear){
+                for(var i=0;i<AllTD.length;i++){
+                    if(AllTD[i].id == tdId){
+                        AllTD[i].style.display = 'none';
+                    }else if(AllTD[i].id == NewYeartd){
+                        AllTD[i].style.display = '';
+                    }
+                    
+                    if(AllTD[i].id == DtdId){
+                        AllTD[i].style.display = 'none';
+                    }else if(AllTD[i].id == NewYeartdD){
+                        AllTD[i].style.display = '';
+                    }
+                }
+                for(var i=0;i<AllTH.length;i++){
+                    if(AllTH[i].id == thId){
+                        AllTH[i].style.display = 'none';
+                    }else if(AllTH[i].id == NewYearth){
+                        AllTH[i].style.display = '';
+                    }
+                    
+                    if(AllTH[i].id == DthId){
+                        AllTH[i].style.display = 'none';
+                    }else if(AllTH[i].id == NewYearthD){
+                        AllTH[i].style.display = '';
+                    }
+                }   
+                var TYCY1;
+                var TYCY2;
+                var TYCY3;
+                var TYCY4;    
+                TYCY1 = 'txtTotalUnitCostY1';
+                TYCY2 = 'txtTotalUnitCostY2';
+                TYCY3 = 'txtTotalUnitCostY3';
+                TYCY4 = 'txtTotalUnitCostY4';
+
+                document.getElementById(thisTH).style.background = '#434445';
+                document.getElementById(thisTH).style.color = '#FFFFFF';
+                if(NewYear=='Year1'){
+                    var TotalObj = document.getElementById(SelectedYear.replace("hdnSelectedYearA",TYCY1));
+                    TotalObj.style.display = '';
+                }else if(NewYear=='Year2'){
+                    var TotalObj = document.getElementById(SelectedYear.replace("hdnSelectedYearA",TYCY2));
+                    TotalObj.style.display = '';
+                }else if(NewYear=='Year3'){
+                    var TotalObj = document.getElementById(SelectedYear.replace("hdnSelectedYearA",TYCY3));
+                    TotalObj.style.display = '';
+                }else if(NewYear=='Year4'){
+                    var TotalObj = document.getElementById(SelectedYear.replace("hdnSelectedYearA",TYCY4));
+                    TotalObj.style.display = '';
+                }
+                if(hdnYear.value == 'Year1'){
+                    document.getElementById('MainThYear1A').style.background = '#DFEFF0';
+                    document.getElementById('MainThYear1A').style.color = '#00688B';
+                    var TotalObj = document.getElementById(SelectedYear.replace("hdnSelectedYearA",TYCY1));
+                    TotalObj.style.display = 'none';
+                }else if(hdnYear.value == 'Year2'){
+                    document.getElementById('MainThYear2A').style.background = '#E7F2D5';
+                    document.getElementById('MainThYear2A').style.color = '#00688B';                        
+                    var TotalObj = document.getElementById(SelectedYear.replace("hdnSelectedYearA",TYCY2));
+                    TotalObj.style.display = 'none';
+                }else if(hdnYear.value == 'Year3'){
+                    document.getElementById('MainThYear3A').style.background = '#FAF3CA';
+                    document.getElementById('MainThYear3A').style.color = '#00688B';
+                    var TotalObj = document.getElementById(SelectedYear.replace("hdnSelectedYearA",TYCY3));
+                    TotalObj.style.display = 'none';
+                }else if(hdnYear.value == 'Year4'){
+                    document.getElementById('MainThYear4A').style.background = '#F0E1E2';
+                    document.getElementById('MainThYear4A').style.color = '#00688B';
+                    var TotalObj = document.getElementById(SelectedYear.replace("hdnSelectedYearA",TYCY4));
+                    TotalObj.style.display = 'none';
+                }
+                document.getElementById(SelectedYear).value = NewYear;
+            }
+        }
+        
+        function CalculateAmount(YearAmount,Quantity){
+            var QuantityValue = document.getElementById(Quantity).value;
+            if(QuantityValue == '' || QuantityValue == null) QuantityValue = 0;           
+            var Amount = parseInt(YearAmount) * parseInt(QuantityValue);
+            return Amount;
+        }
+        
+        function CalculateQuantity(Quantity){
+            var QuantityValue = document.getElementById(Quantity).value;
+            if(QuantityValue == '' || QuantityValue == null) QuantityValue = 0;           
+            return QuantityValue;
+        }
+        
+        function CalculateTotalYear1(Y1,Y2,Y3,Y4,Q1,Q2,Q3,Q4,Q5,Q6,Q7,Q8,Q9,Q10,Q11,Q12,Q13,Q14,Q15,Q16,TotalQty,C1,C2,C3,C4,C5,C6,C7,C8,C9,C10,C11,C12,C13,C14,C15,C16,TotalCase,GrantAmt,GrantQty){
+            var Year1Amt = document.getElementById(Y1).value;   
+            var Year2Amt = document.getElementById(Y2).value;
+            var Year3Amt = document.getElementById(Y3).value;
+            var Year4Amt = document.getElementById(Y4).value;   
+            if(Year1Amt == '' || Year1Amt == null) Year1Amt = 0;
+            if(Year2Amt == '' || Year2Amt == null) Year2Amt = 0;
+            if(Year3Amt == '' || Year3Amt == null) Year3Amt = 0;
+            if(Year4Amt == '' || Year4Amt == null) Year4Amt = 0;
+            document.getElementById(C1).innerHTML = CalculateAmount(Year1Amt,Q1);
+            if(document.getElementById(C1).innerHTML == 0) document.getElementById(C1).innerHTML = '';
+            document.getElementById(C2).innerHTML = CalculateAmount(Year1Amt,Q2);
+            if(document.getElementById(C2).innerHTML == 0) document.getElementById(C2).innerHTML = '';
+            document.getElementById(C3).innerHTML = CalculateAmount(Year1Amt,Q3);
+            if(document.getElementById(C3).innerHTML == 0) document.getElementById(C3).innerHTML = '';
+            document.getElementById(C4).innerHTML = CalculateAmount(Year1Amt,Q4);
+            if(document.getElementById(C4).innerHTML == 0) document.getElementById(C4).innerHTML = '';
+            
+            document.getElementById(TotalQty).innerHTML = (parseFloat(CalculateQuantity(Q1)) + parseFloat(CalculateQuantity(Q2)) + parseFloat(CalculateQuantity(Q3)) + parseFloat(CalculateQuantity(Q4))).toFixed(2);
+            if(document.getElementById(TotalQty).innerHTML == 0) document.getElementById(TotalQty).innerHTML = '';
+            document.getElementById(TotalCase).innerHTML = parseInt(CalculateAmount(Year1Amt,Q1) + CalculateAmount(Year1Amt,Q2) + CalculateAmount(Year1Amt,Q3) + CalculateAmount(Year1Amt,Q4));
+            if(document.getElementById(TotalCase).innerHTML == 0) document.getElementById(TotalCase).innerHTML = '';
+            document.getElementById(GrantQty).innerHTML = (parseFloat(CalculateQuantity(Q1)) + parseFloat(CalculateQuantity(Q2)) + parseFloat(CalculateQuantity(Q3)) + parseFloat(CalculateQuantity(Q4)) + parseFloat(CalculateQuantity(Q5)) + parseFloat(CalculateQuantity(Q6)) + parseFloat(CalculateQuantity(Q7)) + parseFloat(CalculateQuantity(Q8)) + parseFloat(CalculateQuantity(Q9)) + parseFloat(CalculateQuantity(Q10)) + parseFloat(CalculateQuantity(Q11)) + parseFloat(CalculateQuantity(Q12)) + parseFloat(CalculateQuantity(Q13)) + parseFloat(CalculateQuantity(Q14)) + parseFloat(CalculateQuantity(Q15)) + parseFloat(CalculateQuantity(Q16))).toFixed(2);
+            if(document.getElementById(GrantQty).innerHTML == 0) document.getElementById(GrantQty).innerHTML = '';
+            document.getElementById(GrantAmt).innerHTML = CalculateAmount(Year1Amt,Q1) + CalculateAmount(Year1Amt,Q2) + CalculateAmount(Year1Amt,Q3) + CalculateAmount(Year1Amt,Q4) + CalculateAmount(Year2Amt,Q5) + CalculateAmount(Year2Amt,Q6) + CalculateAmount(Year2Amt,Q7) + CalculateAmount(Year2Amt,Q8) + CalculateAmount(Year3Amt,Q9) + CalculateAmount(Year3Amt,Q10) + CalculateAmount(Year3Amt,Q11) + CalculateAmount(Year3Amt,Q12) + CalculateAmount(Year4Amt,Q13) + CalculateAmount(Year4Amt,Q14) + CalculateAmount(Year4Amt,Q15) + CalculateAmount(Year4Amt,Q16);
+            if(document.getElementById(GrantAmt).innerHTML == 0) document.getElementById(GrantAmt).innerHTML = '';
+        }
+        function CalculateTotalYear2(Y1,Y2,Y3,Y4,Q1,Q2,Q3,Q4,Q5,Q6,Q7,Q8,Q9,Q10,Q11,Q12,Q13,Q14,Q15,Q16,TotalQty,C1,C2,C3,C4,C5,C6,C7,C8,C9,C10,C11,C12,C13,C14,C15,C16,TotalCase,GrantAmt,GrantQty){
+            var Year1Amt = document.getElementById(Y1).value;   
+            var Year2Amt = document.getElementById(Y2).value;
+            var Year3Amt = document.getElementById(Y3).value;
+            var Year4Amt = document.getElementById(Y4).value;  
+            if(Year1Amt == '' || Year1Amt == null) Year1Amt = 0;
+            if(Year2Amt == '' || Year2Amt == null) Year2Amt = 0;
+            if(Year3Amt == '' || Year3Amt == null) Year3Amt = 0;
+            if(Year4Amt == '' || Year4Amt == null) Year4Amt = 0;                
+            document.getElementById(C5).innerHTML = CalculateAmount(Year2Amt,Q5);
+            if(document.getElementById(C5).innerHTML == 0) document.getElementById(C5).innerHTML = '';
+            document.getElementById(C6).innerHTML = CalculateAmount(Year2Amt,Q6);
+            if(document.getElementById(C6).innerHTML == 0) document.getElementById(C6).innerHTML = '';
+            document.getElementById(C7).innerHTML = CalculateAmount(Year2Amt,Q7);
+            if(document.getElementById(C7).innerHTML == 0) document.getElementById(C7).innerHTML = '';
+            document.getElementById(C8).innerHTML = CalculateAmount(Year2Amt,Q8);
+            if(document.getElementById(C8).innerHTML == 0) document.getElementById(C8).innerHTML = '';
+            
+            document.getElementById(TotalQty).innerHTML = (parseFloat(CalculateQuantity(Q5)) + parseFloat(CalculateQuantity(Q6)) + parseFloat(CalculateQuantity(Q7)) + parseFloat(CalculateQuantity(Q8))).toFixed(2);
+            if(document.getElementById(TotalQty).innerHTML == 0) document.getElementById(TotalQty).innerHTML = '';
+            document.getElementById(TotalCase).innerHTML = parseInt(CalculateAmount(Year2Amt,Q5) + CalculateAmount(Year2Amt,Q6) + CalculateAmount(Year2Amt,Q7) + CalculateAmount(Year2Amt,Q8));
+            if(document.getElementById(TotalCase).innerHTML == 0) document.getElementById(TotalCase).innerHTML = '';
+            document.getElementById(GrantQty).innerHTML = (parseFloat(CalculateQuantity(Q1)) + parseFloat(CalculateQuantity(Q2)) + parseFloat(CalculateQuantity(Q3)) + parseFloat(CalculateQuantity(Q4)) + parseFloat(CalculateQuantity(Q5)) + parseFloat(CalculateQuantity(Q6)) + parseFloat(CalculateQuantity(Q7)) + parseFloat(CalculateQuantity(Q8)) + parseFloat(CalculateQuantity(Q9)) + parseFloat(CalculateQuantity(Q10)) + parseFloat(CalculateQuantity(Q11)) + parseFloat(CalculateQuantity(Q12)) + parseFloat(CalculateQuantity(Q13)) + parseFloat(CalculateQuantity(Q14)) + parseFloat(CalculateQuantity(Q15)) + parseFloat(CalculateQuantity(Q16))).toFixed(2);
+            if(document.getElementById(GrantQty).innerHTML == 0) document.getElementById(GrantQty).innerHTML = '';
+            document.getElementById(GrantAmt).innerHTML = CalculateAmount(Year1Amt,Q1) + CalculateAmount(Year1Amt,Q2) + CalculateAmount(Year1Amt,Q3) + CalculateAmount(Year1Amt,Q4) + CalculateAmount(Year2Amt,Q5) + CalculateAmount(Year2Amt,Q6) + CalculateAmount(Year2Amt,Q7) + CalculateAmount(Year2Amt,Q8) + CalculateAmount(Year3Amt,Q9) + CalculateAmount(Year3Amt,Q10) + CalculateAmount(Year3Amt,Q11) + CalculateAmount(Year3Amt,Q12) + CalculateAmount(Year4Amt,Q13) + CalculateAmount(Year4Amt,Q14) + CalculateAmount(Year4Amt,Q15) + CalculateAmount(Year4Amt,Q16);
+            if(document.getElementById(GrantAmt).innerHTML == 0) document.getElementById(GrantAmt).innerHTML = '';
+        }
+        
+        function CalculateTotalYear3(Y1,Y2,Y3,Y4,Q1,Q2,Q3,Q4,Q5,Q6,Q7,Q8,Q9,Q10,Q11,Q12,Q13,Q14,Q15,Q16,TotalQty,C1,C2,C3,C4,C5,C6,C7,C8,C9,C10,C11,C12,C13,C14,C15,C16,TotalCase,GrantAmt,GrantQty){
+            var Year1Amt = document.getElementById(Y1).value;   
+            var Year2Amt = document.getElementById(Y2).value;
+            var Year3Amt = document.getElementById(Y3).value;
+            var Year4Amt = document.getElementById(Y4).value;      
+            if(Year1Amt == '' || Year1Amt == null) Year1Amt = 0;
+            if(Year2Amt == '' || Year2Amt == null) Year2Amt = 0;
+            if(Year3Amt == '' || Year3Amt == null) Year3Amt = 0;
+            if(Year4Amt == '' || Year4Amt == null) Year4Amt = 0;        
+            document.getElementById(C9).innerHTML = CalculateAmount(Year3Amt,Q9);
+            if(document.getElementById(C9).innerHTML == 0) document.getElementById(C9).innerHTML = '';
+            document.getElementById(C10).innerHTML = CalculateAmount(Year3Amt,Q10);
+            if(document.getElementById(C10).innerHTML == 0) document.getElementById(C10).innerHTML = '';
+            document.getElementById(C11).innerHTML = CalculateAmount(Year3Amt,Q11);
+            if(document.getElementById(C11).innerHTML == 0) document.getElementById(C11).innerHTML = '';
+            document.getElementById(C12).innerHTML = CalculateAmount(Year3Amt,Q12);
+            if(document.getElementById(C12).innerHTML == 0) document.getElementById(C12).innerHTML = '';
+            
+            document.getElementById(TotalQty).innerHTML = (parseFloat(CalculateQuantity(Q9)) + parseFloat(CalculateQuantity(Q10)) + parseFloat(CalculateQuantity(Q11)) + parseFloat(CalculateQuantity(Q12))).toFixed(2);
+            if(document.getElementById(TotalQty).innerHTML == 0) document.getElementById(TotalQty).innerHTML = '';
+            document.getElementById(TotalCase).innerHTML = parseInt(CalculateAmount(Year3Amt,Q9) + CalculateAmount(Year3Amt,Q10) + CalculateAmount(Year3Amt,Q11) + CalculateAmount(Year3Amt,Q12));
+            if(document.getElementById(TotalCase).innerHTML == 0) document.getElementById(TotalCase).innerHTML = '';
+            document.getElementById(GrantQty).innerHTML = (parseFloat(CalculateQuantity(Q1)) + parseFloat(CalculateQuantity(Q2)) + parseFloat(CalculateQuantity(Q3)) + parseFloat(CalculateQuantity(Q4)) + parseFloat(CalculateQuantity(Q5)) + parseFloat(CalculateQuantity(Q6)) + parseFloat(CalculateQuantity(Q7)) + parseFloat(CalculateQuantity(Q8)) + parseFloat(CalculateQuantity(Q9)) + parseFloat(CalculateQuantity(Q10)) + parseFloat(CalculateQuantity(Q11)) + parseFloat(CalculateQuantity(Q12)) + parseFloat(CalculateQuantity(Q13)) + parseFloat(CalculateQuantity(Q14)) + parseFloat(CalculateQuantity(Q15)) + parseFloat(CalculateQuantity(Q16))).toFixed(2);
+            if(document.getElementById(GrantQty).innerHTML == 0) document.getElementById(GrantQty).innerHTML = '';
+            document.getElementById(GrantAmt).innerHTML = CalculateAmount(Year1Amt,Q1) + CalculateAmount(Year1Amt,Q2) + CalculateAmount(Year1Amt,Q3) + CalculateAmount(Year1Amt,Q4) + CalculateAmount(Year2Amt,Q5) + CalculateAmount(Year2Amt,Q6) + CalculateAmount(Year2Amt,Q7) + CalculateAmount(Year2Amt,Q8) + CalculateAmount(Year3Amt,Q9) + CalculateAmount(Year3Amt,Q10) + CalculateAmount(Year3Amt,Q11) + CalculateAmount(Year3Amt,Q12) + CalculateAmount(Year4Amt,Q13) + CalculateAmount(Year4Amt,Q14) + CalculateAmount(Year4Amt,Q15) + CalculateAmount(Year4Amt,Q16);
+            if(document.getElementById(GrantAmt).innerHTML == 0) document.getElementById(GrantAmt).innerHTML = '';
+        }
+        
+        function CalculateTotalYear4(Y1,Y2,Y3,Y4,Q1,Q2,Q3,Q4,Q5,Q6,Q7,Q8,Q9,Q10,Q11,Q12,Q13,Q14,Q15,Q16,TotalQty,C1,C2,C3,C4,C5,C6,C7,C8,C9,C10,C11,C12,C13,C14,C15,C16,TotalCase,GrantAmt,GrantQty){
+            var Year1Amt = document.getElementById(Y1).value;   
+            var Year2Amt = document.getElementById(Y2).value;
+            var Year3Amt = document.getElementById(Y3).value;
+            var Year4Amt = document.getElementById(Y4).value;  
+            if(Year1Amt == '' || Year1Amt == null) Year1Amt = 0;
+            if(Year2Amt == '' || Year2Amt == null) Year2Amt = 0;
+            if(Year3Amt == '' || Year3Amt == null) Year3Amt = 0;
+            if(Year4Amt == '' || Year4Amt == null) Year4Amt = 0;               
+            document.getElementById(C13).innerHTML = CalculateAmount(Year4Amt,Q13);
+            if(document.getElementById(C13).innerHTML == 0) document.getElementById(C13).innerHTML = '';
+            document.getElementById(C14).innerHTML = CalculateAmount(Year4Amt,Q14);
+            if(document.getElementById(C14).innerHTML == 0) document.getElementById(C14).innerHTML = '';
+            document.getElementById(C15).innerHTML = CalculateAmount(Year4Amt,Q15);
+            if(document.getElementById(C15).innerHTML == 0) document.getElementById(C15).innerHTML = '';
+            document.getElementById(C16).innerHTML = CalculateAmount(Year4Amt,Q16);
+            if(document.getElementById(C16).innerHTML == 0) document.getElementById(C16).innerHTML = '';
+            
+            document.getElementById(TotalQty).innerHTML = (parseFloat(CalculateQuantity(Q13)) + parseFloat(CalculateQuantity(Q14)) + parseFloat(CalculateQuantity(Q15)) + parseFloat(CalculateQuantity(Q8))).toFixed(2);
+            if(document.getElementById(TotalQty).innerHTML == 0) document.getElementById(TotalQty).innerHTML = '';
+            document.getElementById(TotalCase).innerHTML = parseInt(CalculateAmount(Year4Amt,Q13) + CalculateAmount(Year4Amt,Q14) + CalculateAmount(Year4Amt,Q15) + CalculateAmount(Year4Amt,Q16));
+            if(document.getElementById(TotalCase).innerHTML == 0) document.getElementById(TotalCase).innerHTML = '';
+            document.getElementById(GrantQty).innerHTML = (parseFloat(CalculateQuantity(Q1)) + parseFloat(CalculateQuantity(Q2)) + parseFloat(CalculateQuantity(Q3)) + parseFloat(CalculateQuantity(Q4)) + parseFloat(CalculateQuantity(Q5)) + parseFloat(CalculateQuantity(Q6)) + parseFloat(CalculateQuantity(Q7)) + parseFloat(CalculateQuantity(Q8)) + parseFloat(CalculateQuantity(Q9)) + parseFloat(CalculateQuantity(Q10)) + parseFloat(CalculateQuantity(Q11)) + parseFloat(CalculateQuantity(Q12)) + parseFloat(CalculateQuantity(Q13)) + parseFloat(CalculateQuantity(Q14)) + parseFloat(CalculateQuantity(Q15)) + parseFloat(CalculateQuantity(Q16))).toFixed(2);
+            if(document.getElementById(GrantQty).innerHTML == 0) document.getElementById(GrantQty).innerHTML = '';
+            document.getElementById(GrantAmt).innerHTML = CalculateAmount(Year1Amt,Q1) + CalculateAmount(Year1Amt,Q2) + CalculateAmount(Year1Amt,Q3) + CalculateAmount(Year1Amt,Q4) + CalculateAmount(Year2Amt,Q5) + CalculateAmount(Year2Amt,Q6) + CalculateAmount(Year2Amt,Q7) + CalculateAmount(Year2Amt,Q8) + CalculateAmount(Year3Amt,Q9) + CalculateAmount(Year3Amt,Q10) + CalculateAmount(Year3Amt,Q11) + CalculateAmount(Year3Amt,Q12) + CalculateAmount(Year4Amt,Q13) + CalculateAmount(Year4Amt,Q14) + CalculateAmount(Year4Amt,Q15) + CalculateAmount(Year4Amt,Q16);
+            if(document.getElementById(GrantAmt).innerHTML == 0) document.getElementById(GrantAmt).innerHTML = '';
+        }
+        function DisplayNewBudgetlineRow(){
+            document.getElementById('newBudgetLine1').style.display = '';
+            //document.getElementById('newBudgetLine2').style.display = '';
+            document.getElementById('btnAddBudgetLine').style.display = 'none';
+            return false;
+        }
+        function CancelNewBudgetlineRow(){
+            document.getElementById('newBudgetLine1').style.display = 'none';
+           // document.getElementById('newBudgetLine2').style.display = 'none';
+            document.getElementById('btnAddBudgetLine').style.display = '';
+            document.getElementById('page:frm:txtQ1QuantityNew').value = '';
+            document.getElementById('page:frm:txtQ2QuantityNew').value = '';
+            document.getElementById('page:frm:txtQ3QuantityNew').value = '';
+            document.getElementById('page:frm:txtQ4QuantityNew').value = '';
+            document.getElementById('page:frm:txtQ5QuantityNew').value = '';
+            document.getElementById('page:frm:txtQ6QuantityNew').value = '';
+            document.getElementById('page:frm:txtQ7QuantityNew').value = '';
+            document.getElementById('page:frm:txtQ8QuantityNew').value = '';
+            document.getElementById('page:frm:txtQ9QuantityNew').value = '';
+            document.getElementById('page:frm:txtQ10QuantityNew').value = '';
+            document.getElementById('page:frm:txtQ11QuantityNew').value = '';
+            document.getElementById('page:frm:txtQ12QuantityNew').value = '';
+            document.getElementById('page:frm:txtQ13QuantityNew').value = '';
+            document.getElementById('page:frm:txtQ14QuantityNew').value = '';
+            document.getElementById('page:frm:txtQ15QuantityNew').value = '';
+            document.getElementById('page:frm:txtQ16QuantityNew').value = '';
+            
+            document.getElementById('page:frm:txtQ1CaseNew').innerHTML = '';
+            document.getElementById('page:frm:txtQ2CaseNew').innerHTML = '';
+            document.getElementById('page:frm:txtQ3CaseNew').innerHTML = '';
+            document.getElementById('page:frm:txtQ4CaseNew').innerHTML = '';
+            document.getElementById('page:frm:txtQ5CaseNew').innerHTML = '';
+            document.getElementById('page:frm:txtQ6CaseNew').innerHTML = '';
+            document.getElementById('page:frm:txtQ7CaseNew').innerHTML = '';
+            document.getElementById('page:frm:txtQ8CaseNew').innerHTML = '';
+            document.getElementById('page:frm:txtQ9CaseNew').innerHTML = '';
+            document.getElementById('page:frm:txtQ10CaseNew').innerHTML = '';
+            document.getElementById('page:frm:txtQ11CaseNew').innerHTML = '';
+            document.getElementById('page:frm:txtQ12CaseNew').innerHTML = '';
+            document.getElementById('page:frm:txtQ13CaseNew').innerHTML = '';
+            document.getElementById('page:frm:txtQ14CaseNew').innerHTML = '';
+            document.getElementById('page:frm:txtQ15CaseNew').innerHTML = '';
+            document.getElementById('page:frm:txtQ16CaseNew').innerHTML = '';
+            
+            document.getElementById('page:frm:lstNewGI').value = '';
+            document.getElementById('page:frm:txtActivity').value = '';
+            document.getElementById('page:frm:lstNewCostInput').value = '';
+            document.getElementById('page:frm:lstNewPayee').value = '';
+            document.getElementById('page:frm:txtUCD').innerHTML = '';
+            document.getElementById('page:frm:txtNewCurrency').value = '';
+            document.getElementById('page:frm:txtY1AmountNew').value = '';
+            document.getElementById('page:frm:txtY2AmountNew').value = '';
+            document.getElementById('page:frm:txtY3AmountNew').value = '';
+            document.getElementById('page:frm:txtY4AmountNew').value = '';
+            
+            document.getElementById('page:frm:txtTotalQtyY1New').innerHTML = '';
+            document.getElementById('page:frm:txtTotalQtyY2New').innerHTML = '';
+            document.getElementById('page:frm:txtTotalQtyY3New').innerHTML = '';
+            document.getElementById('page:frm:txtTotalQtyY4New').innerHTML = '';
+            
+            document.getElementById('page:frm:txtTotalCaseY1New').innerHTML = '';
+            document.getElementById('page:frm:txtTotalCaseY2New').innerHTML = '';
+            document.getElementById('page:frm:txtTotalCaseY3New').innerHTML = '';
+            document.getElementById('page:frm:txtTotalCaseY4New').innerHTML = '';                
+            return false;     
+        }
+        
+        function ValidateSave(GIvalue,SaveIndex){
+            if(document.getElementById(GIvalue).value != ''){
+                actSaveBudgetLines(SaveIndex);
+                return false;
+            }else{
+                alert('You must select Grant Intervention before save.');
+                return false;
+            }
+        }
+        function validateSaveNew(GIvalue){
+            if(document.getElementById(GIvalue).value != ''){
+                actSaveBudgetLines1();
+                return false;
+            }else{
+                alert('You must select Grant Intervention before save.');
+                return false;
+            }
+        }
+        
+        function SelectUnitOfmeasure(CostInputValue,SelectIndex,UnitMeasure){
+            if(CostInputValue.value != ''){
+                actSelectUnitMeasure(SelectIndex);
+                return false;
+            }else{
+                document.getElementById(UnitMeasure).innerHTML = '';
+                return false;
+            }
+        }
+        
+        function SelectUnitOfmeasureNew(CostInputValue,CostInputId,UnitMeasure){
+            if(CostInputValue.value != ''){
+                actSelectUnitMeasureNew(CostInputId);
+                return false;
+            }else{
+                document.getElementById(UnitMeasure).innerHTML = '';
+                return false;
+            }
+        }            
+        function completeOnchangeNewRow(){
+            document.getElementById('newBudgetLine1').style.display = '';
+            //document.getElementById('newBudgetLine2').style.display = '';
+            document.getElementById('btnAddBudgetLine').style.display = 'none';
+        }
+        function OpenDeletePopup(popupId){
+            document.getElementById(popupId).style.display = '';
+            return false;
+        }
+        function ClosePopup(popupId){
+            document.getElementById(popupId).style.display = 'none';
+            return false;
+        }
+        
+        function openAssumptionDeletePopup(popupId){
+            document.getElementById(popupId).style.display = '';
+            return false;
+        }
+        function CloseAssumptionPopup(popupId){
+            document.getElementById(popupId).style.display = 'none';
+            return false;
+        }
+        
+        function EditAssumption(EditIndex){
+            document.getElementById('page:frm:hdnIndex').value = EditIndex;
+        }
+        var globalTR;
+        function AddNewAssumption(trid,btnid,hide){      
+            globalTR = trid;
+            document.getElementById(trid).style.display = '';
+            document.getElementById(btnid).style.display = 'none';
+            document.getElementById(hide).style.display = '';
+            return false;  
+        }
+        function CancelAssumption(trid,btnid,hide){
+            document.getElementById(trid).style.display = 'none';
+            document.getElementById(btnid).style.display = '';
+            document.getElementById(hide).style.display = 'none';
+            return false;
+        }
+        
+        function CalculateTotalCost(YearIndex,Cost,Quantity,TotalCost,CurrencyRate,Currency,Index,size){
+            var txtCost = document.getElementById(Cost).value;
+            var txtQuantity = document.getElementById(Quantity).value;           
+            if(txtCost == '' || txtCost == null) txtCost = 0;
+            if(txtQuantity == '' || txtQuantity == null) txtQuantity = 0;            
+            var Total;    
+            Total = txtCost * txtQuantity;
+            if(Total == 0){
+                document.getElementById(TotalCost).innerHTML = '';
+            }else{
+                document.getElementById(TotalCost).innerHTML = Total;
+                if(document.getElementById(Currency).options[document.getElementById(Currency).selectedIndex].text == '{!strLocalCurrency}'){
+                    document.getElementById(CurrencyRate).innerHTML = (Total * parseFloat(document.getElementById('page:frm:hdnstrLocalCurrencyRate').value)).toFixed(2) ;
+                }
+                if(document.getElementById(Currency).options[document.getElementById(Currency).selectedIndex].text == '{!strOtherCurrency}'){
+                    document.getElementById(CurrencyRate).innerHTML = (Total * parseFloat(document.getElementById('page:frm:hdnstrOtherCurrencyRate').value)).toFixed(2) ;
+                }
+            }           
+            var TotalUcost = 0;
+            for(var i=0;i<size;i++){  
+                if(document.getElementById('page:frm:rptBudgetLine:'+Index+':rptBudgetLine:'+i+':txtRateY'+YearIndex).innerHTML == '' &&
+                    document.getElementById('page:frm:rptBudgetLine:'+Index+':rptBudgetLine:'+i+':txtTotalCostY'+YearIndex).innerHTML == ''){
+                        TotalUcost += 0;    
+                }else if(document.getElementById('page:frm:rptBudgetLine:'+Index+':rptBudgetLine:'+i+':txtRateY'+YearIndex).innerHTML != ''){
+                    TotalUcost += parseFloat(document.getElementById('page:frm:rptBudgetLine:'+Index+':rptBudgetLine:'+i+':txtRateY'+YearIndex).innerHTML);
+                }else{
+                    TotalUcost += parseFloat(document.getElementById('page:frm:rptBudgetLine:'+Index+':rptBudgetLine:'+i+':txtTotalCostY'+YearIndex).innerHTML);
+                }
+            }    
+            var TotalnewCost = 0;
+            if(document.getElementById('page:frm:rptBudgetLine:'+Index+':txtRateY'+YearIndex+'New').innerHTML != ''){
+                TotalnewCost = parseInt(document.getElementById('page:frm:rptBudgetLine:'+Index+':txtRateY'+YearIndex+'New').innerHTML);
+            }else if(document.getElementById('page:frm:rptBudgetLine:'+Index+':txtTotalCostY'+YearIndex+'New').innerHTML != ''){
+                TotalnewCost = parseInt(document.getElementById('page:frm:rptBudgetLine:'+Index+':txtTotalCostY'+YearIndex+'New').innerHTML);
+            }
+            if(document.getElementById('page:frm:rptBudgetLine:'+Index+':txtTotalUnitCostY'+YearIndex).innerHTML != ''){
+                document.getElementById('page:frm:rptBudgetLine:'+Index+':txtTotalUnitCostY'+YearIndex).innerHTML = '';
+            }
+            if(TotalnewCost == ''){
+                TotalnewCost = 0;
+            }
+            if(TotalnewCost != 0){
+                TotalUcost = TotalUcost + TotalnewCost;
+            }
+            if(TotalUcost == 0){
+                document.getElementById('page:frm:rptBudgetLine:'+Index+':txtTotalUnitCostY'+YearIndex).innerHTML = '';
+            }else{
+                TotalUcost = TotalUcost.toFixed(2);
+                document.getElementById('page:frm:rptBudgetLine:'+Index+':txtTotalUnitCostY'+YearIndex).innerHTML = TotalUcost;    
+            }
+        }
+        
+        function CalculateTotalCostNew(YearIndex,Cost,Quantity,TotalCost,Currency,CurrencyRate,Index,size){           
+            var txtCost = document.getElementById(Cost).value;
+            var txtQuantity = document.getElementById(Quantity).value;
+            
+            if(txtCost == '' || txtCost == null) txtCost = 0;
+            if(txtQuantity == '' || txtQuantity == null) txtQuantity = 0;
+            
+            var Total = txtCost * txtQuantity;
+            var tempTotal;
+            if(Total == 0){
+                document.getElementById(TotalCost).innerHTML = '';
+            }else{         
+                document.getElementById(TotalCost).innerHTML = Total;               
+                if(document.getElementById(Currency).options[document.getElementById(Currency).selectedIndex].text == '{!strLocalCurrency}'){
+                   tempTotal = document.getElementById(CurrencyRate).innerHTML = (Total * parseFloat(document.getElementById('page:frm:hdnstrLocalCurrencyRate').value)).toFixed(2) ;
+                } 
+                if(document.getElementById(Currency).options[document.getElementById(Currency).selectedIndex].text == '{!strOtherCurrency}'){
+                    tempTotal = document.getElementById(CurrencyRate).innerHTML = (Total * parseFloat(document.getElementById('page:frm:hdnstrOtherCurrencyRate').value)).toFixed(2) ;
+                }   
+            }
+            var FinalTotalToAdd = 0;
+            if(document.getElementById(CurrencyRate).innerHTML != ''){
+                FinalTotalToAdd = tempTotal;
+            }else{
+                FinalTotalToAdd = Total;
+            }   
+            var TotalUcost = 0;   
+            if(size > 0){
+                for(var i=0;i<size;i++){    
+                    if(document.getElementById('page:frm:rptBudgetLine:'+Index+':rptBudgetLine:'+i+':txtRateY'+YearIndex).innerHTML == '' &&
+                        document.getElementById('page:frm:rptBudgetLine:'+Index+':rptBudgetLine:'+i+':txtTotalCostY'+YearIndex).innerHTML == ''){
+                        TotalUcost += 0;         
+                    }else if(document.getElementById('page:frm:rptBudgetLine:'+Index+':rptBudgetLine:'+i+':txtRateY'+YearIndex).innerHTML != ''){
+                        TotalUcost += parseFloat(document.getElementById('page:frm:rptBudgetLine:'+Index+':rptBudgetLine:'+i+':txtRateY'+YearIndex).innerHTML);
+                    }else{
+                        TotalUcost += parseFloat(document.getElementById('page:frm:rptBudgetLine:'+Index+':rptBudgetLine:'+i+':txtTotalCostY'+YearIndex).innerHTML);
+                    }
+               }
+            TotalUcost = parseFloat(TotalUcost) + parseFloat(FinalTotalToAdd);
+            }else{
+                TotalUcost = FinalTotalToAdd;
+            } 
+            if(document.getElementById('page:frm:rptBudgetLine:'+Index+':txtTotalUnitCostY'+YearIndex).innerHTML != ''){
+                document.getElementById('page:frm:rptBudgetLine:'+Index+':txtTotalUnitCostY'+YearIndex).innerHTML = '';
+            }
+            if(parseFloat(TotalUcost) != 0){
+                document.getElementById('page:frm:rptBudgetLine:'+Index+':txtTotalUnitCostY'+YearIndex).innerHTML = TotalUcost;
+            }else{
+                TotalUcost = TotalUcost.toFixed(2);
+                document.getElementById('page:frm:rptBudgetLine:'+Index+':txtTotalUnitCostY'+YearIndex).innerHTML = TotalUcost;
+            }
+        }
+        
+        function CalculateTotalCostFirst(Cost,Charges,TotalSalary,Level,Number,TotalCost,Currency,CurrencyRate,Index,size,SelectedYear){
+            var txtCost = document.getElementById(Cost).value;
+            var txtCharges = document.getElementById(Charges).value;
+            
+            var txtLevel = document.getElementById(Level).value;
+            var txtNumber = document.getElementById(Number).value;
+                
+            if(txtCost == '' || txtCost == null) txtCost = 0;
+            if(txtCharges == '' || txtCharges == null) txtCharges = 0;
+            if(txtLevel == '' || txtLevel == null) txtLevel = 0;
+            if(txtNumber == '' || txtNumber == null) txtNumber = 0;
+                
+            var txtTotalSalary = parseFloat(txtCost) + parseFloat(txtCharges);
+            if(txtTotalSalary == 0){
+                document.getElementById(TotalSalary).innerHTML = '';
+            }else{
+                document.getElementById(TotalSalary).innerHTML = txtTotalSalary;
+            }
+            
+            var txtTotalCost = txtTotalSalary * txtLevel * txtNumber;   
+            if(txtTotalCost == 0){
+                document.getElementById(TotalCost).innerHTML = '';
+            }else{
+                document.getElementById(TotalCost).innerHTML = txtTotalCost;
+                
+                if(document.getElementById(Currency).options[document.getElementById(Currency).selectedIndex].text == '{!strLocalCurrency}'){
+                    document.getElementById(CurrencyRate).innerHTML = (txtTotalCost * parseFloat(document.getElementById('page:frm:hdnstrLocalCurrencyRate').value)).toFixed(2) ;
+                }
+                if(document.getElementById(Currency).options[document.getElementById(Currency).selectedIndex].text == '{!strOtherCurrency}'){
+                    document.getElementById(CurrencyRate).innerHTML = (txtTotalCost * parseFloat(document.getElementById('page:frm:hdnstrOtherCurrencyRate').value)).toFixed(2) ;
+                }
+            }
+            
+            var TotalCostAll;
+            var TotalUnitCostAll;
+            var TotalRateAll;
+            var TotalCostAllNew;
+            var TotalRateAllNew;
+            if(SelectedYear == 'Year1'){
+                TotalCostAll = 'txtTotalCostY1First';
+                TotalUnitCostAll = 'txtTotalUnitCostY1First';
+                TotalRateAll = 'txtRateY1First';
+                TotalCostAllNew = 'txtTotalCostY1NewFirst';
+                TotalRateAllNew = 'txtRateY1NewFirst';
+            }else if(SelectedYear == 'Year2'){
+                TotalCostAll = 'txtTotalCostY2First';
+                TotalUnitCostAll = 'txtTotalUnitCostY2First';
+                TotalRateAll = 'txtRateY2First';
+                TotalCostAllNew = 'txtTotalCostY2NewFirst';
+                TotalRateAllNew = 'txtRateY2NewFirst';
+            }else if(SelectedYear == 'Year3'){
+                TotalCostAll = 'txtTotalCostY3First';
+                TotalUnitCostAll = 'txtTotalUnitCostY3First';
+                TotalRateAll = 'txtRateY3First';
+                TotalCostAllNew = 'txtTotalCostY3NewFirst';
+                TotalRateAllNew = 'txtRateY3NewFirst';
+            }else if(SelectedYear == 'Year4'){
+                TotalCostAll = 'txtTotalCostY4First';
+                TotalUnitCostAll = 'txtTotalUnitCostY4First';
+                TotalRateAll = 'txtRateY4First';
+                TotalCostAllNew = 'txtTotalCostY4NewFirst';
+                TotalRateAllNew = 'txtRateY4NewFirst';
+            }
+            var TotalUcost = 0;
+            for(var i=0;i<size;i++){
+                if(document.getElementById('page:frm:rptBudgetLine:'+Index+':rptBudgetLineFirst:'+i+':'+TotalRateAll).innerHTML == ''){
+                    if(document.getElementById('page:frm:rptBudgetLine:'+Index+':rptBudgetLineFirst:'+i+':'+TotalCostAll).innerHTML == ''){
+                        TotalUcost += 0;
+                    }
+                }else if(document.getElementById('page:frm:rptBudgetLine:'+Index+':rptBudgetLineFirst:'+i+':'+TotalRateAll).innerHTML != ''){
+                    TotalUcost += parseFloat(document.getElementById('page:frm:rptBudgetLine:'+Index+':rptBudgetLineFirst:'+i+':'+TotalRateAll).innerHTML);
+                }else{
+                    TotalUcost += parseFloat(document.getElementById('page:frm:rptBudgetLine:'+Index+':rptBudgetLineFirst:'+i+':'+TotalCostAll).innerHTML);
+                }
+          
+                /*if(document.getElementById('page:frm:rptBudgetLine:'+Index+':rptBudgetLineFirst:'+i+':'+TotalCostAll).innerHTML == ''){
+                    TotalUcost += 0;
+                }else{
+                    TotalUcost += parseInt(document.getElementById('page:frm:rptBudgetLine:'+Index+':rptBudgetLineFirst:'+i+':'+TotalCostAll).innerHTML);
+                }*/
+            }            
+            var TotalnewCost = 0;                
+            if(document.getElementById('page:frm:rptBudgetLine:'+Index+':'+TotalRateAllNew).innerHTML != ''){
+                TotalnewCost = parseInt(document.getElementById('page:frm:rptBudgetLine:'+Index+':'+TotalRateAllNew).innerHTML);
+            }else if(document.getElementById('page:frm:rptBudgetLine:'+Index+':'+TotalCostAllNew).innerHTML != ''){
+                TotalnewCost = parseInt(document.getElementById('page:frm:rptBudgetLine:'+Index+':'+TotalCostAllNew).innerHTML);
+            }
+            
+            if(document.getElementById('page:frm:rptBudgetLine:'+Index+':'+TotalUnitCostAll).innerHTML != ''){
+                document.getElementById('page:frm:rptBudgetLine:'+Index+':'+TotalUnitCostAll).innerHTML = '';
+            }
+            if(TotalnewCost == ''){
+                TotalnewCost = 0;
+            }
+            if(TotalnewCost != 0){
+                TotalUcost = TotalUcost + TotalnewCost;
+            }
+            if(TotalUcost == 0){
+                document.getElementById('page:frm:rptBudgetLine:'+Index+':'+TotalUnitCostAll).innerHTML = '';
+            }else{
+                document.getElementById('page:frm:rptBudgetLine:'+Index+':'+TotalUnitCostAll).innerHTML = TotalUcost;
+            }            
+        }
+        
+        
+        function CalculateTotalCostFirstNew(Cost,Charges,TotalSalary,Level,Number,TotalCost,Currency,CurrencyRate,Index,size,SelectedYear){
+            
+            var txtCost = document.getElementById(Cost).value;
+            var txtCharges = document.getElementById(Charges).value;
+            
+            var txtLevel = document.getElementById(Level).value;
+            var txtNumber = document.getElementById(Number).value;
+            
+            if(txtCost == '' || txtCost == null) txtCost = 0;
+            if(txtCharges == '' || txtCharges == null) txtCharges = 0;
+            if(txtLevel == '' || txtLevel == null) txtLevel = 0;
+            if(txtNumber == '' || txtNumber == null) txtNumber = 0;
+            
+            var txtTotalSalary = parseFloat(txtCost) + parseFloat(txtCharges);
+            if(txtTotalSalary == 0){
+                document.getElementById(TotalSalary).innerHTML = '';
+            }else{
+                document.getElementById(TotalSalary).innerHTML = txtTotalSalary;
+            }
+            
+            var txtTotalCost = txtTotalSalary * txtLevel * txtNumber;   
+            if(txtTotalCost == 0){
+                document.getElementById(TotalCost).innerHTML = '';
+            }else{
+                document.getElementById(TotalCost).innerHTML = txtTotalCost;
+                if(document.getElementById(Currency).options[document.getElementById(Currency).selectedIndex].text == '{!strLocalCurrency}'){
+                    document.getElementById(CurrencyRate).innerHTML = (txtTotalCost * parseFloat(document.getElementById('page:frm:hdnstrLocalCurrencyRate').value)).toFixed(2) ;
+                }
+                if(document.getElementById(Currency).options[document.getElementById(Currency).selectedIndex].text == '{!strOtherCurrency}'){
+                    document.getElementById(CurrencyRate).innerHTML = (txtTotalCost * parseFloat(document.getElementById('page:frm:hdnstrOtherCurrencyRate').value)).toFixed(2) ;
+                }
+            }
+            
+            var txtTotalCostFinal = 0;
+            if(document.getElementById(CurrencyRate).innerHTML != ''){
+                txtTotalCostFinal = parseFloat(document.getElementById(CurrencyRate).innerHTML);
+            }else{
+                txtTotalCostFinal = txtTotalCost;
+            }
+            
+            var TotalUcost = 0;
+            
+            var TotalCostAll;
+            var TotalUnitCostAll;
+            var TotalRateAll;
+            var TotalCostAllNew;
+            var TotalRateAllNew;
+            if(SelectedYear == 'Year1'){
+                TotalCostAll = 'txtTotalCostY1First';
+                TotalUnitCostAll = 'txtTotalUnitCostY1First';
+                TotalRateAll = 'txtRateY1First';
+                TotalCostAllNew = 'txtTotalCostY1NewFirst';
+                TotalRateAllNew = 'txtRateY1NewFirst';
+            }else if(SelectedYear == 'Year2'){
+                TotalCostAll = 'txtTotalCostY2First';
+                TotalUnitCostAll = 'txtTotalUnitCostY2First';
+                TotalRateAll = 'txtRateY2First';
+                TotalCostAllNew = 'txtTotalCostY2NewFirst';
+                TotalRateAllNew = 'txtRateY2NewFirst';
+            }else if(SelectedYear == 'Year3'){
+                TotalCostAll = 'txtTotalCostY3First';
+                TotalUnitCostAll = 'txtTotalUnitCostY3First';
+                TotalRateAll = 'txtRateY3First';
+                TotalCostAllNew = 'txtTotalCostY3NewFirst';
+                TotalRateAllNew = 'txtRateY3NewFirst';
+            }else if(SelectedYear == 'Year4'){
+                TotalCostAll = 'txtTotalCostY4First';
+                TotalUnitCostAll = 'txtTotalUnitCostY4First';
+                TotalRateAll = 'txtRateY4First';
+                TotalCostAllNew = 'txtTotalCostY4NewFirst';
+                TotalRateAllNew = 'txtRateY4NewFirst';
+            }
+            
+            if(size > 0){
+                for(var i=0;i<size;i++){
+                    if(document.getElementById('page:frm:rptBudgetLine:'+Index+':rptBudgetLineFirst:'+i+':'+TotalRateAll).innerHTML == ''){
+                        if(document.getElementById('page:frm:rptBudgetLine:'+Index+':rptBudgetLineFirst:'+i+':'+TotalCostAll).innerHTML == ''){
+                            TotalUcost += 0;
+                    }
+                    }else if(document.getElementById('page:frm:rptBudgetLine:'+Index+':rptBudgetLineFirst:'+i+':'+TotalRateAll).innerHTML != ''){
+                        TotalUcost += parseFloat(document.getElementById('page:frm:rptBudgetLine:'+Index+':rptBudgetLineFirst:'+i+':'+TotalRateAll).innerHTML);
+                    }else{
+                        TotalUcost += parseFloat(document.getElementById('page:frm:rptBudgetLine:'+Index+':rptBudgetLineFirst:'+i+':'+TotalCostAll).innerHTML);
+                    }
+                }
+                TotalUcost = TotalUcost + txtTotalCostFinal;
+            }else{
+                TotalUcost = txtTotalCostFinal;
+            }
+            if(document.getElementById('page:frm:rptBudgetLine:'+Index+':'+TotalUnitCostAll).innerHTML != ''){
+                document.getElementById('page:frm:rptBudgetLine:'+Index+':'+TotalUnitCostAll).innerHTML = '';
+            }
+            if(TotalUcost == 0){
+                document.getElementById('page:frm:rptBudgetLine:'+Index+':'+TotalUnitCostAll).innerHTML = '';
+            }else{
+                TotalUcost = TotalUcost.toFixed(2);
+                document.getElementById('page:frm:rptBudgetLine:'+Index+':'+TotalUnitCostAll).innerHTML = TotalUcost;
+            }
+        }
+        
+        function SaveAssumptionRecords(TrId){              
+            if(document.getElementById(TrId).style.display == 'none'){                    
+                actSaveAssumption();
+                return false;
+            }else{                  
+                actSaveAssumptionNew();
+                return false;
+            }
+        }
+        
+        function oncompleteAssumption(){
+            document.getElementById('NewAssumptionTR{!Count}').style.display = 'none';
+            document.getElementById('AddButtonTD').style.display = '';
+        }
+        
+        function ChangeCurrencyRate(Code,ChangeIndex){
+            actChangeCurrencyRateFromCode(Code,ChangeIndex);
+            return false;
+        }
+        function ChangeCurrencyRateNew(Code){
+            actChangeCurrencyRateFromCodeNew(Code);
+            return false;
+        }
+        function showRows(){
+            document.getElementById(globalTR).style.display = '';
+        }
+        function displayApplyButton(AssmptionSet,Index){                
+            if(AssmptionSet.value != ''){
+                document.getElementById('page:frm:rptBudgetLine:'+Index+':btnApply').style.display = '';
+            }else{
+                document.getElementById('page:frm:rptBudgetLine:'+Index+':btnApply').style.display = 'none';
+            }
+            return false;
+        }
+    </script>  
+    
+      
+    <style type="text/css">
+        .custAssumptionPopup{
+            background-color: white;
+            border-width: 0px;
+            border-radius:10px;
+            border-style: solid;
+            /*z-index: 9999;*/
+            z-index: 51;
+            left: 6%;
+            padding:10px;
+            position: absolute;
+            top:50%;
+            width:91%;                   
+        }
+        .popupAssumptionBackground{
+            background-color:black;
+            opacity: 0.20;
+            filter: alpha(opacity = 20);
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            /*z-index: 9998;*/
+            z-index: 50;
+            top: 0;
+            left: 0;               
+        }
+        .custDialogPopup{
+            background-color: white;
+            border-width: 0px;
+            border-radius:10px;
+            border-style: solid;
+            /*z-index: 9999;*/
+            z-index: 51;
+            left: 6%;
+            padding:10px;
+            position: absolute;
+            top:50%;               
+        }
+        .popupDialogBackground{
+            background-color:black;
+            opacity: 0.20;
+            filter: alpha(opacity = 20);
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            /*z-index: 9998;*/
+            z-index: 50;
+            top: 0;
+            left: 0;               
+        }
+    </style>
+    </apex:form> 
+</apex:page>

@@ -1,0 +1,120 @@
+<apex:page id="page1" sidebar="false" standardController="Country__c" extensions="ctrlGrantMaking" tabstyle="Grant_Making_home__tab">
+    <apex:stylesheet value="{!URLFOR($Resource.GoalsJs, 'assets/css/bootstrap.css')}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.GoalsJs, 'assets/css/bootstrap-responsive.css')}"/>
+    <head>
+        <title>Grant-Making Homepage</title>
+    </head>
+    <style>
+    .pageTitleIcon {
+        background-image: url("/img/icon/custom51_100/globe32.png");
+        background-position: 0 0;
+        height: 32px;
+        width: 32px;
+    }
+    .h3 {
+        font-size:24px;
+        line-height: 20px;
+    }
+    table {
+        font-size:14px;
+    }
+    td .middle{
+     vertical-align:middle;
+       }
+    .countryselect{
+    font-size:16px;
+    color:black;
+    }
+    .link{
+    color:#2E7BBB;
+    text-decoration:underline;
+    }
+    
+        </style>
+    <!--<apex:includeScript value="{!$Resource.GoalsJs/assets/js/bootstrap.js}" />-->
+    <apex:includeScript value="{URLFOR(!$Resource.GoalsJs, 'assets/js/bootstrap.js')}" />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js">
+    
+    </script>
+    <!--<script src="assets/js/bootstrap.js">
+    </script>-->
+    <apex:form id="frm">
+         
+    <div style="padding:20px">
+                    <div id="Infopanel" class="alert alert-info">
+                    
+                        <button type="button" class="close" data-dismiss="alert" onclick="closePanel();">
+                            ×
+                        </button>
+                        <b>
+                        On this page you can review the list of grants in the grant-making stage.
+                    </b>
+                    </div>
+                    <span class="h3">
+                        Grant-Making Home Page                        
+                    </span>
+                    <span class="pull-right">
+                        <a href="#" class="link">See Help</a>
+                    </span>
+                    <br/><br/>
+                    <div>
+                    <apex:selectList size="1" value="{!CountryId}" styleclass="countryselect" id="country">
+                          <apex:selectOptions value="{!selOptCountry}"/>
+                        <apex:actionSupport event="onchange" action="{!IPByCountry}" reRender="frm"/>
+                    </apex:selectList>
+                    </div>
+                    <div>
+                        Click on a grant below to enter the Grant-Making Detail page.
+                    </div>
+        </div>
+       
+
+        <div id="pBlock" style="padding:20px">
+            <table id="pbTable" class="table table-striped" width="100%" cellspacing="0" cellpadding="0" border="0">
+                <tr>
+                    <th></th>
+                    <th>Implementation Period</th>
+                    <th>Principal Recipient</th>
+                    <th>Start Date</th>
+                    <th>End Date</th>
+                    <th>Status</th>
+                </tr>
+            <apex:repeat value="{!lstIP}" var="IP">
+                <tr>
+                    <td width="5%">
+                        <img src="{!if(IP.Concept_Note__r.Component__c=='Tuberculosis',$Resource.TB,if(IP.Concept_Note__r.Component__c=='HIV/AIDS',$Resource.HIV,if(IP.Concept_Note__r.Component__c=='Malaria',$Resource.Malaria,if(IP.Concept_Note__r.Component__c=='HSS',$Resource.Other,''))))}"/>
+                    </td>
+                    <td class="middle">
+                       <!-- <apex:outputlink value="{!if($Profile.Name=='PR Standard Portal User','/GM','')}{!if($Profile.Name=='PR Manager Portal User','/GM','')}{!if($Profile.Name=='PR Read-Only Portal User','/GM','')}{!if($Profile.Name=='LFA GM Admin Portal User','/GM','')}{!if($Profile.Name=='LFA GM Editor Portal User','/GM','')}{!if($Profile.Name=='PR Only Portal User','/GM','')}/apex/grantmakingoverview?Id={!IP.Id}" styleclass="link">{!IP.Name} -->
+                        <apex:outputlink value="{!if($Profile.Name=='PR Standard Portal User','/GM','')}{!if($Profile.Name=='PR Manager Portal User','/GM','')}{!if($Profile.Name=='PR Read-Only Portal User','/GM','')}{!if($Profile.Name=='LFA GM Admin Portal User','/GM','')}{!if($Profile.Name=='LFA GM Editor Portal User','/GM','')}{!if($Profile.Name=='PR Only Portal User','/GM','')}/{!IP.Id}" styleclass="link">{!IP.Name}
+                        </apex:outputlink>
+                    </td>
+                    <td class="middle">
+                        <apex:outputField value="{!IP.Principal_Recipient__r.Name}"/>  
+                    </td>
+                    <td class="middle">
+                        <apex:outputField value="{!IP.Start_Date__c}"/>
+                    </td>  
+                    <td class="middle">
+                        <apex:outputField value="{!IP.End_Date__c}"/>
+                    </td> 
+                     <td class="middle">
+                        <apex:outputField value="{!IP.Status__c}"/>
+                    </td>                        
+                </tr>
+                </apex:repeat>               
+                 <tr style="display:{!if(lstIP.size = null,'',if(lstIP.size > 0,'none',''))}">
+                     <td colspan="6">
+                         There are no grants currently in grant-making.
+                    </td>
+                 </tr>
+            </table>
+            <br/>
+        </div>
+        <script>
+         function closePanel(){
+                document.getElementById('Infopanel').style.display = 'none';
+            }
+        </script>
+    </apex:form>
+</apex:page>

@@ -1,0 +1,1889 @@
+<!--*******************************************************************************
+* VisualForce {Page}: GoalsAndImpactIndicators
+* DateCreated: 12/08/2013
+----------------------------------------------------------------------------------
+* Purpose/Methods:
+* - page is opened from Url : /apex/GoalsAndImpactIndicators?id={!Page__c.Id}
+* - create,edit,delete,update Goals and Indicators and create Goal Indicator junction.
+----------------------------------------------------------------------------------
+* History:
+* - VERSION  DATE            DETAIL FEATURE    S/CSR/TTP
+    1.0      12/08/2013      INITIAL DEVELOPMENT   
+********************************************************************************-->
+
+<apex:page standardController="Page__c" extensions="GoalsAndImpactIndicators" sidebar="false" id="pg" showheader="true"> 
+
+    <apex:stylesheet value="{!URLFOR($Resource.GoalsJs, 'assets/css/bootstrap.css')}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.GoalsJs, 'assets/css/bootstrap-responsive.css')}"/>
+    <apex:includeScript value="{!$Resource.jquery142}" />
+    <script src="{!URLFOR($Resource.charCounter)}" type="text/javascript"></script>
+   
+    <script>function setFocusOnLoad() {}</script>
+    <style>
+      
+        /* To push content below navbar */
+        
+        .span9 {
+            display: -moz-grid-line;
+            width: 94%;
+        }
+        .container, .navbar-static-top .container, .navbar-fixed-top .container, .navbar-fixed-bottom .container {
+            display: inline-block;
+            margin-left: 1% !important;
+            margin-right: 1% !important;
+            width: 97%;
+        }
+        
+        @media (min-width: 980px) {
+        body {
+            margin-top: 41px;
+        }
+        }
+        .dateFormat{
+          visibility:hidden;
+        }
+        .readOnlyDiv{
+            background-color:black;
+            opacity: 0.10;
+            filter: alpha(opacity = 20);
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            z-index: 9997;
+            top: 0;
+            left: 0;
+        }
+        .Image{
+            cursor:pointer;
+           /* height:13px;
+            width:13px; */
+            vertical-align:middle;
+        }
+        a.brand > a > img {
+            height:40px;
+        }
+        .summary {
+        border: 1px solid black;
+            padding:10px;
+        }
+        div.active{
+            background-color: #D1D1D1;
+        }
+        .add_indicator {
+            margin: 30px;
+            padding:40px;
+            border: 1px solid #CCC;
+        }
+        .grey{
+            background-color:#E6E6E6;
+            font-weight:bold;
+        }             
+        .indicator{
+            border:1px solid #CCC;
+            padding:10px;
+            margin-bottom:10px;
+        }
+        
+        .baseline {
+            /*width: 350px;*/
+            width:44%;
+            display: inline-block;
+            /*margin-right:20px;*/
+            margin-right:43px;
+        }
+        
+        .target {
+            /*width: 350px;*/
+            width:50%;
+            display: inline-block;
+        }
+        .popupButtonYes{
+            background-color: #49C739 !important;
+            background-image: none !important;
+            color: white !important;
+            font-size: 12.9pt !important;
+            font-weight: bold !important;
+            height: 30px !important;;
+            width: 90px !important;;
+        }
+        .popupButtonCancel{
+            background-color: #d82516 !important;
+            background-image: none !important;
+            color: white !important;
+            font-size: 12.9pt !important;
+            font-weight: bold !important;
+            height: 30px !important;;
+            width: 90px !important;;
+        }
+        .blankCell{
+            width:5px;
+        }
+        .custPopup{
+            background-color: #ededed;
+            border-width: 0px;
+            border-radius:10px;
+            border-style: solid;
+            z-index: 9999;
+            left: 40%;
+            margin-top:-60px;
+            padding:10px;
+            position: absolute;
+            width:300px;
+            height:130px;
+        }
+        .custPopuptwo{
+            background-color: #ededed;
+            border-width: 0px;
+            border-radius:10px;
+            border-style: solid;
+            z-index: 9999;
+            left: 40%;
+            margin-top:-60px;
+            padding:10px;
+            position: absolute;
+            width:300px;
+            height:220px;
+        }
+        .popupBackground{
+            background-color:black;
+            opacity: 0.50;
+            filter: alpha(opacity = 20);
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            z-index: 9998;
+            top: 0;
+            left: 0;
+        }
+        .white {
+            background-color:white
+        }
+        .deletePopup{
+            background-color: #EDEDED !important;
+            border-top: 0px !important;
+            text-align:center !important;
+        }
+        .deletePopupCancel{
+            background-color: #EDEDED !important;
+            border-top: 0px !important;
+            text-align:left !important;
+        }
+        
+        .pageContent {
+            color: #4A4A56; 
+            font-size: 0.9em; 
+            font-weight: bold; 
+            padding-left: 1px;
+        }
+        .pageTitleIcon {
+            margin-top: 5px;
+            background-image: url("/img/sprites/master.png");
+            background-position: 0 -1058px;
+            height: 32px;
+            width: 32px;
+            display: inline;
+            float: left;
+            margin-right: 5px;
+            margin-left: 10px;
+        }
+        .pageDescription{
+            font-size: 1.8em; 
+            font-weight: normal;
+            line-height: 1.1em;
+        }
+        .containerTGF{
+            display: inline-block;
+            margin-left: 1% !important;
+            margin-right: 1% !important;
+            width: 97%;
+        }
+        .link{
+            color:#2E7BBB;
+            }
+        .margin20{
+            margin-left:1%;
+            margin-bottom:16px;
+            margin-top:16px;
+            width:95%;
+        }    
+        .h3{
+            font-size:24px;
+            margin-top:16px;
+            font-weight:bold;
+            margin-left:1%;
+            text-align: left;
+        }
+        .h4{
+            font-size:18px;
+            margin-bottom:16px;
+            margin-top:16px;
+        }
+        .help{
+            font-size:18px;
+            font-weight:bold;
+            line-height:1.5;
+        }
+        .resourcetTable{
+            vertical-align:top;
+        }
+        .chatterFeedPanel{
+            height: 300px !important;
+        }
+         .custPopupChatter{
+            background-color: white;
+            border-width: 0px;
+            border-radius:10px;
+            border-style: solid;
+            /*z-index: 9999;*/
+            z-index: 51;
+             left: 24%;
+            margin-top: 5%;
+            padding:10px;
+            position: absolute;
+            width:55%;
+            height:400px;
+            top:30%;
+        }
+        .popupBackgroundChatter{
+            background-color:black;
+            opacity: 0.20;
+            filter: alpha(opacity = 20);
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            /*z-index: 9998;*/
+            z-index: 50;
+            top: 0;
+            left: 0;
+           
+        }
+        
+       .webkitright {
+            text-align: right;
+            white-space: nowrap;
+       };
+       .headerSearchContainer {
+            margin-top: -20px !important;
+       }    
+       .phHeaderCustomLogo .headerSearchLeftRoundedCorner {
+           margin-top: -20px !important;
+       }
+       .TGFbtn{
+           margin-right:5px;
+       }
+       body .bodyDiv #bodyTable {
+         font-size: 14px; 
+        }        
+       .pull-right {
+          margin-right: 30px !important; 
+       }
+       .container {
+       background: none;
+       }
+       
+    </style>
+    
+    <!--<apex:includeScript value="{!$Resource.GoalsJs/assets/js/bootstrap.js}" />-->
+    <apex:includeScript value="{URLFOR(!$Resource.GoalsJs, 'assets/js/bootstrap.js')}" />
+    <!--<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js">
+    
+    </script>
+    <script src="assets/js/bootstrap.js">
+    </script>-->
+    <script>
+      $(document).ready(function () {
+          $('label.tree-toggler').click(function () {
+              $(this).parent().children('ul.tree').toggle(300);
+          });
+          
+           if ( $.browser.webkit ) {
+            $("#phHeaderLogoImage").parents("table").find("td").eq(2).removeClass("right").addClass("webkitright");           
+           };
+      });
+      
+        function focusonme() {
+            window.location.hash = '#HistoryPopup';
+        }
+    </script>
+    
+    <!-- The Read-Only div -->
+    <div class="readOnlyDiv" style="display:none"/>
+     
+         <div class="container">
+            <span class="h3">
+                  {!$Label.Goals_and_Impact_Indicators} - {!IPName}               
+            </span>
+            <!-- See Help Changes (By TCS) -->
+             <span class="pull-right">
+                  <img src="/img/func_icons/util/info16.png" style="padding-bottom:5px"/>
+                  <apex:outputpanel rendered="{!if(Page__c.Implementation_Period__c !=Null,true,false)}">
+                      <a href="{!if((blnExternalPro),'/GM','')}/apex/GrantMakingGuidance?Id={!strGuidanceId}&lang={!strLanguage}" target="_blank" class="link help" >{!$Label.See_Help}</a>
+                  </apex:outputpanel>
+                  <apex:outputpanel rendered="{!if(Page__c.Concept_Note__c !=Null,true,false)}">
+                      <a href="{!if((blnExternalPro),'/GM','')}/apex/CN_Guidance_New?Id={!strGuidanceId}&lang={!strLanguage}" target="_blank" class="link help">{!$Label.See_Help}</a> 
+                  </apex:outputpanel>
+              </span>
+            
+            
+         </div> 
+          
+    <div class="margin20">
+    <div id="Infopanel" class="alert alert-info" style="display:{!if(Page__c.Implementation_Period__c == NULL,'','none')}">                        
+                <button type="button" class="close" data-dismiss="alert" onclick="closePanel();">
+                    ×
+                </button>
+                <b>
+                {!$label.List_Program_Goals} <!--{!strclosePanelLabel}-->
+            </b> 
+    </div>
+    <div id="Infopanel2" class="alert alert-info" style="display:{!if(Page__c.Implementation_Period__c == NULL,'none','')}">                        
+                <button type="button" class="close" data-dismiss="alert" onclick="closePanel2();">
+                    ×
+                </button>
+                <b>
+                {!$label.GM_Goals_and_Impact_Indicators_Instructions} <!--{!strclosePanelLabel}-->
+            </b> 
+    </div>
+    <apex:outputpanel style="none" rendered="{!if(Page__c.Implementation_Period__c == null,'true','false')}">
+        <c:CNbreadcrumb recordId="{!Page__c.Id}"/>
+    </apex:outputpanel>
+    
+    <apex:outputpanel style="none" rendered="{!if(Page__c.Implementation_Period__c == null,'false','true')}">
+    <ul class="breadcrumb">
+                <li>
+                    <a href="{!if((blnExternalPro),'/GM','')}/apex/grantmakinghome" class="link"> {!$label.Grant_Making}  <!--Grant-Making--> </a>
+                    <span class="divider">/</span>
+                </li>
+                <li>
+                    <a href="{!if((blnExternalPro),'/GM','')}/apex/grantmakingHome?id={!Page__c.Implementation_Period__r.Grant__r.Country__c}" class="link">{!Page__c.Implementation_Period__r.Grant__r.Country__r.Name}</a><!-- Note -->
+                    <span class="divider">/</span>
+                </li>
+              <!--   <li>
+                    {!Page__c.Implementation_Period__r.Grant__r.Name}
+                    <span class="divider">/</span>
+                </li> -->
+                <li>
+                    <a href="{!if((blnExternalPro),'/GM','')}/apex/grantmakingoverview?id={!Page__c.Implementation_Period__r.Id}" class="link">{!Page__c.Implementation_Period__r.Name}<!-- Note --></a>
+                </li>
+            </ul>
+    </apex:outputpanel>
+            
+    <chatter:feedWithFollowers id="chatterFeed" entityId="{!Page__c.Id}"/>
+    </div>
+  
+    <apex:form id="frm">        
+    <div class="containerTGF">
+            <div class="row">
+              <table width="100%">
+                <tr> 
+                  <td width="20%" valign="top" align="left">
+                  <!--RENDER CN SIDEBAR-->
+                  <c:GMSidebar RecordId="{!Page__c.Id}"/>                              
+                  <br/> 
+                  </td>
+               <td valign="top" align="left">       
+             <div>
+                <div class="span9">
+                <apex:outputPanel id="GoalsPanel">                    
+                    <div>
+                        <span class="h3">
+                            {!$label.Goals_text} <!--{!strGoals}-->
+                        </span>
+                    </div>
+                    <br/>
+                    <apex:actionFunction name="actSaveGoalEdited" action="{!SaveGoal}" reRender="frm" status="Processing">
+                        <apex:param value="" name="SaveIndex" id="SaveIndex" />
+                    </apex:actionFunction>
+                    <!--GOALS TABLE-->
+                    <table class="table table-striped" width="100%" cellspacing="0" cellpadding="0" border="0">
+                        <tbody>
+                            <apex:variable var="Count" value="{!1}"/>
+                            <apex:repeat value="{!lstGoalsObjectives}" var="Goals">
+                                <tr>
+                                    <td width="5%" valign="top">
+                                        <span class="badge badge-inverse">{!Goals.IndexGoal}</span>
+                                    </td>
+                                    <td valign="top" width="{!if(strLanguage == 'FRENCH','70','80')}%">
+                                        <apex:outputText id="optGoalDec" value="{!Goals.GoalDescription}" style="display:{!if(Goals.blnDisplay == true,'','none')}"/>
+                                        <apex:inputTextarea styleclass="countable1" onKeyPress="return charLimit(this)" onKeyUp="return characterCount(this)" id="inpGoalDec" value="{!Goals.GoalDescription}" style="height: 20px;width: 650px;resize:none;display:{!if(Goals.blnDisplay == true,'none','')}"/>
+                                    </td>
+                                    <td valign="top" width="{!if(strLanguage == 'FRENCH','14','15')}%" style="padding-left: 0;padding-right: 0px; text-align: right;">
+                                        <apex:commandLink id="cmdLinkEditGoal" rendered="{!if(Page__c.Read_Only__c == false && blnEdit && !blnGMReadOnly,true,false)}" styleClass="TGFbtn TGFbtn-mini TGFbtn-primary" onclick="return EditExistGoal('{!$Component.optGoalDec}','{!$Component.inpGoalDec}','{!$Component.cmdLinkEditGoal}','{!$Component.cmdLinkSaveGoal}','{!$Component.cmdLinkCancelGoal}','{!$Component.cmdLinkDeleteGoal}')"> <!-- style="display:{!if(Goals.blnDisplay == true,'','none')}" reRender="GoalsPanel" action="{!EditGoal}"  status="Processing">-->
+                                            <i class="icon-edit icon-white"></i>
+                                            <strong>{!$label.Edit}  <!--{!strEdit}--></strong>
+                                            <apex:param value="{!Count-1}" name="EditIndex" /> 
+                                        </apex:commandLink>
+                                        <apex:commandLink id="cmdLinkSaveGoal" rendered="{!Page__c.Read_Only__c == false && !blnGMReadOnly==true}" styleClass="TGFbtn TGFbtn-mini TGFbtn-success" style="display:{!if(Goals.blnDisplay == true,'none','')};width:if(strLanguage == 'FRENCH','70','40')px;" onclick="return validateNewGoalEdited('{!$Component.inpGoalDec}','{!Count-1}');">
+                                            <strong>{!$label.Save} <!--{!strSave}--></strong>                                             
+                                        </apex:commandLink>
+                                    
+                                        <apex:commandLink id="cmdLinkCancelGoal" rendered="{!Page__c.Read_Only__c == false}" style="display:none;" styleClass="TGFbtn TGFbtn-mini TGFbtn-danger" onclick="return CancelExistGoal('{!$Component.optGoalDec}','{!$Component.inpGoalDec}','{!$Component.cmdLinkEditGoal}','{!$Component.cmdLinkSaveGoal}','{!$Component.cmdLinkCancelGoal}','{!$Component.cmdLinkDeleteGoal}');"><!-- style="display:{!if(Goals.blnDisplay == true,'none','')}" action="{!CancelGoal}" reRender="GoalsPanel" status="Processing">-->
+                                            <strong>{!$Label.Cancel} <!--{!strCancel}--></strong>
+                                            <apex:param value="{!Count-1}" name="CancelIndex" />
+                                        </apex:commandLink>
+                                        <apex:commandLink id="cmdLinkDeleteGoal" styleClass="TGFbtn TGFbtn-mini TGFbtn-danger" rendered="{!if(Page__c.Read_Only__c== false && blnDelete && !blnGMReadOnly,true,false)}" onclick="return OpenPopup('{!$Component.tstpopup}');">
+                                            <i class="icon-trash icon-white"></i> 
+                                            <strong>{!$label.Delete}<!--{!strDelete}--></strong>
+                                        </apex:commandLink>
+                                        <!--DELETE GOAL POP-UP-->
+                                        <apex:outputPanel id="tstpopup" style="display:none;" rendered="{!Page__c.Read_Only__c == false}">
+                                            <apex:outputPanel id="popupBackground" styleClass="popupBackground"/>
+                                            <apex:outputPanel id="custPopuptwo" styleClass="custPopuptwo">
+                                                <table width="100%" cellspacing="0" cellpadding="0" border="0" >
+                                                    <tr>
+                                                        <td colspan="3" class="deletePopup">
+                                                            <apex:outputtext style="color:#6590c4; font-size: 13.9pt;font-weight: bold;" value="{!$Label.Are_you_sure}"/> <!--value="Are you sure?"-->
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td colspan="3" class="deletePopup">
+                                                            <apex:outputtext style="color:#6590c4; font-size: 13.9pt;font-weight: bold;" value="{!$Label.Delete_Goal_Alert}"/> <!--value="This Goal will be deleted. All previously linked Indicators will no longer be linked to this Goal. Please make sure those Indicators are linked to a different Goal."-->
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td width="47%" class="deletePopup">
+                                                            <apex:commandButton styleClass="popupButtonYes" value="{!$Label.Yes}" action="{!DeleteGoal}" reRender="frm" status="Processing">
+                                                                <apex:param value="{!Count-1}" name="DeleteIndex" />
+                                                            </apex:commandButton>
+                                                        </td>
+                                                        <td width="6%" class="deletePopup"></td>
+                                                        <td width="47%" align="left" class="deletePopupCancel">
+                                                            <apex:commandButton styleClass="popupButtonCancel" value="{!$Label.Cancel}" onclick="return ClosePopup('{!$Component.tstpopup}');"/>
+                                                        </td>
+                                                    </tr>
+                                                </table>
+                                            </apex:outputPanel>
+                                        </apex:outputPanel>
+                                        
+                                        <apex:variable var="Count" value="{!Count+1}"/>
+                                    </td>
+                                </tr>
+                            </apex:repeat>
+                            <!--ROW USED TO ADD NEW GOAL-->
+                            <tr id="AddGoalNewRow" style="display:none;">
+                                <td width="5%" valign="top">
+                                    <span class="badge badge-inverse">{!lstGoalsObjectives.size+1}</span>
+                                </td>
+                                <td width="75%" valign="top">
+                                    <apex:inputTextarea styleclass="countable1" onKeyPress="return charLimit(this)" onKeyUp="return characterCount(this)" style="height: 22px;resize: none; width: 350px;" id="itaGDec" value="{!strNewGoalDescription}" />
+                                    <apex:outputtext value="{!$Label.Save_Goal}" style="margin-left:30px;color:red;"/> <!--value="You must save this goal before you can link any indicators to it."-->
+                                </td>                                
+                                <td width="10%" style="padding-left: 0;padding-right: 0px;text-align: right;" valign="top">
+                                    <apex:actionFunction name="actSaveGoal" action="{!SaveGoal}" reRender="frm" status="Processing">
+                                        <apex:param value="{!lstGoalsObjectives.size+1}" name="SaveIndex" />
+                                    </apex:actionFunction>
+                                    <apex:commandLink styleClass="TGFbtn TGFbtn-mini TGFbtn-success" style="width:37px;" onclick="return validateNewGoal('{!$Component.itaGDec}');">
+                                        <strong>{!$label.Save} <!--{!strSave}--></strong>
+                                    </apex:commandLink>
+                                
+                                    <apex:commandLink styleClass="TGFbtn TGFbtn-mini TGFbtn-danger" onclick="return CancelNewGoalRow();"> <!-- action="{!CancelGoal}" reRender="GoalsPanel" status="Processing">-->
+                                        <strong>{!$Label.Cancel}<!--{!strCancel}--></strong>
+                                        <apex:param value="{!lstGoalsObjectives.size+1}" name="CancelIndex" />
+                                    </apex:commandLink>
+                                </td>
+                            </tr>                           
+                            <tr id="AddGoalBtntr">
+                                <td colspan="2" style="padding-left:10px;padding-right: 5px;" valign="top">
+                                    <apex:commandLink styleClass="TGFbtn TGFbtn-mini TGFbtn-success" 
+                                    rendered="{!if(Page__c.Read_Only__c== false && blnAddGoal && !blnGMReadOnly,true,false)}" onclick="return AddNewGoalUsingJS();" > <!-- rerender="GoalsPanel" action="{!AddNewGoal}" status="Processing"> -->
+                                        <i class="icon-plus-sign icon-white"></i>
+                                        <strong>{!$label.Add_Goal} <!--{!strADDGOAL}--></strong>
+                                    </apex:commandLink>
+                                </td>
+                                <td >
+                                </td>                                
+                           </tr>
+                         </tbody>
+                    </table>
+                    <hr></hr>
+                    </apex:outputPanel>
+<!--INDICATORS SECTION: Enable users to (1) input baseline and targets for auto-added indicators, (2) add standard indicators, (3) add custom indicators. -->          
+                   
+                    <div>
+                        <!--<apex:outputLink styleClass="pull-right link" style="display: inline-block;font-size:12px" target="_blank" value="/apex/CN_Guidance_New?id={!Page__c.Guidance__c}&lang={!strLanguage}">{!$Label.See_Help} {!strSeeHelp}</apex:outputLink>-->
+                        <span class="pull-right">
+                            <img src="/img/func_icons/util/info16.png" style="padding-bottom:5px"/>
+                            <apex:outputpanel rendered="{!if(Page__c.Implementation_Period__c !=Null,true,false)}">
+                                <a href="{!if((blnExternalPro),'/GM','')}/apex/GrantMakingGuidance?Id={!strGuidanceId}&lang={!strLanguage}" target="_blank" class="link help" >{!$Label.See_Help}</a>
+                            </apex:outputpanel>
+                            <apex:outputpanel rendered="{!if(Page__c.Concept_Note__c !=Null,true,false)}">
+                                <a href="{!if((blnExternalPro),'/GM','')}/apex/CN_Guidance_New?Id={!strGuidanceId}&lang={!strLanguage}" target="_blank" class="link help">{!$Label.See_Help}</a> 
+                            </apex:outputpanel>
+                    </span>
+                        <span class="h3">
+                            {!$label.Impact_Indicators} <!--{!strImpactIndicators}-->
+                        </span>
+                    </div>
+                    <br/>
+                    <apex:actionFunction action="{!SaveIndicator}" name="actSaveIndicator" reRender="indicatorPanel" status="Processing">
+                        <apex:param value="" name="SaveIndiIndex" id="SaveIndiIndex"/>
+                    </apex:actionFunction>
+                    <div class="indicators">
+                        <apex:outputPanel id="indicatorPanel">
+                        <apex:variable var="CountIndicator" value="{!1}"/>
+                        <apex:repeat value="{!lstindicators}" var="Indicator" id="rptIndi">
+                        <div class="indicator">
+                            <h4>
+                                <table width="100%">
+                                    <tr>
+                                        <td width="60%" valign="top">
+                                            <!-- Commneted for INC011582 Display Indicator according to user Language 
+                                            <apex:outputText style="font-size:13.8pt;font-weight:bold;display:{!if(Page__c.Implementation_Period__c == NULL,'','none')};" value="{!Indicator.objIndicator.Indicator_Full_Name__c}" styleClass="bold" rendered="{!if(Indicator.blnIndicatorDisplay == true || Page__c.Implementation_Period__c == NULL || (Indicator.blnIndicatorDisplay == false && Indicator.objIndicator.Indicator__c != null),IF(strLanguage != 'RUSSIAN' && strLanguage != 'FRENCH' && strLanguage != 'SPANISH',true,false),false)}"></apex:outputText> 
+                                            <apex:outputText style="font-size:13.8pt;font-weight:bold;display:{!if(Page__c.Implementation_Period__c != NULL,'','none')};" value="{!if((Indicator.objIndicator.Is_Disaggregated__c==true),Indicator.objIndicator.Disaggregated_Name__c,Indicator.objIndicator.Indicator_Full_Name__c)}" styleClass="bold" rendered="{!if(Indicator.blnIndicatorDisplay == true  || (Indicator.blnIndicatorDisplay == false && Indicator.objIndicator.Indicator__c != null),IF(strLanguage != 'RUSSIAN' && strLanguage != 'FRENCH' && strLanguage != 'SPANISH',true,false),false)}"></apex:outputText>-->
+                                            <!--<apex:outputText style="font-size:13.8pt;font-weight:bold;display:{!if(Page__c.Implementation_Period__c == NULL,'','none')};" value="{!Indicator.objIndicator.Indicator_Full_Name__c}" styleClass="bold" rendered="{!if(Indicator.blnIndicatorDisplay == true || Page__c.Implementation_Period__c == NULL || (Indicator.blnIndicatorDisplay == false && Indicator.objIndicator.Indicator__c != null),IF(UserLanguage != 'ru' && UserLanguage != 'fr' && UserLanguage != 'es',true,false),false)}"></apex:outputText>-->
+                                            <apex:outputText style="font-size:13.8pt;font-weight:bold;display:{!if(Page__c.Implementation_Period__c == NULL,'','none')};" value="{!if((Indicator.objIndicator.Is_Disaggregated__c==true),Indicator.objIndicator.Disaggregated_Name__c,Indicator.objIndicator.Indicator_Full_Name__c)}" styleClass="bold" rendered="{!if(Indicator.blnIndicatorDisplay == true  || (Indicator.blnIndicatorDisplay == false && Indicator.objIndicator.Indicator__c != null),IF(UserLanguage != 'ru' && UserLanguage != 'fr' && UserLanguage != 'es',true,false),false)}"></apex:outputText>
+                                            <apex:inputTextArea styleclass="countable3" onKeyPress="return charLimit(this)" onKeyUp="return characterCount(this)" style="height: 40px;resize: none; width:90%;" value="{!Indicator.objIndicator.Indicator_Full_Name__c}" rendered="{!if(Indicator.blnIndicatorDisplay == false && Indicator.objIndicator.Indicator__c == null,IF(strLanguage != 'FRENCH' && strLanguage != 'RUSSIAN' && strLanguage != 'SPANISH',true,false),false)}"></apex:inputTextarea>
+                                            
+                                            <!-- Commneted for INC011582 Display Indicator according to user Language 
+                                             <apex:outputText style="font-size:13.8pt;font-weight:bold;" value="{!Indicator.objIndicator.Russian_Name__c}" styleClass="bold" rendered="{!if(Indicator.blnIndicatorDisplay == true || (Indicator.blnIndicatorDisplay == false && Indicator.objIndicator.Indicator__c != null),IF(strLanguage == 'RUSSIAN',true,false),false)}"></apex:outputText>-->
+                                             <apex:outputText style="font-size:13.8pt;font-weight:bold;" value="{!Indicator.objIndicator.Russian_Name__c}" styleClass="bold" rendered="{!if(Indicator.blnIndicatorDisplay == true || (Indicator.blnIndicatorDisplay == false && Indicator.objIndicator.Indicator__c != null),IF(UserLanguage == 'ru',true,false),false)}"></apex:outputText>
+                                            <apex:inputTextArea styleclass="countable3" onKeyPress="return charLimit(this)" onKeyUp="return characterCount(this)" style="height: 40px;resize: none; width:90%;" value="{!Indicator.objIndicator.Russian_Name__c}" rendered="{!if(Indicator.blnIndicatorDisplay == false && Indicator.objIndicator.Indicator__c == null,IF(strLanguage == 'RUSSIAN',true,false),false)}"></apex:inputTextarea>
+                                            
+                                            <!-- Commneted for INC011582 Display Indicator according to user Language 
+                                             <apex:outputText style="font-size:13.8pt;font-weight:bold;" value="{!Indicator.objIndicator.French_Name__c}" styleClass="bold" rendered="{!if(Indicator.blnIndicatorDisplay == true || (Indicator.blnIndicatorDisplay == false && Indicator.objIndicator.Indicator__c != null),IF(strLanguage == 'FRENCH',true,false),false)}"></apex:outputText>-->
+                                             <apex:outputText style="font-size:13.8pt;font-weight:bold;" value="{!Indicator.objIndicator.French_Name__c}" styleClass="bold" rendered="{!if(Indicator.blnIndicatorDisplay == true || (Indicator.blnIndicatorDisplay == false && Indicator.objIndicator.Indicator__c != null),IF(UserLanguage == 'fr',true,false),false)}"></apex:outputText>
+                                            <apex:inputTextArea styleclass="countable3" onKeyPress="return charLimit(this)" onKeyUp="return characterCount(this)" style="height: 40px;resize: none; width:90%;" value="{!Indicator.objIndicator.French_Name__c}" rendered="{!if(Indicator.blnIndicatorDisplay == false && Indicator.objIndicator.Indicator__c == null,IF(strLanguage == 'FRENCH',true,false),false)}"></apex:inputTextarea>
+                                            
+                                            <!-- Commneted for INC011582 Display Indicator according to user Language 
+                                              <apex:outputText style="font-size:13.8pt;font-weight:bold;" value="{!Indicator.objIndicator.Spanish_Name__c}" styleClass="bold" rendered="{!if(Indicator.blnIndicatorDisplay == true || (Indicator.blnIndicatorDisplay == false && Indicator.objIndicator.Indicator__c != null),IF(strLanguage == 'SPANISH',true,false),false)}"></apex:outputText>-->
+                                              <apex:outputText style="font-size:13.8pt;font-weight:bold;" value="{!Indicator.objIndicator.Spanish_Name__c}" styleClass="bold" rendered="{!if(Indicator.blnIndicatorDisplay == true || (Indicator.blnIndicatorDisplay == false && Indicator.objIndicator.Indicator__c != null),IF(UserLanguage == 'es',true,false),false)}"></apex:outputText>
+                                            <apex:inputTextArea styleclass="countable3" onKeyPress="return charLimit(this)" onKeyUp="return characterCount(this)" style="height: 40px;resize: none; width:90%;" value="{!Indicator.objIndicator.Spanish_Name__c}" rendered="{!if(Indicator.blnIndicatorDisplay == false && Indicator.objIndicator.Indicator__c == null,IF(strLanguage == 'SPANISH',true,false),false)}"></apex:inputTextarea>
+                                       
+                                        </td>
+                                        <td width="15%" valign="top" style="text-align:left">
+                                            <!--value="{!strDataType}"--> <apex:outputText value="{!$Label.Data_Type}: " rendered="{!if(Indicator.objIndicator.Indicator__c == null,true,false)}"/>
+                                            <apex:outputField value="{!Indicator.objIndicator.Data_Type__c}" style="font-weight:normal" rendered="{!if(Indicator.blnIndicatorDisplay == true && Indicator.objIndicator.Indicator__c == null,true,false)}"/>
+                                            <apex:inputField value="{!Indicator.objIndicator.Indicator_Type__c}" style="display:none;"/>
+                                            <apex:inputField value="{!Indicator.objIndicator.Component__c}" style="display:none;"/>
+                                            <apex:inputField value="{!Indicator.objIndicator.Data_Type__c}" style="width:100px" rendered="{!if(Indicator.blnIndicatorDisplay == false && Indicator.objIndicator.Indicator__c == null,true,false)}">
+                                                <apex:actionSupport event="onchange" reRender="frm"/>
+                                            </apex:inputField>
+                                        </td>
+                                        <td width="25%" valign="top">
+                                            <apex:outputPanel style="float:right;" rendered="{!Page__c.Read_Only__c == false}">
+                                                <apex:commandLink reRender="HistoryPopup" status="Processing" oncomplete="focusonme();" action="{!ShowHistoryPopup}" rendered="{! if(Indicator.blnHistory == false  && !blnGMReadOnly,true,false)}"  >
+                                                        <!-- action="{!ShowHistoryPopup}" rendered="{! if(GI.blnHistory == false,true,false)}" --> 
+                                                        <apex:image styleClass="Image" url="{!$Resource.History}" title="{!$Label.View_History}" style="height: 25px;width: 20px;" />                                                      
+                                                        <apex:param value="{!CountIndicator-1}" name="HistoryIndiIndex"/>
+                                                    </apex:commandLink>&nbsp;
+                                                <apex:commandLink styleClass="TGFbtn TGFbtn-mini TGFbtn-primary" action="{!EditIndicator}" onclick="onEditpopup('{!CountIndicator-1}','{!$Component.ipdecimalplace}');" oncomplete="setYearValues();" reRender="{!$Component.indicatorPanel}, opJSCount" style="display:{!if(AND(Indicator.blndisplaySave == false,blnEdit),'','none')};" status="Processing" rendered="{!if((CONTAINS($Profile.Name,'Applicant/CM')||CONTAINS($Profile.Name,$Label.PR_Admin)||CONTAINS($Profile.Name,$Label.PR_Read_Write_Edit)||CONTAINS($Profile.Name,$Label.FPM)||CONTAINS($Profile.Name,$Label.PSM_Officer)||CONTAINS($Profile.Name,$Label.System_Admin))  && !blnGMReadOnly,true,false)}">
+                                                    <apex:param value="{!CountIndicator-1}" name="EditIndiIndex"/>
+                                                    <i class="icon-edit icon-white">
+                                                    </i> <strong>{!$label.Edit}<!--{!strEdit}--></strong>
+                                                </apex:commandLink>&nbsp;
+                                                <apex:commandLink styleClass="TGFbtn TGFbtn-mini TGFbtn-danger" style="display:{!if(AND(Indicator.blndisplaySave == false,blnDelete),'','none')};" onclick="return OpenPopup('{!$Component.tstpopup1}');" rendered="{!if((CONTAINS($Profile.Name,'Applicant/CM')||CONTAINS($Profile.Name,$Label.PR_Admin)||CONTAINS($Profile.Name,$Label.PR_Read_Write_Edit)||CONTAINS($Profile.Name,$Label.FPM)||CONTAINS($Profile.Name,$Label.PSM_Officer)||CONTAINS($Profile.Name,$Label.System_Admin))  && !blnGMReadOnly,true,false)}">
+                                                    <i class="icon-trash icon-white">
+                                                    </i> <strong>{!$label.Delete} <!--{!strDelete}--></strong>
+                                                </apex:commandLink>
+                                                <apex:commandLink styleClass="TGFbtn TGFbtn-mini TGFbtn-success"  style="display:{!if(Indicator.blndisplaySave == true,'','none')};width:if(strLanguage == 'FRENCH','70','40')px;" onclick="return setStringForExistIndicator('{!$Component.GoalIndexPanel}','{!$Component.hdnsetGoalIdAdd}','{!CountIndicator-1}','{!$Component.ipdecimalplace}','{!$Component.ipIndY1}','{!$Component.ipIndY2}','{!$Component.ipIndY3}','{!$Component.ipIndY4}','{!$Component.ipbasevalue}');">
+                                                    <strong>{!$label.Save} <!--{!strSave}--></strong>
+                                                </apex:commandLink>
+                                                <apex:commandLink styleClass="TGFbtn TGFbtn-mini TGFbtn-danger" action="{!CancelIndicator}" reRender="frm" style="display:{!if(Indicator.blndisplaySave == true,'','none')};" status="Processing">
+                                                    <apex:param value="{!CountIndicator-1}" name="CancelIndiIndex"/>
+                                                    <strong>{!$Label.Cancel} <!--{!strCancel}--></strong>
+                                                </apex:commandLink>
+                                            </apex:outputPanel>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td width="50%">
+                                            <apex:outputText style="font-size:11pt;font-weight:bold;display:{!if(Page__c.Implementation_Period__c == NULL && Indicator.objIndicator.Is_Disaggregated__c==true,'','none')};" value="{!$Label.Requires_disaggregated_results_during_Grant_Implementation_Yes}" styleClass="bold" rendered="{!if(Indicator.blnIndicatorDisplay == true  || (Indicator.blnIndicatorDisplay == false && Indicator.objIndicator.Indicator__c != null),IF(UserLanguage != 'ru' && UserLanguage != 'fr' && UserLanguage != 'es',true,false),false)}"/>                                            
+                                            <apex:outputText style="font-size:11pt;font-weight:bold;display:{!if(Page__c.Implementation_Period__c == NULL && Indicator.objIndicator.Is_Disaggregated__c==false,'','none')};" value="{!$Label.Requires_disaggregated_results_during_Grant_Implementation_No}" styleClass="bold" rendered="{!if(Indicator.blnIndicatorDisplay == true  || (Indicator.blnIndicatorDisplay == false && Indicator.objIndicator.Indicator__c != null),IF(UserLanguage != 'ru' && UserLanguage != 'fr' && UserLanguage != 'es',true,false),false)}"/>
+                                            
+                                            <apex:outputText style="font-size:11pt;font-weight:bold;display:{!if(Page__c.Implementation_Period__c == NULL && Indicator.objIndicator.Is_Disaggregated__c==true,'','none')};" value="{!$Label.Requires_disaggregated_results_during_Grant_Implementation_Yes}" styleClass="bold" rendered="{!if(Indicator.blnIndicatorDisplay == true || (Indicator.blnIndicatorDisplay == false && Indicator.objIndicator.Indicator__c != null),IF(strLanguage == 'RUSSIAN',true,false),false)}"></apex:outputText>
+                                            <apex:outputText style="font-size:11pt;font-weight:bold;display:{!if(Page__c.Implementation_Period__c == NULL && Indicator.objIndicator.Is_Disaggregated__c==false,'','none')};" value="{!$Label.Requires_disaggregated_results_during_Grant_Implementation_No}" styleClass="bold" rendered="{!if(Indicator.blnIndicatorDisplay == true || (Indicator.blnIndicatorDisplay == false && Indicator.objIndicator.Indicator__c != null),IF(strLanguage == 'RUSSIAN',true,false),false)}"></apex:outputText>
+                                            
+                                            <apex:outputText style="font-size:11pt;font-weight:bold;display:{!if(Page__c.Implementation_Period__c == NULL && Indicator.objIndicator.Is_Disaggregated__c==true,'','none')};" value="{!$Label.Requires_disaggregated_results_during_Grant_Implementation_Yes}" styleClass="bold" rendered="{!if(Indicator.blnIndicatorDisplay == true || (Indicator.blnIndicatorDisplay == false && Indicator.objIndicator.Indicator__c != null),IF(strLanguage == 'FRENCH',true,false),false)}"></apex:outputText>
+                                            <apex:outputText style="font-size:11pt;font-weight:bold;display:{!if(Page__c.Implementation_Period__c == NULL && Indicator.objIndicator.Is_Disaggregated__c==false,'','none')};" value="{!$Label.Requires_disaggregated_results_during_Grant_Implementation_No}" styleClass="bold" rendered="{!if(Indicator.blnIndicatorDisplay == true || (Indicator.blnIndicatorDisplay == false && Indicator.objIndicator.Indicator__c != null),IF(strLanguage == 'FRENCH',true,false),false)}"></apex:outputText>
+                                            
+                                            <apex:outputText style="font-size:11pt;font-weight:bold;display:{!if(Page__c.Implementation_Period__c == NULL && Indicator.objIndicator.Is_Disaggregated__c==true,'','none')};" value="{!$Label.Requires_disaggregated_results_during_Grant_Implementation_Yes}" styleClass="bold" rendered="{!if(Indicator.blnIndicatorDisplay == true || (Indicator.blnIndicatorDisplay == false && Indicator.objIndicator.Indicator__c != null),IF(strLanguage == 'SPANISH',true,false),false)}"></apex:outputText>
+                                            <apex:outputText style="font-size:11pt;font-weight:bold;display:{!if(Page__c.Implementation_Period__c == NULL && Indicator.objIndicator.Is_Disaggregated__c==false,'','none')};" value="{!$Label.Requires_disaggregated_results_during_Grant_Implementation_No}" styleClass="bold" rendered="{!if(Indicator.blnIndicatorDisplay == true || (Indicator.blnIndicatorDisplay == false && Indicator.objIndicator.Indicator__c != null),IF(strLanguage == 'SPANISH',true,false),false)}"></apex:outputText>
+                                        </td>
+                                    </tr>
+                                </table>
+                                <!-- Field History -->
+                                        <apex:outputPanel id="HistoryPopup" >
+                                            <apex:outputPanel id="popupBackgroundH" styleClass="popupBackgroundHistory" rendered="{! if(Indicator.blnHistory == true,true,false)}" />
+                                            <apex:outputPanel id="custPopupH" styleClass="custPopupHistory" rendered="{! if(Indicator.blnHistory == true,true,false)}">
+                                                <table>
+                                                    <tr>
+                                                        <td>
+                                                            <c:FieldHistory TargetRecordId="{!Indicator.objIndicator.id}" TagetObjectAPIname="Grant_Indicator__c" RecordTitle="{!IF(strLanguage == 'RUSSIAN',Indicator.objIndicator.Russian_Name__c,If(strLanguage == 'FRENCH',Indicator.objIndicator.French_Name__c,If(strLanguage == 'SPANISH',Indicator.objIndicator.Spanish_Name__c,Indicator.objIndicator.Indicator_Full_Name__c)))}"  /> 
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td align="center" style="">
+                                                            <apex:commandButton value="{!$Label.OK}" action="{!HidePopupHistory}" style="width:50px" reRender="frm" status="Processing"> 
+                                                        </apex:commandButton>
+                                                        </td>
+                                                    </tr>
+                                                </table>                                                                                                                                                      
+                                            </apex:outputPanel>
+                                            </apex:outputPanel>
+                                <apex:outputPanel id="tstpopup1" style="display:none;">
+                                    <apex:outputPanel id="popupBackground1" styleClass="popupBackground"/>
+                                    <apex:outputPanel id="custPopup1" styleClass="custPopup">
+                                        <table width="100%" cellspacing="0" cellpadding="0" border="0">
+                                            <tr><td style="height:10px;"></td></tr>
+                                            <tr>
+                                                <td colspan="3" align="center">
+                                                    <apex:outputtext style="color:#6590c4; font-size: 13.9pt;font-weight: bold;" value="{!$Label.Are_you_sure}"/> <!--{!strAreYouSure}-->
+                                                </td>
+                                            </tr>
+                                            <tr><td style="height:6px;"></td></tr>
+                                            <tr>
+                                                <td colspan="3" align="center">
+                                                    <apex:outputtext style="color:#6590c4; font-size: 13.9pt;font-weight: bold;" value="{!$Label.Indicator_alert}"/>  <!--value="{!strIndicatorDeleted}"-->
+                                                </td>
+                                            </tr>
+                                            <tr><td style="height:10px;"></td></tr>
+                                            <tr>
+                                                <td width="47%" align="right">
+                                                    <apex:commandButton styleClass="popupButtonYes" value="{!$Label.Yes}" action="{!DeleteIndicator}" reRender="frm" status="Processing"> <!-- value="Yes" -->
+                                                        <apex:param value="{!CountIndicator-1}" name="DeleteIndiIndex"/>
+                                                    </apex:commandButton>
+                                                </td>
+                                                <td width="6%"></td>
+                                                <td width="47%" align="left">
+                                                    <apex:commandButton styleClass="popupButtonCancel" value="{!$Label.Cancel}" onclick="return ClosePopup('{!$Component.tstpopup1}');"/>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </apex:outputPanel>
+                                </apex:outputPanel>
+                            </h4>
+                            <br/>
+                            <h5>
+                                {!strLinkedToGoals}
+                            </h5>
+                            <div>
+                                <table width="100%">
+                                    <tr>
+                                        <td width="10%" style="vertical-align:bottom;">
+                                            <apex:inputHidden value="{!Indicator.setGoalIdAdd}" id="hdnsetGoalIdAdd"/>
+                                            <apex:inputHidden value="{!Indicator.setGoalIdRemove}" id="hdnsetGoalIdRemove"/>
+                                            <apex:outputPanel id="GoalIndexPanel">
+                                                <apex:repeat value="{!lstGoalsObjectives}" var="Goal">
+                                                    <!--<span style="display:{!if(Goal.GoalId != null && Indicator.blndisplaySave == false && Indicator.MapIDGoalIndex[Goal.GoalId] == 0,'none','')}">{!CountGoalIndex}</span>-->
+                                                    <span id="{!Goal.GoalId}" class="{!if(Goal.GoalId != null && Indicator.MapIDGoalIndex[Goal.GoalId] != 0,'badge badge-inverse','badge badge-info')}" style="display:{!if(Goal.GoalId != null && Indicator.blndisplaySave == false && Indicator.MapIDGoalIndex[Goal.GoalId] == 0 ,'none','')};cursor:{!if(Indicator.blndisplaySave == true,'pointer','')};" onclick="{!if(Indicator.blndisplaySave == true,'AddRemoveJunction(this)','')};">{!Goal.IndexGoal}</span>
+                                                </apex:repeat>
+                                            </apex:outputPanel>
+                                        </td>
+                                        <td align="right" width="90%">    
+                                            <div align="right" id="decimalplaces" style="display:{!if(Indicator.blndisplaySave == true,'','none')};width:if(strLanguage == 'FRENCH','70','40')px;padding-right:2px;">
+                                                <span style="text-align:left">Decimal Places:</span>
+                                                <br/>
+                                                <!--<apex:outputField value="{!Indicator.objIndicator.Decimal_Places__c}" id="ipdecimalplace" rendered="{!Indicator.blnIndicatorDisplay}" />-->
+                                                <apex:inputField style="width:11%" value="{!Indicator.objIndicator.Decimal_Places__c}" id="ipdecimalplace"/>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                            <apex:outputPanel rendered="{!blnMultiCountryRegional}">    
+                                <h5>
+                                    Linked to Country
+                                </h5>
+                                <div>
+                                    <apex:outputPanel id="CountryIndexPanel">                                 
+                                        <span class="badge badge-inverse" style="display: {!IF(Indicator.blndisplaySave, 'none','')}" >{!Indicator.objIndicator.Country__r.Name} </span>
+                                        <apex:selectList id="editSelectCountry" value="{!Indicator.objIndicator.Country__c}" size="1" rendered="{!Indicator.blndisplaySave}">
+                                            <apex:selectOptions value="{!IndicatorCountryOptions}"></apex:selectOptions> <!--Note-->
+                                        </apex:selectList>
+                                        <br/><br/>                                
+                                    </apex:outputPanel>                               
+                                </div>
+                            </apex:outputPanel>
+                                
+                                <div class="baseline">
+                                    <h5>
+                                        {!$label.Baseline} <!--{!strBaseline}-->
+                                    </h5>
+                                    <table class="table table-condensed table-bordered">
+                                        <thead>
+                                            <tr>
+                                                <th width="30%">
+                                                   {!$label.Value} <!-- {!strValue}-->
+                                                </th>
+                                                <th width="20%">
+                                                   {!$label.Year} <!--{!strYear}-->
+                                                </th>
+                                                <th width="50%">
+                                                   {!$label.Source} <!-- {!strSource}-->
+                                                </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>
+                                                    <apex:outputText id="ofbaseyearvalue" value="{!if(Indicator.objIndicator.Decimal_Places__c == '0','{0,number,####}',if(Indicator.objIndicator.Decimal_Places__c == '1','{0,number,###0.0}',if(Indicator.objIndicator.Decimal_Places__c == '2','{0,number,###0.00}',if(Indicator.objIndicator.Decimal_Places__c == '3','{0,number,###0.000}',if(Indicator.objIndicator.Decimal_Places__c == '4','{0,number,###0.0000}','{0,number,###0.00}')))))}" rendered="{!Indicator.blnIndicatorDisplay}">
+                                                        <apex:param value="{!Indicator.objIndicator.Baseline_Value__c}"/>
+                                                    </apex:outputText>
+                                                    <!--<apex:outputField id="" value="{!Indicator.objIndicator.Baseline_Value__c}" rendered="{!Indicator.blnIndicatorDisplay}" />-->
+                                                    <apex:inputField id="ipbasevalue" style="width:70%" value="{!Indicator.objIndicator.Baseline_Value__c}" rendered="{!!Indicator.blnIndicatorDisplay}"/>
+                                                    {!if(Indicator.objIndicator.Data_Type__c == 'Number','',if(Indicator.objIndicator.Data_Type__c == 'Percent','%',if(Indicator.objIndicator.Data_Type__c == 'Ratio','per 100k','')))}
+                                                </td>
+                                                <td>
+                                                    <apex:outputField value="{!Indicator.objIndicator.Baseline_Year__c}" rendered="{!Indicator.blnIndicatorDisplay}"/>
+                                                    <apex:inputField style="width:80px;" value="{!Indicator.objIndicator.Baseline_Year__c}" rendered="{!!Indicator.blnIndicatorDisplay}"/>
+                                                </td>
+                                                <td style="width:93px;">
+                                                    <apex:inputfield style="display:none" value="{!Indicator.objIndicator.Component__c}"/>
+                                                    <apex:outputField value="{!Indicator.objIndicator.Baseline_Sources__c}" rendered="{!Indicator.blnIndicatorDisplay}"/>
+                                                    <apex:inputField style="width:100%;" value="{!Indicator.objIndicator.Baseline_Sources__c}" rendered="{!!Indicator.blnIndicatorDisplay}"/>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="target">
+                                    <h5>
+                                        {!$label.Targets} <!--{!strTargets}-->
+                                    </h5>
+                                    <table class="table table-condensed table-bordered">
+                                        <thead>
+                                            <tr>
+                                                <th class="grey" width="15%">
+                                                    {!$label.Year} <!--{!stryear}-->
+                                                </th>
+                                                <th>
+                                                    {!if(isnull(strGIPId),Page__c.Concept_Note__r.Year_1__c,Page__c.Implementation_Period__r.Year_1__c)}
+                                                </th>
+                                                <th>
+                                                    {!if(isnull(strGIPId),Page__c.Concept_Note__r.Year_2__c,Page__c.Implementation_Period__r.Year_2__c)}
+                                                </th>
+                                                <th>
+                                                    {!if(isnull(strGIPId),Page__c.Concept_Note__r.Year_3__c,Page__c.Implementation_Period__r.Year_3__c)}
+                                                </th>
+                                                <th style="display:{!if(Page__c.Concept_Note__r.Number_of_Years__c == '4','','none')}">
+                                                    {!if(isnull(strGIPId),Page__c.Concept_Note__r.Year_4__c,Page__c.Implementation_Period__r.Year_4__c)}
+                                                </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td class="grey">
+                                                    {!$label.Value} <!--{!strvalue}-->
+                                                </td>
+                                                <td>
+                                                    <apex:outputText id="oty1" value="{!if(Indicator.objIndicator.Decimal_Places__c == '0','{0,number,####}',if(Indicator.objIndicator.Decimal_Places__c == '1','{0,number,###0.0}',if(Indicator.objIndicator.Decimal_Places__c == '2','{0,number,###0.00}',if(Indicator.objIndicator.Decimal_Places__c == '3','{0,number,###0.000}',if(Indicator.objIndicator.Decimal_Places__c == '4','{0,number,###0.0000}','{0,number,###0.00}')))))}" rendered="{!Indicator.blnIndicatorDisplay}">
+                                                        <apex:param value="{!(Indicator.objIndicator.Target_Value_Y1__c)}"/>
+                                                    </apex:outputText>
+                                                    <!--<apex:outputField value="{!(Indicator.objIndicator.Target_Value_Y1__c)}" rendered="{!Indicator.blnIndicatorDisplay}" />-->
+                                                    <apex:inputField style="width:40%" id="ipIndY1" value="{!Indicator.objIndicator.Target_Value_Y1__c}" rendered="{!!Indicator.blnIndicatorDisplay}"/>
+                                                    {!if(Indicator.objIndicator.Data_Type__c == 'Number','',if(Indicator.objIndicator.Data_Type__c == 'Percent','%',if(Indicator.objIndicator.Data_Type__c == 'Ratio','per 100k','')))}
+                                                </td>
+                                                <td>
+                                                    <apex:outputText id="oty2" value="{!if(Indicator.objIndicator.Decimal_Places__c == '0','{0,number,####}',if(Indicator.objIndicator.Decimal_Places__c == '1','{0,number,###0.0}',if(Indicator.objIndicator.Decimal_Places__c == '2','{0,number,###0.00}',if(Indicator.objIndicator.Decimal_Places__c == '3','{0,number,###0.000}',if(Indicator.objIndicator.Decimal_Places__c == '4','{0,number,###0.0000}','{0,number,###0.00}')))))}" rendered="{!Indicator.blnIndicatorDisplay}">
+                                                        <apex:param value="{!(Indicator.objIndicator.Target_Value_Y2__c)}"/>
+                                                    </apex:outputText>
+                                                    <!--<apex:outputField value="{!Indicator.objIndicator.Target_Value_Y2__c}" rendered="{!Indicator.blnIndicatorDisplay}"/>-->
+                                                    <apex:inputField style="width:40%" id="ipIndY2" value="{!Indicator.objIndicator.Target_Value_Y2__c}" rendered="{!!Indicator.blnIndicatorDisplay}"/>
+                                                    {!if(Indicator.objIndicator.Data_Type__c == 'Number','',if(Indicator.objIndicator.Data_Type__c == 'Percent','%',if(Indicator.objIndicator.Data_Type__c == 'Ratio','per 100k','')))}
+                                                </td>
+                                                <td>
+                                                    <apex:outputText id="oty3" value="{!if(Indicator.objIndicator.Decimal_Places__c == '0','{0,number,####}',if(Indicator.objIndicator.Decimal_Places__c == '1','{0,number,###0.0}',if(Indicator.objIndicator.Decimal_Places__c == '2','{0,number,###0.00}',if(Indicator.objIndicator.Decimal_Places__c == '3','{0,number,###0.000}',if(Indicator.objIndicator.Decimal_Places__c == '4','{0,number,###0.0000}','{0,number,###0.00}')))))}" rendered="{!Indicator.blnIndicatorDisplay}">
+                                                        <apex:param value="{!(Indicator.objIndicator.Target_Value_Y3__c)}"/>
+                                                    </apex:outputText>
+                                                    <!--<apex:outputField value="{!Indicator.objIndicator.Target_Value_Y3__c}" rendered="{!Indicator.blnIndicatorDisplay}"/>-->
+                                                    <apex:inputField style="width:40%" id="ipIndY3" value="{!Indicator.objIndicator.Target_Value_Y3__c}" rendered="{!!Indicator.blnIndicatorDisplay}"/>
+                                                    {!if(Indicator.objIndicator.Data_Type__c == 'Number','',if(Indicator.objIndicator.Data_Type__c == 'Percent','%',if(Indicator.objIndicator.Data_Type__c == 'Ratio','per 100k','')))}
+                                                </td>
+                                                 <td style="display:{!if(Page__c.Concept_Note__r.Number_of_Years__c == '4','','none')}">
+                                                    <apex:outputText id="oty4" value="{!if(Indicator.objIndicator.Decimal_Places__c == '0','{0,number,####}',if(Indicator.objIndicator.Decimal_Places__c == '1','{0,number,###0.0}',if(Indicator.objIndicator.Decimal_Places__c == '2','{0,number,###0.00}',if(Indicator.objIndicator.Decimal_Places__c == '3','{0,number,###0.000}',if(Indicator.objIndicator.Decimal_Places__c == '4','{0,number,###0.0000}','{0,number,###0.00}')))))}" rendered="{!Indicator.blnIndicatorDisplay}">
+                                                        <apex:param value="{!(Indicator.objIndicator.Target_Value_Y4__c)}"/>
+                                                    </apex:outputText>
+                                                    <!--<apex:outputField value="{!Indicator.objIndicator.Target_Value_Y4__c}" rendered="{!Indicator.blnIndicatorDisplay}"/>-->
+                                                    <apex:inputField style="width:40%" id="ipIndY4" value="{!Indicator.objIndicator.Target_Value_Y4__c}" rendered="{!!Indicator.blnIndicatorDisplay}"/>
+                                                    {!if(Indicator.objIndicator.Data_Type__c == 'Number','',if(Indicator.objIndicator.Data_Type__c == 'Percent','%',if(Indicator.objIndicator.Data_Type__c == 'Ratio','per 100k','')))}
+                                                </td>   
+                                            </tr>
+                                            <tr>
+                                                <td class="grey">
+                                                    {!$label.Report_Due} <!--Report Due-->
+                                                </td>
+                                                <td>
+                                                    <apex:outputField value="{!Indicator.objIndicator.Y1_Report_Due__c}" rendered="{!Indicator.blnIndicatorDisplay}"/>
+                                                    <apex:inputField style="width:50%" value="{!Indicator.objIndicator.Y1_Report_Due__c}" rendered="{!!Indicator.blnIndicatorDisplay}"/>
+                                                </td>
+                                                <td>
+                                                    <apex:outputField value="{!Indicator.objIndicator.Y2_Report_Due__c}" rendered="{!Indicator.blnIndicatorDisplay}"/>
+                                                    <apex:inputField style="width:50%" value="{!Indicator.objIndicator.Y2_Report_Due__c}" rendered="{!!Indicator.blnIndicatorDisplay}"/>
+                                                </td>
+                                                <td>
+                                                    <apex:outputField value="{!Indicator.objIndicator.Y3_Report_Due__c}" rendered="{!Indicator.blnIndicatorDisplay}"/>
+                                                    <apex:inputField style="width:50%" value="{!Indicator.objIndicator.Y3_Report_Due__c}" rendered="{!!Indicator.blnIndicatorDisplay}"/>
+                                                </td>
+                                                <td style="display:{!if(Page__c.Concept_Note__r.Number_of_Years__c == '4','','none')}">
+                                                    <apex:outputField value="{!Indicator.objIndicator.Y4_Report_Due__c}" rendered="{!Indicator.blnIndicatorDisplay}"/>
+                                                    <apex:inputField style="width:50%" value="{!Indicator.objIndicator.Y4_Report_Due__c}" rendered="{!!Indicator.blnIndicatorDisplay}"/>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                           
+                            <div class="comments">
+                                <table width="100%">
+                                    <tr>
+                                        <td style="width:80%;">
+                                            <h5>
+                                                {!$label.Comments} <!--{!strComments}-->
+                                            </h5>
+                                            <p>
+                                              <apex:outputPanel rendered="{!If(strLanguage != 'RUSSIAN' && strLanguage != 'FRENCH' && strLanguage != 'SPANISH',true,false)}">
+                                                <apex:outputField value="{!Indicator.objIndicator.Comments__c}" rendered="{!Indicator.blnIndicatorDisplay}"/>
+                                                <apex:inputtextArea styleclass="countable2" onKeyPress="return charLimitComment(this)" onKeyUp="return characterCountComment(this)" style="height: 150px;resize: none; width: 720px;" value="{!Indicator.objIndicator.Comments__c}" rendered="{!if((blnComments && !Indicator.blnIndicatorDisplay),true,false)}"/>
+                                              </apex:outputPanel>
+                                              
+                                               <apex:outputPanel rendered="{!If(strLanguage == 'RUSSIAN',true,false)}">
+                                                <apex:outputField value="{!Indicator.objIndicator.Comments_Russian__c}" rendered="{!Indicator.blnIndicatorDisplay}"/>
+                                                <apex:inputtextArea styleclass="countable2" onKeyPress="return charLimitComment(this)" onKeyUp="return characterCountComment(this)" style="height: 150px;resize: none; width: 720px;" value="{!Indicator.objIndicator.Comments_Russian__c}" rendered="{!if((blnComments && !Indicator.blnIndicatorDisplay),true,false)}"/>
+                                              </apex:outputPanel>
+                                              
+                                               <apex:outputPanel rendered="{!If(strLanguage == 'FRENCH',true,false)}">
+                                                <apex:outputField value="{!Indicator.objIndicator.Comments_French__c}" rendered="{!Indicator.blnIndicatorDisplay}"/>
+                                                <apex:inputtextArea styleclass="countable2" onKeyPress="return charLimitComment(this)" onKeyUp="return characterCountComment(this)" style="height: 150px;resize: none; width: 720px;" value="{!Indicator.objIndicator.Comments_French__c}" rendered="{!if((blnComments && !Indicator.blnIndicatorDisplay),true,false)}"/>
+                                              </apex:outputPanel>
+                                              
+                                                <apex:outputPanel rendered="{!If(strLanguage == 'SPANISH',true,false)}">
+                                                <apex:outputField value="{!Indicator.objIndicator.Comments_Spanish__c}" rendered="{!Indicator.blnIndicatorDisplay}"/>
+                                                <apex:inputtextArea styleclass="countable2" onKeyPress="return charLimitComment(this)" onKeyUp="return characterCountComment(this)" style="height: 150px;resize: none; width: 720px;" value="{!Indicator.objIndicator.Comments_Spanish__c}" rendered="{!if((blnComments && !Indicator.blnIndicatorDisplay),true,false)}"/>
+                                              </apex:outputPanel>
+                                            </p>
+                                        </td>
+                                         <!--Commented for Profile Level Access 
+                                        <td style="display:{!if(CONTAINS($Profile.Name,$Label.Finance_Officer),'none','')}">-->
+                                        <td style="display:{!if(CONTAINS($Profile.Name,$Label.Finance_Officer),'none','')}">
+                                            <img style="{!if(Indicator.blnHasPost,'width:25px;height:28px;','display:none;')}" src="{!$Resource.PostCount}" rendered="{!if(CONTAINS($Profile.Name,$Label.Finance_Officer),false,true)}"/>
+                                            <sup style="margin-left: -3px;margin-right:5px;color:dark-grey;padding-right:2px;display:{!if(Indicator.blnHasPost,'','none')}" rendered="{!if(CONTAINS($Profile.Name,$Label.Finance_Officer),false,true)}">{!Indicator.intPostCount}</sup>
+                                            <!--Commented for Profile Level Access 
+                                            <apex:commandLink styleClass="TGFbtn TGFbtn-mini TGFbtn-warning" onclick="return OpenChatterPopup('{!$Component.ChatterPopup}','{!$Component.top}');" style="z-index: 9998" rendered="{!if(CONTAINS($Profile.Name,$Label.Finance_Officer),false,true)}">  --><!-- rerender="GoalsPanel" action="{!AddNewGoal}" status="Processing"> -->
+                                            <apex:commandLink styleClass="TGFbtn TGFbtn-mini TGFbtn-warning" onclick="return OpenChatterPopup('{!$Component.ChatterPopup}','{!$Component.top}');" style="z-index: 9998"> <!-- rerender="GoalsPanel" action="{!AddNewGoal}" status="Processing"> -->
+                                                <img style="{!if(Indicator.blnHasPost,'width:15px;height:16px;','')}" src="{!$Resource.comment}"/>
+                                                <strong>{!$label.Dialogue}<!--Dialogue--></strong>
+                                            </apex:commandLink>
+                                            <apex:outputPanel id="ChatterPopup" style="display:none;">
+                                                <apex:outputPanel id="popupBackground" styleClass="popupBackgroundChatter"/>
+                                                <apex:outputPanel id="custPopup" styleClass="custPopupChatter">
+                                                    <table width="100%" cellspacing="0" cellpadding="0" border="0" >
+                                                        
+                                                        <tr>
+                                                            
+                                                             <td colspan="2" align="right">
+                                                                <!-- TCS 15/7/2017 added output panel for condition -->
+                                                                <apex:outputPanel rendered="{!if(Page__c.Implementation_Period__c !=Null,true,false)}">
+                                                                    <apex:commandLink onclick="return CloseChatterPopup('{!$Component.ChatterPopup}');">
+                                                                        <apex:image url="{!$Resource.CrossImage}" rendered="{!if(CONTAINS($Profile.Name,$Label.Finance_Officer),false,true)}"/>
+                                                                        <!-- <img src="{!URLFOR($Resource.CrossImg)}')" />
+                                                                        <strong>Close</strong>-->
+                                                                    </apex:commandLink>
+                                                                 </apex:outputPanel>
+                                                                 <!-- Tcs 15/7/2014 Condition End here -->
+                                                               </td>
+                                                            
+                                                        </tr>                                                        
+                                                        <tr>
+                                                            <td>
+                                                                <div>
+                                                                <br></br>
+                                                                    <span class="h3">
+                                                                   {! IF(strLanguage == 'RUSSIAN',Indicator.objIndicator.Russian_Name__c,If(strLanguage == 'FRENCH',Indicator.objIndicator.French_Name__c,If(strLanguage == 'SPANISH',Indicator.objIndicator.Spanish_Name__c,Indicator.objIndicator.Indicator_Full_Name__c)))} <!--  {!Indicator.objIndicator.Indicator_full_Name__c}---> <!--Note-->
+                                                                    </span>
+                                                                   <br></br>
+                                                                   <br></br> 
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                        
+                                                        <tr>
+                                                           <td class="resourcetTable">
+                                                           <apex:outputPanel id="top"> </apex:outputPanel>
+                                                                <div id="boxscroll" class="chatterFeedPanel">
+                                                                    <apex:iframe id="ifResourceChatter" height="320px" scrolling="true" src="{!if((blnExternalPro),'/GM','')}/apex/IndicatorChatter?IndicatorId={!Indicator.objIndicator.Id}" />
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                        <tr >
+                                                           <td align="center">
+                                                           <!-- TCS 15/7/2017 added output panel for condition -->
+                                                           <apex:outputPanel rendered="{!if(Page__c.Concept_Note__c !=Null,true,false)}">
+                                                                <apex:commandLink styleClass="TGFbtn TGFbtn-mini TGFbtn-danger" onclick="return CloseChatterPopup('{!$Component.ChatterPopup}');">
+                                                                    <strong>{!$label.Close} <!--Close--></strong>
+                                                                </apex:commandLink>
+                                                             </apex:outputPanel>  
+                                                             <!-- Tcs 15/7/2014 Condition End here --> 
+                                                            </td>
+                                                        </tr>
+                                                    </table>                                                    
+                                                </apex:outputPanel>
+                                            </apex:outputPanel>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                         
+                        <apex:variable var="CountIndicator" value="{!CountIndicator + 1}"/>
+                        </apex:repeat>
+                        <!--BUTTONS TO ADD STANDARD AND CUSTOM INDICATORS-->
+                        <table id="tableCusStdBtn" width="100%" cellspacing="0" cellpadding="0" border="0">
+                            <tr>
+                                <td align="right">
+                                    <table>
+                                        <tr>
+                                            <td>
+                                                <div class="add">
+                                                    <apex:variable value="{!lstGoalsObjectives.size}" var="goalssize" id="goalssize"/>
+                                                    <apex:commandLink rendered="{!if(Page__c.Read_Only__c == false && blnAddStandardIndicator && !blnGMReadOnly ,true,false)}" styleClass="TGFbtn TGFbtn-success pull-right" onclick="return ValidateGoalList({!lstGoalsObjectives.size},'Standard');">
+                                                        <i class="icon-plus icon-white"></i> 
+                                                        <strong>{!$label.Add_Standard_Indicator} <!--{!strAddStandardIndicator}--> </strong>
+                                                    </apex:commandLink>
+                                                </div>
+                                            </td>
+                                           <td>
+                                                <div class="add">
+                                                    <apex:commandLink rendered="{!if(Page__c.Read_Only__c == false && blnAddCustomIndicator && !blnGMReadOnly,true,false)}" styleClass="TGFbtn TGFbtn-success pull-right" onclick="return ValidateGoalList({!lstGoalsObjectives.size},'Custom');">
+                                                        <i class="icon-plus icon-white"></i> 
+                                                        <strong>{!$label.Add_Custom_Indicator}<!--{!strAddCustomIndicator}--></strong>
+                                                    </apex:commandLink>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </td>
+                            </tr>
+                        </table>
+                        </apex:outputPanel>
+                    </div>
+                    <hr></hr>
+                    <apex:outputPanel id="CustomIndiPanel" rendered="{!Page__c.Read_Only__c == false}">
+                    <div id="custIndiLabel" style="display:none;">
+                        <span class="h3">
+                            {!$label.Add_Custom_Indicator} <!--{!strAddCustomIndicator}-->
+                        </span>
+                    </div>
+                    <br/>
+                    <apex:actionFunction action="{!SaveNewIndicator}" name="actSaveNewIndicator" reRender="frm" status="Processing" oncomplete="CancelCustIndioncomplete();">
+                        <apex:param value="{!if(lstIndicators != null && lstIndicators.size > 0,lstIndicators.size+1,1)}" name="SaveIndex"/>
+                    </apex:actionFunction>
+                    <div id="custIndiSec" class="indicators" style="display:none;">
+                        <div class="indicator">
+                            <h4>
+                                <table width="100%">
+                                    <tr>
+                                        <td width="60%" valign="top">
+                                            <apex:inputTextArea styleclass="countable1" rendered="{!If(strLanguage != 'RUSSIAN' && strLanguage != 'FRENCH' && strLanguage != 'SPANISH',true,false)}" onKeyPress="return charLimit(this)" onKeyUp="return characterCount(this)" id="Fullname" value="{!objNewIndicator.Indicator_Full_Name__c}" style="width:400px;height: 60px; resize:both;resize:none;"/>
+                                            <apex:inputTextArea styleclass="countable1" rendered="{!If(strLanguage == 'RUSSIAN',true,false)}" onKeyPress="return charLimit(this)" onKeyUp="return characterCount(this)" id="Fullname_Rus" value="{!objNewIndicator.Russian_Name__c}" style="width:400px;height: 60px; resize:both;resize:none;"/>
+                                            <apex:inputTextArea styleclass="countable1" rendered="{!If(strLanguage == 'FRENCH',true,false)}" onKeyPress="return charLimit(this)" onKeyUp="return characterCount(this)" id="Fullname_Fr" value="{!objNewIndicator.French_Name__c}" style="width:400px;height: 60px; resize:both;resize:none;"/>
+                                            <apex:inputTextArea styleclass="countable1" rendered="{!If(strLanguage == 'SPANISH',true,false)}" onKeyPress="return charLimit(this)" onKeyUp="return characterCount(this)" id="Fullname_Es" value="{!objNewIndicator.Spanish_Name__c}" style="width:400px;height: 60px; resize:both;resize:none;"/>
+                                        </td>
+                                        <td width="15%" valign="top">
+                                            {!$label.Data_Type} <!--{!strDataType}--> :&nbsp;&nbsp;
+                                                        <apex:inputField value="{!objNewIndicator.Indicator_Type__c}" style="display:none;"/>
+                                                        <apex:inputField value="{!objNewIndicator.Component__c}" style="display:none;"/>
+                                                        <apex:inputField id="datatype" value="{!objNewIndicator.Data_Type__c}" >
+                                                            <apex:actionSupport event="onchange" reRender="labelBV,labelTy1,labelTy2,labelTy3,labelTy4"/>
+                                                        </apex:inputField>
+                                        </td>
+                                        <td width="15%" valign="top">
+                                            <apex:outputPanel style="float:right;" >
+                                                <apex:inputHidden value="{!setAddGoalCustom}" id="hdnsetAddGoalCustom"/>
+                                                <apex:commandLink style="width:if(strLanguage == 'FRENCH','70','40')px;" styleClass="TGFbtn TGFbtn-mini TGFbtn-success" onclick="return setStringForCusIndicator('{!IF(strLanguage == 'RUSSIAN',$Component.Fullname_Rus,If(strLanguage == 'FRENCH',$Component.Fullname_Fr,If(strLanguage == 'SPANISH',$Component.Fullname_Es,$Component.Fullname)))}','{!$Component.CustomPanelGoal}','{!$Component.hdnsetAddGoalCustom}','{!$Component.datatype}','{!$Component.Tyear1}','{!$Component.Tyear2}','{!$Component.Tyear3}','{!$Component.Tyear4}','{!$Component.BaselineValue}','{!$Component.ipdecimalplacenew}');">
+                                                    <strong>{!$label.Save} <!--{!strSave}--></strong>
+                                                </apex:commandLink>
+                                                    &nbsp;<apex:commandLink styleClass="TGFbtn TGFbtn-mini TGFbtn-danger" onclick="return CancelCustIndi('{!IF(strLanguage == 'RUSSIAN',$Component.Fullname_Rus,If(strLanguage == 'FRENCH',$Component.Fullname_Fr,If(strLanguage == 'SPANISH',$Component.Fullname_Es,$Component.Fullname)))}','{!$Component.datatype}','{!$Component.BaselineValue}','{!$Component.BaselineYear}','{!$Component.BaselineSource}','{!$Component.Tyear1}','{!$Component.Tyear2}','{!$Component.Tyear3}','{!$Component.Tyear4}','{!IF(strLanguage == 'RUSSIAN',$Component.comment_Rus,If(strLanguage == 'FRENCH',$Component.comment_Fr,If(strLanguage == 'SPANISH',$Component.comment_Es,$Component.comment)))}');">
+                                                    <strong>{!$label.Cancel} <!--{!strCancel}--></strong>
+                                                </apex:commandLink>
+                                            </apex:outputPanel>
+                                        </td>
+                                    </tr>
+                                </table>
+                                 
+                            </h4>
+                            <h5>
+                                {!$label.Linked_Goals} <!--{!strLinkedToGoals}-->
+                            </h5>
+                            <div>
+                                <table width="100%">
+                                    <tr>
+                                        <td width="10%" style="vertical-align:bottom;">
+                                             <apex:outputPanel id="CustomPanelGoal">
+                                                <apex:repeat value="{!lstGoalsObjectives}" var="Goal">
+                                                    <!--<span style="display:{!if(Goal.GoalId != null && Indicator.blndisplaySave == false && Indicator.MapIDGoalIndex[Goal.GoalId] == 0,'none','')}">{!CountGoalIndex}</span>-->
+                                                    <span id="{!Goal.GoalId}" class="badge badge-info" style="cursor:pointer" onclick="AddRemoveJunction(this);">{!Goal.IndexGoal}</span>
+                                                </apex:repeat>
+                                            </apex:outputPanel>
+                                        </td>
+                                        <td align="right" width="90%">    
+                                            <div align="right" id="decimalplaces" style="width:if(strLanguage == 'FRENCH','70','40')px;padding-right:2px;">
+                                                <span style="text-align:left">Decimal Places:</span>
+                                                <br/>
+                                                <!--<apex:outputField value="{!Indicator.objIndicator.Decimal_Places__c}" id="ipdecimalplace" rendered="{!Indicator.blnIndicatorDisplay}" />-->
+                                                <apex:inputField style="width:11%" value="{!objNewIndicator.Decimal_Places__c}" id="ipdecimalplacenew"/>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                            
+                        <apex:outputPanel rendered="{!blnMultiCountryRegional}">
+                            <h5>
+                                {!$label.Linked_Country} <!--Linked to Country-->
+                            </h5>
+                            <div>
+                                <apex:outputPanel id="CustomPanelCountry">                                    
+                                  <apex:selectList id="CustomSelectCountry" value="{!objNewIndicator.Country__c}" size="1">
+                                            <apex:selectOptions value="{!IndicatorCountryOptions}"></apex:selectOptions> <!--Note-->
+                                  </apex:selectList>
+                                </apex:outputPanel>
+                            </div>
+                          </apex:outputPanel>
+                            
+                            <div class="baseline">
+                                <h5>
+                                    {!$label.Baseline} <!--{!strBaseline}-->
+                                </h5>
+                                <table class="table table-condensed table-bordered">
+                                    <thead>
+                                        <tr>
+                                            <th width="30%">
+                                                {!$label.Value} <!--{!strValue}-->
+                                            </th>
+                                            <th width="20%">
+                                                {!$label.Year} <!--{!strYear}-->
+                                            </th>
+                                            <th width="50%">
+                                                {!$label.Source} <!--{!strSource}-->
+                                            </th>
+                                            
+                                        </tr>
+                                    </thead>
+                                    
+                                    <tbody>
+                                        <tr>
+                                            <td>
+                                                <apex:inputField id="BaselineValue" style="width:40%" value="{!objNewIndicator.Baseline_Value__c}"/> <!--Note-->
+                                                <apex:outputlabel id="labelBV" style=" display: inline !important; " value="{!if(objNewIndicator.Data_Type__c == 'Number','',if(objNewIndicator.Data_Type__c == 'Percent','%',if(objNewIndicator.Data_Type__c == 'Ratio','per 100k','')))}"/>
+                                            </td>
+                                            <td>
+                                                <apex:inputField id="BaselineYear" style="width:100%" value="{!objNewIndicator.Baseline_Year__c}" /><!--Note-->
+                                            </td>
+                                            <td style="width:93px;">
+                                                <apex:inputField id="BaselineSource" style="width:100%" value="{!objNewIndicator.Baseline_Sources__c}" /><!--Note-->
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                     
+                                </table>
+                            </div>
+                            <div class="target">
+                                <h5>
+                                    {!$label.Targets} <!--{!strTargets}-->
+                                </h5>
+                                <table class="table table-condensed table-bordered">
+                                    <thead>
+                                        <tr>
+                                            <th class="grey" width="5%">
+                                                {!$label.Year} <!--{!stryear}-->
+                                            </th>
+                                            <th>
+                                                {!if(isnull(strGIPId),Page__c.Concept_Note__r.Year_1__c,Page__c.Implementation_Period__r.Year_1__c)}
+                                            </th>
+                                            <th>
+                                                {!if(isnull(strGIPId),Page__c.Concept_Note__r.Year_2__c,Page__c.Implementation_Period__r.Year_2__c)}
+                                            </th>
+                                            <th>
+                                                {!if(isnull(strGIPId),Page__c.Concept_Note__r.Year_3__c,Page__c.Implementation_Period__r.Year_3__c)}
+                                            </th>
+                                            <th style="display:{!if(Page__c.Concept_Note__r.Number_of_Years__c == '4','','none')}">
+                                                {!if(isnull(strGIPId),Page__c.Concept_Note__r.Year_4__c,Page__c.Implementation_Period__r.Year_4__c)}
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    
+                                    <tbody>
+                                        <tr>
+                                            <td class="grey" width="5%">
+                                                {!$label.Value} <!--{!strvalue}-->
+                                            </td>
+                                            <td>
+                                                <apex:inputField id="Tyear1" style="width:40%" value="{!objNewIndicator.Target_Value_Y1__c}" /><!--Note-->
+                                                <apex:outputlabel id="labelTy1" style=" display: inline !important; " value="{!if(objNewIndicator.Data_Type__c == 'Number','',if(objNewIndicator.Data_Type__c == 'Percent','%',if(objNewIndicator.Data_Type__c == 'Ratio','per 100k','')))}"/><!--Note-->
+                                            </td>
+                                            <td> 
+                                                <apex:inputField id="Tyear2" style="width:40%" value="{!objNewIndicator.Target_Value_Y2__c}"/>
+                                                <apex:outputlabel id="labelTy2" style=" display: inline !important; " value="{!if(objNewIndicator.Data_Type__c == 'Number','',if(objNewIndicator.Data_Type__c == 'Percent','%',if(objNewIndicator.Data_Type__c == 'Ratio','per 100k','')))}"/><!--Note-->
+                                            </td>
+                                            <td> 
+                                                <apex:inputField id="Tyear3" style="width:40%" value="{!objNewIndicator.Target_Value_Y3__c}"/>
+                                                <apex:outputlabel id="labelTy3" style=" display: inline !important; " value="{!if(objNewIndicator.Data_Type__c == 'Number','',if(objNewIndicator.Data_Type__c == 'Percent','%',if(objNewIndicator.Data_Type__c == 'Ratio','per 100k','')))}"/><!--Note-->
+                                            </td>
+                                            <td style="display:{!if(Page__c.Concept_Note__r.Number_of_Years__c == '4','','none')}">
+                                                <apex:inputField id="Tyear4" style="width:40%" value="{!objNewIndicator.Target_Value_Y4__c}" />
+                                                <apex:outputlabel id="labelTy4" style=" display: inline !important; " value="{!if(objNewIndicator.Data_Type__c == 'Number','',if(objNewIndicator.Data_Type__c == 'Percent','%',if(objNewIndicator.Data_Type__c == 'Ratio','per 100k','')))}"/>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="grey" width="5%">
+                                                {!$label.Report_Due} <!--Report Due-->
+                                            </td>
+                                            <td>
+                                                <apex:inputField id="Ryear1" style="width:50%" value="{!objNewIndicator.Y1_Report_Due__c}"/><!--Note-->
+                                            </td>
+                                            <td>
+                                                <apex:inputField id="Ryear2" style="width:50%" value="{!objNewIndicator.Y2_Report_Due__c}"/><!--Note-->
+                                            </td>
+                                            <td>
+                                                <apex:inputField id="Ryear3" style="width:50%" value="{!objNewIndicator.Y3_Report_Due__c}"/><!--Note-->
+                                            </td>
+                                            <td style="display:{!if(Page__c.Concept_Note__r.Number_of_Years__c == '4','','none')}">
+                                                <apex:inputField id="Ryear4" style="width:50%" value="{!objNewIndicator.Y4_Report_Due__c}"/><!--Note-->
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                     
+                                </table>
+                            </div>
+                            <div class="comments">
+                                <h5>
+                                   {!$label.Comments} <!-- {!strComments}-->
+                                </h5>
+                                <p>
+                                    <apex:inputtextarea styleclass="countable4" onKeyPress="return charLimitComment(this)" rendered="{!If(strLanguage != 'RUSSIAN' && strLanguage != 'FRENCH' && strLanguage != 'SPANISH',true,false)}" onKeyUp="return characterCountComment(this)" style="height: 150px;resize: none; width: 770px;"  id="comment" value="{!objNewIndicator.Comments__c}"/>
+                                    <apex:inputtextarea styleclass="countable4" onKeyPress="return charLimitComment(this)" rendered="{!If(strLanguage == 'RUSSIAN',true,false)}" onKeyUp="return characterCountComment(this)" style="height: 150px;resize: none; width: 770px;"  id="comment_Rus" value="{!objNewIndicator.Comments_Russian__c}"/>
+                                    <apex:inputtextarea styleclass="countable4" onKeyPress="return charLimitComment(this)" rendered="{!If(strLanguage == 'FRENCH',true,false)}" onKeyUp="return characterCountComment(this)" style="height: 150px;resize: none; width: 770px;"  id="comment_Fr" value="{!objNewIndicator.Comments_French__c}"/>
+                                    <apex:inputtextarea styleclass="countable4" onKeyPress="return charLimitComment(this)" rendered="{!If(strLanguage == 'SPANISH',true,false)}" onKeyUp="return characterCountComment(this)" style="height: 150px;resize: none; width: 770px;"  id="comment_Es" value="{!objNewIndicator.Comments_Spanish__c}"/>
+                                                              
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    </apex:outputPanel>
+                    <apex:actionFunction name="actCreateIndicatorOnSelectCatalog" action="{!CreateIndicatorOnSelectCatalog}" reRender="frm" status="Processing" oncomplete="showstdIndiOncomplete();"/>
+                    <apex:outputPanel id="stdPanel" rendered="{!Page__c.Read_Only__c == false}">
+                    <div id="SelectCatalogIndicator" class="indicators" style="display:none;">
+                        <div class="indicator">
+                            <h4>
+                                <table width="100%" cellspacing="0" cellpadding="0" border="0">
+                                    <tr>
+                                        <td width="25%" style="padding-bottom: 11px;">
+                                            <apex:outputText value="{!$Label.Select_Catalog_Indicator}" style="font-weight:bold;"/> <!--value="{!strSelectCatalogIndicator}"-->
+                                        </td>
+                                        <td>
+                                            <apex:selectList id="SelectCatIndicator" value="{!strSelectedIndicator}" size="1"><!--Note-->
+                                                <apex:selectOptions value="{!CatalogIndicatorOptions}"></apex:selectOptions> <!--Note-->
+                                            </apex:selectList>
+                                        </td>
+                                        <td style="float:left;padding-right:220px;">
+                                            <apex:commandLink id="SelectIndicatorPicklist" styleClass="TGFbtn TGFbtn-mini TGFbtn-success" onclick="return showstdIndi('{!$Component.SelectCatIndicator}');"  >
+                                              <strong>{!$label.Select} <!--{!strSelect}--></strong>
+                                            </apex:commandLink>
+                                               &nbsp;<apex:commandLink styleClass="TGFbtn TGFbtn-mini TGFbtn-danger" onclick="return hideSelectCalalogIndi();">
+                                                <strong>{!$label.Cancel} <!--{!strCancel}--></strong>
+                                            </apex:commandLink>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </h4>
+                        </div>
+                    </div>
+                   
+                    <div id="AddStdIndiLabel" style="display:none;">
+                        <span class="h3">
+                            {!$label.Add_Standard_Indicator} <!--{!strAddStandardIndicator}-->
+                        </span>
+                    </div>
+                    <br/>
+                    <apex:actionFunction action="{!SaveStdIndicator}" name="actSaveStdIndicator" reRender="indicatorPanel,stdPanel" status="Processing">
+                        <apex:param value="{!if(lstIndicators != null && lstIndicators.size > 0,lstIndicators.size+1,1)}" name="SaveIndex"/>
+                    </apex:actionFunction>                    
+                    <div id="AddStdIndiSec" class="indicators" style="display:none;">
+                        <div class="indicator">
+                            <h4>
+                                <table width="100%"><tr>
+                                <!--<td width="50%">
+                                    <apex:inputTextArea styleclass="countable1" onKeyPress="return charLimit(this)" onKeyUp="return characterCount(this)"  value="{!objNewStdIndicator.Indicator_Full_Name__c}" style="width: 90%;height: 60%; resize:none;"/>
+                                </td>
+                                <td width="50%">
+                                    Data Type :&nbsp;&nbsp;<apex:inputField value="{!objNewStdIndicator.Data_Type__c}" >
+                                                    <apex:actionSupport reRender="frm"/>
+                                                </apex:inputField>
+                                </td>-->
+                                <td width="50%" valign="top">
+                                    <apex:outputText style="font-size:13.8pt;font-weight:bold;display:" rendered="{!IF(strLanguage != 'RUSSIAN' && strLanguage != 'FRENCH' && strLanguage != 'SPANISH',true,false)}" value="{!objNewStdIndicator.Indicator_Full_Name__c}"/> <!--Note-->
+                                    <apex:outputText style="font-size:13.8pt;font-weight:bold;" rendered="{!IF(strLanguage == 'RUSSIAN',true,false)}" value="{!objNewStdIndicator.Russian_Name__c}"/> <!--Note-->
+                                     <apex:outputText style="font-size:13.8pt;font-weight:bold;" rendered="{!IF(strLanguage == 'FRENCH',true,false)}" value="{!objNewStdIndicator.French_Name__c}"/> <!--Note-->
+                                     <apex:outputText style="font-size:13.8pt;font-weight:bold;" rendered="{!IF(strLanguage == 'SPANISH',true,false)}" value="{!objNewStdIndicator.Spanish_Name__c}"/> <!--Note-->
+                              
+                                </td>
+                                
+                                <td width="50%" valign="top">
+                                   {!$label.Data_Type} <!-- {!strDataType}-->: &nbsp;&nbsp;<apex:outputText style="font-size:13.8pt;font-weight:bold;" value="{!objNewStdIndicator.Data_Type__c}" />
+                                </td>
+                                
+                                </tr>
+                                <tr>
+                                    <td width="50%">
+                                        <apex:outputText style="font-size:11pt;font-weight:bold;display:{!if(objNewStdIndicator.Is_Disaggregated__c==true,'','none')};" value="{!$Label.Requires_disaggregated_results_during_Grant_Implementation_Yes}" styleClass="bold" rendered="{!IF(UserLanguage != 'ru' && UserLanguage != 'fr' && UserLanguage != 'es',true,false)}"/>                                            
+                                        <apex:outputText style="font-size:11pt;font-weight:bold;display:{!if(objNewStdIndicator.Is_Disaggregated__c==false,'','none')};" value="{!$Label.Requires_disaggregated_results_during_Grant_Implementation_No}" styleClass="bold" rendered="{!IF(UserLanguage != 'ru' && UserLanguage != 'fr' && UserLanguage != 'es',true,false)}"/>
+                                        
+                                        <apex:outputText style="font-size:11pt;font-weight:bold;display:{!if(objNewStdIndicator.Is_Disaggregated__c==true,'','none')};" value="{!$Label.Requires_disaggregated_results_during_Grant_Implementation_Yes}" styleClass="bold" rendered="{!IF(strLanguage == 'RUSSIAN',true,false)}"></apex:outputText>
+                                        <apex:outputText style="font-size:11pt;font-weight:bold;display:{!if(objNewStdIndicator.Is_Disaggregated__c==false,'','none')};" value="{!$Label.Requires_disaggregated_results_during_Grant_Implementation_No}" styleClass="bold" rendered="{!IF(strLanguage == 'RUSSIAN',true,false)}"></apex:outputText>
+                                        
+                                        <apex:outputText style="font-size:11pt;font-weight:bold;display:{!if(objNewStdIndicator.Is_Disaggregated__c==true,'','none')};" value="{!$Label.Requires_disaggregated_results_during_Grant_Implementation_Yes}" styleClass="bold" rendered="{!IF(strLanguage == 'FRENCH',true,false)}"></apex:outputText>
+                                        <apex:outputText style="font-size:11pt;font-weight:bold;display:{!if(objNewStdIndicator.Is_Disaggregated__c==false,'','none')};" value="{!$Label.Requires_disaggregated_results_during_Grant_Implementation_No}" styleClass="bold" rendered="{!IF(strLanguage == 'FRENCH',true,false)}"></apex:outputText>
+                                        
+                                        <apex:outputText style="font-size:11pt;font-weight:bold;display:{!if(objNewStdIndicator.Is_Disaggregated__c==true,'','none')};" value="{!$Label.Requires_disaggregated_results_during_Grant_Implementation_Yes}" styleClass="bold" rendered="{!IF(strLanguage == 'SPANISH',true,false)}"></apex:outputText>
+                                        <apex:outputText style="font-size:11pt;font-weight:bold;display:{!if(objNewStdIndicator.Is_Disaggregated__c==false,'','none')};" value="{!$Label.Requires_disaggregated_results_during_Grant_Implementation_No}" styleClass="bold" rendered="{!IF(strLanguage == 'SPANISH',true,false)}"></apex:outputText>
+                                        
+                                    </td>
+                                </tr>
+                                </table>
+                                <!--<div class="pull-right">
+                                
+                                </div>-->
+                                <apex:outputPanel style="float:right;" rendered="{!Page__c.Read_Only__c == false}">
+                                    <apex:inputHidden value="{!setAddGoalStandard}" id="hdnsetAddGoalStandard"/>
+                                    <apex:commandLink style="width:if(strLanguage == 'FRENCH','70','40')px;" styleClass="TGFbtn TGFbtn-mini TGFbtn-success" 
+                                        onclick="return setStringForStdIndicator('{!$Component.StdPanelGoal}','{!$Component.hdnsetAddGoalStandard}','{!$Component.ipStdTy1}','{!$Component.ipStdTy2}','{!$Component.ipStdTy3}','{!$Component.ipStdTy4}','{!$Component.ipStdBy1}','{!$Component.ipdecimalplacestand}');" 
+                                        oncomplete="cancelStdIndi();">
+                                        <strong>{!$label.Save} <!--{!strSave}--></strong>
+                                    </apex:commandLink>&nbsp;&nbsp;
+                                <apex:commandLink styleClass="TGFbtn TGFbtn-mini TGFbtn-danger" onclick="return cancelStdIndi();">
+                                       <strong>{!$label.Cancel} <!--{!strCancel}--> </strong>
+                                    </apex:commandLink>
+                                </apex:outputPanel>
+                            </h4>
+                            <h5>
+                                {!$label.Linked_Goals} <!--{!strLinkedToGoals}-->
+                            </h5>
+                            <div>
+                                <table width="100%">
+                                    <tr>
+                                        <td width="10%">
+                                            <apex:outputPanel id="StdPanelGoal">
+                                                <apex:repeat value="{!lstGoalsObjectives}" var="Goal">
+                                                    <span id="{!Goal.GoalId}" class="badge badge-info" style="cursor:pointer" onclick="AddRemoveJunction(this);">{!Goal.IndexGoal}</span>
+                                                </apex:repeat>
+                                            </apex:outputPanel>
+                                        </td>
+                                        <td align="right" width="90%">    
+                                            <div align="right" id="decimalplaces" style="width:if(strLanguage == 'FRENCH','70','40')px;padding-right:2px;">
+                                                <span style="text-align:left">Decimal Places:</span>
+                                                <br/>
+                                                <!--<apex:outputField value="{!Indicator.objIndicator.Decimal_Places__c}" id="ipdecimalplace" rendered="{!Indicator.blnIndicatorDisplay}" />-->
+                                                <apex:inputField style="width:11%" value="{!objNewStdIndicator.Decimal_Places__c}" id="ipdecimalplacestand"/>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                         <apex:outputPanel rendered="{!blnMultiCountryRegional}">
+                            <h5>
+                                {!$label.Linked_Country} <!--Linked to Country-->
+                            </h5>
+                            <div>
+                                <apex:outputPanel id="StdPanelCountry">                                    
+                                  <apex:selectList id="SelectCountry" value="{!objNewStdIndicator.Country__c}" size="1">
+                                            <apex:selectOptions value="{!IndicatorCountryOptions}"></apex:selectOptions>
+                                  </apex:selectList>
+                                </apex:outputPanel>
+                            </div>
+                          </apex:outputPanel> 
+                            
+                            <div class="baseline">
+                                <h5>
+                                    {!strBaseline}
+                                </h5>
+                                <table class="table table-condensed table-bordered">
+                                    <thead>
+                                        <tr>
+                                            <th width="30%">
+                                                {!$label.Baseline} <!--{!strValue}-->
+                                            </th>
+                                            <th width="20%">
+                                                {!$label.Year}<!--{!strYear}-->
+                                            </th>
+                                            <th width="50%">
+                                                {!$label.Source} <!--{!strSource}-->
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody >
+                                        <tr>
+                                            <td>
+                                                <apex:inputField style="width:40%" id="ipStdBy1" value="{!objNewStdIndicator.Baseline_Value__c}"/>
+                                                {!if(objNewStdIndicator.Data_Type__c == 'Number','',if(objNewStdIndicator.Data_Type__c == 'Percent','%',if(objNewStdIndicator.Data_Type__c == 'Ratio','per 100k','')))}
+                                            </td>
+                                            <td>
+                                                <apex:inputField style="width:100%" value="{!objNewStdIndicator.Baseline_Year__c}" />
+                                            </td>
+                                            <td style="width:93px;">
+                                                <apex:inputfield style="display:none;" value="{!objNewStdIndicator.Component__c}"/>
+                                                <apex:inputField style="width:100%" value="{!objNewStdIndicator.Baseline_Sources__c}" />
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="target">
+                                <h5>
+                                    {!$label.Targets} <!--{!strTargets}-->
+                                </h5>
+                                <table class="table table-condensed table-bordered">
+                                    <thead>
+                                        <tr>
+                                            <th class="grey" width="15%">
+                                                {!$label.Year} <!--{!stryear}-->
+                                            </th>
+                                            <th>
+                                                {!if(isnull(strGIPId),Page__c.Concept_Note__r.Year_1__c,Page__c.Implementation_Period__r.Year_1__c)}<!--Note-->
+                                            </th>
+                                            <th>
+                                                {!if(isnull(strGIPId),Page__c.Concept_Note__r.Year_2__c,Page__c.Implementation_Period__r.Year_2__c)}<!--note-->
+                                            </th>
+                                            <th>
+                                                {!if(isnull(strGIPId),Page__c.Concept_Note__r.Year_3__c,Page__c.Implementation_Period__r.Year_3__c)}<!--note-->
+                                            </th>
+                                            <th style="display:{!if(Page__c.Concept_Note__r.Number_of_Years__c == '4','','none')}">
+                                                {!if(isnull(strGIPId),Page__c.Concept_Note__r.Year_4__c,Page__c.Implementation_Period__r.Year_4__c)}<!--note-->
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody >
+                                        <tr>
+                                            <td class="grey">
+                                               {!$label.Value} <!-- {!strvalue}-->
+                                            </td>
+                                            <td>
+                                                <apex:inputField style="width:40%" id="ipStdTy1" value="{!objNewStdIndicator.Target_Value_Y1__c}"/><!--Note-->
+                                                {!if(objNewStdIndicator.Data_Type__c == 'Number','',if(objNewStdIndicator.Data_Type__c == 'Percent','%',if(objNewStdIndicator.Data_Type__c == 'Ratio','per 100k','')))}
+                                            </td>
+                                            <td>
+                                                <apex:inputField style="width:40%" id="ipStdTy2" value="{!objNewStdIndicator.Target_Value_Y2__c}"/><!--Note-->
+                                                {!if(objNewStdIndicator.Data_Type__c == 'Number','',if(objNewStdIndicator.Data_Type__c == 'Percent','%',if(objNewStdIndicator.Data_Type__c == 'Ratio','per 100k','')))}
+                                            </td>
+                                            <td>
+                                                <apex:inputField style="width:40%" id="ipStdTy3" value="{!objNewStdIndicator.Target_Value_Y3__c}"/><!--Note-->
+                                                {!if(objNewStdIndicator.Data_Type__c == 'Number','',if(objNewStdIndicator.Data_Type__c == 'Percent','%',if(objNewStdIndicator.Data_Type__c == 'Ratio','per 100k','')))}
+                                            </td>
+                                            <td style="display:{!if(Page__c.Concept_Note__r.Number_of_Years__c == '4','','none')}">
+                                                <apex:inputField style="width:40%" id="ipStdTy4" value="{!objNewStdIndicator.Target_Value_Y4__c}"/><!--Note-->
+                                                {!if(objNewStdIndicator.Data_Type__c == 'Number','',if(objNewStdIndicator.Data_Type__c == 'Percent','%',if(objNewStdIndicator.Data_Type__c == 'Ratio','per 100k','')))}
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="grey">
+                                                {!$label.Report_Due} <!--Report Due-->
+                                            </td>
+                                            <td>
+                                                <apex:inputField style="width:50%" value="{!objNewStdIndicator.Y1_Report_Due__c}"/><!--Note-->
+                                            </td>
+                                            <td>
+                                                <apex:inputField style="width:50%" value="{!objNewStdIndicator.Y2_Report_Due__c}"/><!--Note-->
+                                            </td>
+                                            <td>
+                                                <apex:inputField style="width:50%" value="{!objNewStdIndicator.Y3_Report_Due__c}"/><!--Note-->
+                                            </td>
+                                            <td style="display:{!if(Page__c.Concept_Note__r.Number_of_Years__c == '4','','none')}">
+                                                <apex:inputField style="width:50%" value="{!objNewStdIndicator.Y4_Report_Due__c}"/><!--Note-->
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="comments">
+                                <h5>
+                                    {!$label.Comments} <!--{!strComments}-->
+                                </h5>
+                                <p>
+                                    <apex:inputtextarea styleclass="countable4" onKeyPress="return charLimitComment(this)" onKeyUp="return characterCountComment(this)" rendered="{!If(strLanguage != 'RUSSIAN' && strLanguage != 'FRENCH' && strLanguage != 'SPANISH',true,false)}" style="height: 150px;resize: none; width: 770px;" value="{!objNewStdIndicator.Comments__c}"/>
+                                    <apex:inputtextarea styleclass="countable4" onKeyPress="return charLimitComment(this)" onKeyUp="return characterCountComment(this)" rendered="{!If(strLanguage == 'RUSSIAN',true,false)}" style="height: 150px;resize: none; width: 770px;" value="{!objNewStdIndicator.Comments_Russian__c}"/>
+                                    <apex:inputtextarea styleclass="countable4" onKeyPress="return charLimitComment(this)" onKeyUp="return characterCountComment(this)" rendered="{!If(strLanguage == 'FRENCH',true,false)}" style="height: 150px;resize: none; width: 770px;" value="{!objNewStdIndicator.Comments_French__c}"/>
+                                    <apex:inputtextarea styleclass="countable4" onKeyPress="return charLimitComment(this)" onKeyUp="return characterCountComment(this)" rendered="{!If(strLanguage == 'SPANISH',true,false)}" style="height: 150px;resize: none; width: 770px;" value="{!objNewStdIndicator.Comments_Spanish__c}"/>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                     </apex:outputPanel>
+                <!-- End of right content -->
+                </div>
+            <!-- /end of righht-left row -->
+            </div>
+            <!-- end of wrapping table -->
+              </td>
+            </tr>
+          </table>
+        <!-- /container -->
+        </div>
+        </div>
+        <style>
+            .ProcessingBackground
+            {
+                background-color: black;
+                opacity: 0.50;
+                filter: alpha(opacity = 50);
+                width: 100%;
+                height: 100%;
+                position: fixed;
+                z-index: 9999;
+                top:0;
+                left:0;
+            }
+            .Processing
+            {
+                z-index: 9999;
+                left: 50%;
+                top: 50%;
+                text-align: center;
+                position: fixed;
+            } 
+            .custPopupHistory{
+            background-color: white;
+            border-width: 0px;
+            border-radius:10px;
+            border-style: solid;
+            /*z-index: 9999;*/
+            z-index: 51;
+            left: 12%;
+            padding:10px;
+            position: absolute;
+            top:60%;
+        }
+        .popupBackgroundHistory{
+            background-color:black;
+            opacity: 0.20;
+            filter: alpha(opacity = 20);
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            /*z-index: 9998;*/
+            z-index: 50;
+            top: 0;
+            left: 0;
+           
+        }        
+        </style>
+        <div id="divProcessing" style="display:none;">
+            <div class="ProcessingBackground"></div>
+            <div class="Processing">
+                <apex:image alt="Processing" url="{!$Resource.LoadingCircle}" />
+            </div>
+        </div>  
+        <apex:actionStatus id="Processing" onstart="document.getElementById('divProcessing').style.display = '';" onstop="document.getElementById('divProcessing').style.display = 'none';">                            
+        </apex:actionStatus> 
+        
+        <script>
+            var oty1 = '';
+            var oty2 = '';
+            var oty3 = '';
+            var oty4 = '';
+            var otby = '';
+            var yindex='';
+            var decimalplace1 = '';
+            function ValidateGoalList(goalssize,type){
+                if(goalssize == 0){
+                    <!--alert('You must specify at least one goal before adding any indicators');-->
+                    alert('{!$Label.You_must_specify_at_least_one_goal}');
+                    return false;
+                }else{
+                    if(type=='Standard') DisplaySelectIndicatorPanel();
+                    if(type=='Custom') openCustIndi();
+                    return false;
+                }
+            }                
+            function AddRemoveJunction(SpanId){
+                if(SpanId.className == 'badge badge-inverse'){
+                    SpanId.className = SpanId.className.replace('badge badge-inverse','badge badge-info');
+                }else if(SpanId.className == 'badge badge-info'){
+                    SpanId.className = SpanId.className.replace('badge badge-info','badge badge-inverse');
+                }
+            }
+            
+            function setStringForExistIndicator(panelId,setAdd,SaveIndiIndex,decimalplace,indy1,indy2,indy3,indy4,ipbasevalue){
+                var addString = SetStringAddGoal(panelId,setAdd);
+                if(addString == ''){
+                    <!--alert('You must select at least one goal');-->
+                    alert('{!$Label.Select_Goal}');
+                    return false;
+                }else{
+                    document.getElementById(setAdd).value = addString;
+                    var decimal1 = document.getElementById(decimalplace).value;
+                    if(decimal1 == '')
+                        document.getElementById(decimalplace).value = 0;
+                    if(!isNaN(document.getElementById(ipbasevalue).value) && document.getElementById(ipbasevalue).value != '')
+                        document.getElementById(ipbasevalue).value = parseFloat(document.getElementById(ipbasevalue).value).toFixed(decimal1);
+                    if(!isNaN(document.getElementById(indy1).value) && document.getElementById(indy1).value != '')
+                        document.getElementById(indy1).value = parseFloat(document.getElementById(indy1).value).toFixed(decimal1);
+                    if(!isNaN(document.getElementById(indy2).value) && document.getElementById(indy2).value != '')
+                        document.getElementById(indy2).value = parseFloat(document.getElementById(indy2).value).toFixed(decimal1);
+                    if(!isNaN(document.getElementById(indy3).value) && document.getElementById(indy3).value != '')
+                        document.getElementById(indy3).value = parseFloat(document.getElementById(indy3).value).toFixed(decimal1);
+                    if(!isNaN(document.getElementById(indy4).value) && document.getElementById(indy4).value != '')
+                        document.getElementById(indy4).value = parseFloat(document.getElementById(indy4).value).toFixed(decimal1);
+                    actSaveIndicator(SaveIndiIndex);
+                    return false;
+                }
+            }
+            function setStringForCusIndicator(Name,panelId,setAdd,DataType,Tyear1,Tyear2,Tyear3,Tyear4,BaseLine,decimal){
+                var addString = SetStringAddGoal(panelId,setAdd);
+                if(addString == ''){
+                    <!--alert('You must select at least one goal.');-->
+                    alert('{!$Label.Select_Goal}');
+                }else if(document.getElementById(DataType).value == ''){
+                    <!--alert('You must select a data type.');-->
+                    alert('{!$Label.Select_Data_Type}');
+                }else if(document.getElementById(Name).value == ''){
+                    alert('You must enter an indicator name.');
+                }else{
+                    var decimal1 = document.getElementById(decimal).value;
+                    if(decimal1 == '')
+                        document.getElementById(decimal).value = 0;
+                    if(!isNaN(document.getElementById(BaseLine).value) && document.getElementById(BaseLine).value != '')
+                        document.getElementById(BaseLine).value = parseFloat(document.getElementById(BaseLine).value).toFixed(decimal1);
+                    if(!isNaN(document.getElementById(Tyear1).value) && document.getElementById(Tyear1).value != '')
+                        document.getElementById(Tyear1).value = parseFloat(document.getElementById(Tyear1).value).toFixed(decimal1);
+                    if(!isNaN(document.getElementById(Tyear2).value) && document.getElementById(Tyear2).value != '')
+                        document.getElementById(Tyear2).value = parseFloat(document.getElementById(Tyear2).value).toFixed(decimal1);
+                    if(!isNaN(document.getElementById(Tyear3).value)&& document.getElementById(Tyear3).value != '')
+                        document.getElementById(Tyear3).value = parseFloat(document.getElementById(Tyear3).value).toFixed(decimal1);
+                    if(!isNaN(document.getElementById(Tyear4).value) && document.getElementById(Tyear4).value != '')
+                        document.getElementById(Tyear4).value = parseFloat(document.getElementById(Tyear4).value).toFixed(decimal1);
+                    document.getElementById(setAdd).value = addString;
+                    actSaveNewIndicator();
+                }
+                return false;
+            }
+            function setStringForStdIndicator(panelId,setAdd,Tyear1,Tyear2,Tyear3,Tyear4,BaseLine,decimal){
+                var addString = SetStringAddGoal(panelId,setAdd);
+                if(addString == ''){
+                    <!--alert('You must select atleast one goal');-->
+                    alert('{!$Label.Select_Goal}');
+                    return false;
+                }else{
+                    document.getElementById(setAdd).value = addString;
+                     var decimal1 = document.getElementById(decimal).value;
+                    if(decimal1 == '')
+                        document.getElementById(decimal).value = 0;
+                    if(!isNaN(document.getElementById(BaseLine).value) && document.getElementById(BaseLine).value != '')
+                        document.getElementById(BaseLine).value = parseFloat(document.getElementById(BaseLine).value).toFixed(decimal1);
+                    if(!isNaN(document.getElementById(Tyear1).value) && document.getElementById(Tyear1).value != '')
+                        document.getElementById(Tyear1).value = parseFloat(document.getElementById(Tyear1).value).toFixed(decimal1);
+                    if(!isNaN(document.getElementById(Tyear2).value) && document.getElementById(Tyear2).value != '')
+                        document.getElementById(Tyear2).value = parseFloat(document.getElementById(Tyear2).value).toFixed(decimal1);
+                    if(!isNaN(document.getElementById(Tyear3).value)&& document.getElementById(Tyear3).value != '')
+                        document.getElementById(Tyear3).value = parseFloat(document.getElementById(Tyear3).value).toFixed(decimal1);
+                    if(!isNaN(document.getElementById(Tyear4).value) && document.getElementById(Tyear4).value != '')
+                        document.getElementById(Tyear4).value = parseFloat(document.getElementById(Tyear4).value).toFixed(decimal1); 
+                    actSaveStdIndicator();
+                    return false;
+                }
+            }
+            function SetStringAddGoal(panelId,setAdd){
+                var spans = document.getElementById(panelId).childNodes;
+                var addStr = '';
+                for(var i=0;i<spans.length;i++){
+                    if(spans[i].tagName == 'SPAN'){
+                        if(spans[i].className.indexOf('badge badge-inverse') != -1){
+                            if(addStr == '') addStr = spans[i].id;
+                            else addStr += ','+spans[i].id;
+                        }
+                    }
+                }
+                return addStr;
+            }
+            function OpenPopup(PopupPanelId){
+                document.getElementById(PopupPanelId).style.display = '';
+                return false;
+            }
+            function ClosePopup(PopupPanelId){
+                document.getElementById(PopupPanelId).style.display = 'none';
+                return false;
+            }
+            function closePanel(){
+                document.getElementById('Infopanel').style.display = 'none';
+            }
+            function closePanel(){
+                document.getElementById('Infopanel2').style.display = 'none';
+            }
+            function DisplaySelectIndicatorPanel(){
+                document.getElementById('SelectCatalogIndicator').style.display = '';
+                document.getElementById('tableCusStdBtn').style.display = 'none';
+                return false;
+            }
+            function hideSelectCalalogIndi(){
+                document.getElementById('SelectCatalogIndicator').style.display = 'none';
+                document.getElementById('tableCusStdBtn').style.display = '';
+                document.getElementById('AddStdIndiLabel').style.display = 'none';
+                document.getElementById('AddStdIndiSec').style.display = 'none';
+                return false;
+            }
+            function showstdIndi(SelectedIndicator){
+                if(document.getElementById(SelectedIndicator).value != ''){
+                    document.getElementById('SelectCatalogIndicator').style.display = 'none';
+                    actCreateIndicatorOnSelectCatalog();
+                    return false;
+                }else{
+                    return false;
+                }
+            }
+            function showstdIndiOncomplete(){ 
+                document.getElementById('AddStdIndiLabel').style.display = '';
+                document.getElementById('AddStdIndiSec').style.display = '';
+                document.getElementById('tableCusStdBtn').style.display = 'none';
+                document.getElementById('SelectCatalogIndicator').style.display = 'none';
+            }
+            function cancelStdIndi(){ 
+                document.getElementById('AddStdIndiLabel').style.display = 'none';
+                document.getElementById('AddStdIndiSec').style.display = 'none';
+                document.getElementById('tableCusStdBtn').style.display = '';
+                document.getElementById('SelectCatalogIndicator').style.display = 'none';
+                return false;
+            }
+            function CancelCustIndioncomplete(){ 
+                document.getElementById('custIndiLabel').style.display = 'none';
+                document.getElementById('custIndiSec').style.display = 'none';
+                document.getElementById('decimalplaces').style.display = 'none';
+                document.getElementById('tableCusStdBtn').style.display = '';
+                return false;
+            }
+            function CancelCustIndi(Fullname,datatype,BaselineValue,BaselineYear,BaselineSource,Tyear1,Tyear2,Tyear3,Tyear4,comment){
+                document.getElementById('custIndiLabel').style.display = 'none';
+                document.getElementById('custIndiSec').style.display = 'none';
+                document.getElementById('decimalplaces').style.display = 'none';
+                document.getElementById('tableCusStdBtn').style.display = '';
+                document.getElementById(Fullname).value = '';
+                document.getElementById(datatype).value = '';
+                document.getElementById(BaselineValue).value = '';
+                document.getElementById(BaselineYear).value = '';
+                document.getElementById(BaselineSource).value = '';
+                document.getElementById(Tyear1).value = '';
+                document.getElementById(Tyear2).value = '';
+                document.getElementById(Tyear3).value = '';
+                document.getElementById(Tyear4).value = '';
+                document.getElementById(comment).value = '';
+                return false;
+            }
+            
+            function openCustIndi(){
+                document.getElementById('custIndiLabel').style.display = '';
+                document.getElementById('custIndiSec').style.display = '';
+                document.getElementById('decimalplaces').style.display = 'display';
+                document.getElementById('tableCusStdBtn').style.display = 'none';
+                return false;
+            }
+            
+            function AddNewGoalUsingJS(){
+                document.getElementById('AddGoalNewRow').style.display = '';
+                document.getElementById('AddGoalBtntr').style.display = 'none';
+                return false;
+            }
+            function CancelNewGoalRow(){
+                document.getElementById('AddGoalNewRow').style.display = 'none';
+                document.getElementById('AddGoalBtntr').style.display = '';
+                return false;
+            }
+            function onEditpopup(y1,decimalplace) {
+                yindex = y1
+                oty1  = document.getElementById('pg:frm:rptIndi:'+y1+':oty1').innerHTML;
+                oty2 = document.getElementById('pg:frm:rptIndi:'+y1+':oty2').innerHTML;
+                oty3 = document.getElementById('pg:frm:rptIndi:'+y1+':oty3').innerHTML;
+                oty4 = document.getElementById('pg:frm:rptIndi:'+y1+':oty4').innerHTML; 
+                otby = document.getElementById('pg:frm:rptIndi:'+y1+':ofbaseyearvalue').innerHTML; 
+                decimalplace1 = document.getElementById(decimalplace ).value; 
+            }
+            function setYearValues() {
+                if(!isNaN(oty1) && oty1 != '')
+                    document.getElementById('pg:frm:rptIndi:'+yindex +':ipIndY1').value = parseFloat(oty1).toFixed(decimalplace1);
+                if(!isNaN(oty2) && oty2 != '')
+                    document.getElementById('pg:frm:rptIndi:'+yindex +':ipIndY2').value = parseFloat(oty2).toFixed(decimalplace1);
+                if(!isNaN(oty3) && oty3 != '')
+                    document.getElementById('pg:frm:rptIndi:'+yindex +':ipIndY3').value = parseFloat(oty3).toFixed(decimalplace1);
+                if(!isNaN(oty4) && oty4 != '')
+                    document.getElementById('pg:frm:rptIndi:'+yindex +':ipIndY4').value = parseFloat(oty4).toFixed(decimalplace1);
+                if(!isNaN(otby) && otby != '')
+                    document.getElementById('pg:frm:rptIndi:'+yindex +':ipbasevalue').value = parseFloat(otby).toFixed(decimalplace1);
+            }
+            function EditExistGoal(optGoalDec,inpGoalDec,EditLink,SaveLink,CancelLink,DeleteLink){
+                document.getElementById(optGoalDec).style.display = 'none';
+                document.getElementById(inpGoalDec).style.display = '';
+                document.getElementById(EditLink).style.display = 'none';
+                document.getElementById(SaveLink).style.display = '';
+                document.getElementById(CancelLink).style.display = '';
+                document.getElementById(DeleteLink).style.display = 'none';
+                return false;
+            }
+            
+            function CancelExistGoal(optGoalDec,inpGoalDec,EditLink,SaveLink,CancelLink,DeleteLink){
+                document.getElementById(optGoalDec).style.display = '';
+                document.getElementById(inpGoalDec).style.display = 'none';
+                document.getElementById(EditLink).style.display = '';
+                document.getElementById(SaveLink).style.display = 'none';
+                document.getElementById(CancelLink).style.display = 'none';
+                document.getElementById(DeleteLink).style.display = '';
+                return false;
+            }
+            function OpenChatterPopup(ChatterPanel,top){
+                document.getElementById(ChatterPanel).style.display = '';
+                top = '#'+top;
+                window.location.hash = top;
+                return false;
+            }
+            function CloseChatterPopup(ChatterPanel){
+                document.getElementById(ChatterPanel).style.display = 'none';
+                return false;
+            }
+            function validateNewGoal(GoalDec){
+                if(document.getElementById(GoalDec).value != ''){
+                    actSaveGoal();
+                    return false;
+                }else{
+                    <!--alert('You must enter Goal Description before save');-->
+                    alert('{!$Label.enter_Goal_Description_before_save}');                      
+                    return false;
+                }
+            }
+            function validateNewGoalEdited(GoalDecEdited,SaveIndex){
+                if(document.getElementById(GoalDecEdited).value != ''){
+                    actSaveGoalEdited(SaveIndex);
+                    return false;
+                }else{
+                    <!--alert('You must enter Goal Description before save');-->
+                    alert('{!$Label.enter_Goal_Description_before_save}');                    
+                    return false;
+                }
+            }
+            function switchMenu(obj,obj1,obj2,hdn,val) 
+        {   
+            var AllLI = document.getElementsByTagName('li');
+            for(var i=0;i<AllLI.length;i++){
+                if(AllLI[i].id == obj){
+                    if(AllLI[i].style.display != 'none'){
+                        AllLI[i].style.display = 'none';
+                    }else{
+                        AllLI[i].style.display = '';
+                    }
+                }
+            }
+            document.getElementById(hdn).value=val; 
+            
+            var e2 = document.getElementById(obj1);                                       
+            if ( e2.style.display != 'none' ) {
+                e2.style.display = 'none';
+            }
+            else {
+                e2.style.display = '';
+            }
+            var e3 = document.getElementById(obj2);                                       
+            if ( e2.style.display != 'none' ) {
+                e3.style.display = 'none';
+            }
+            else {
+                e3.style.display = '';
+            }
+        }
+        function switchMenu(obj,obj1,obj2,hdn,val) 
+        {   
+            var AllLI = document.getElementsByTagName('li');
+            for(var i=0;i<AllLI.length;i++){
+                if(AllLI[i].id == obj){
+                    if(AllLI[i].style.display != 'none'){
+                        AllLI[i].style.display = 'none';
+                    }else{
+                        AllLI[i].style.display = '';
+                    }
+                }
+            }
+            document.getElementById(hdn).value=val; 
+            
+            var e2 = document.getElementById(obj1);                                       
+            if ( e2.style.display != 'none' ) {
+                e2.style.display = 'none';
+            }
+            else {
+                e2.style.display = '';
+            }
+            var e3 = document.getElementById(obj2);                                       
+            if ( e2.style.display != 'none' ) {
+                e3.style.display = 'none';
+            }
+            else {
+                e3.style.display = '';
+            }
+        }
+    </script>
+    <script type="text/javascript">
+        var maxLength=255;
+        function charLimit(el) {
+            if (el.value.length > maxLength) return false;
+            return true;
+        }
+        function characterCount(el) {
+            var charCount = document.getElementById('charCount');
+            if (el.value.length > maxLength) el.value = el.value.substring(0,maxLength);
+            if (charCount) charCount.innerHTML = maxLength - el.value.length;
+            return true;
+        }
+        var maxLengthComment=1000;
+        function charLimitComment(el) {
+            if (el.value.length > maxLengthComment) 
+                return false;
+            return true;
+        }
+        function characterCountComment(el) {
+            var charCount = document.getElementById('charCount');
+            if (el.value.length > maxLengthComment) 
+                el.value = el.value.substring(0,maxLengthComment);
+             
+            if (charCount)
+                charCount.innerHTML = maxLengthComment - el.value.length;
+               
+            return true;
+        }
+        </script>
+         
+        <apex:outputPanel id="opJSCount" >
+              <script type="text/javascript">
+                  $(document).ready(function(){
+                    $('.countable3').jqEasyCounter({
+                        'maxChars': 255,
+                        'maxCharsWarning': 240
+                    });
+                        
+                    $('.countable2').jqEasyCounter({
+                    'maxChars': 1000,
+                    'maxCharsWarning': 999,
+                    'msgFontSize': '12px',
+                    'msgFontColor': '#000',
+                    'msgFontFamily': 'Verdana',
+                    'msgTextAlign': 'left',
+                    'msgWarningColor': '#F00',
+                    'msgAppendMethod': 'insertBefore'
+                    });
+                     
+                    });
+                    
+                </script>
+        </apex:outputPanel>
+         <script type="text/javascript">
+              $(document).ready(function(){
+                 
+                   $('.countable1').jqEasyCounter({
+                    'maxChars': 255,
+                    'maxCharsWarning': 240
+                    });
+                    $('.countable4').jqEasyCounter({
+                    'maxChars': 1000,
+                    'maxCharsWarning': 999,
+                    'msgFontSize': '12px',
+                    'msgFontColor': '#000',
+                    'msgFontFamily': 'Verdana',
+                    'msgTextAlign': 'left',
+                    'msgWarningColor': '#F00',
+                    'msgAppendMethod': 'insertBefore'
+                    });
+                });      
+        </script>
+    </apex:form>
+</apex:page>

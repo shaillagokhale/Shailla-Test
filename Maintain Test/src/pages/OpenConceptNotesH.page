@@ -1,0 +1,449 @@
+<!--*******************************************************************************
+* Open Concept Note Home Page
+----------------------------------------------------------------------------------
+*History
+*Version       Date        DETAIL FEATURES
+  1.1         13/05/2014   Added script "function validateDate()" and calling it on onchange event of implementation start and end date
+                           Added Script "function validateSave()" and calling it on Save button click
+********************************************************************************-->
+
+<apex:page id="page1" sidebar="false" standardController="Country__c" extensions="ctrlOpenConceptNotes" tabstyle="Concept_Note_Home__tab">
+    <apex:stylesheet value="{!URLFOR($Resource.GoalsJs, 'assets/css/bootstrap.css')}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.GoalsJs, 'assets/css/bootstrap-responsive.css')}"/>
+    <apex:includeScript value="{!$Resource.jquery142}" />
+    <head>
+        <title>Concept Note Homepage</title>
+    </head>
+    <script>function setFocusOnLoad() {}
+        
+    //TCS 5/13/2014:FeedBack#7 :Function to validate Implementation End Date and End Date on Change of particulate record
+    // Called on onchange event of Implementation Start Date and End Date input field. 
+    function validateDate(StartDate,EndDate)
+    {
+        var strStartDate = StartDate.value;
+        var strEndDate = EndDate.value;
+        var blncheck = '';
+        var n = strStartDate.split('/');
+         var yyyy = n[2];
+        if (yyyy < '2014'){
+               StartDate.style.color = 'red';
+               StartDate.style.borderColor = 'red';
+               alert('{!$Label.Imp_Start_Date_Alert}');
+               return false;
+         }else{
+               StartDate.style.color = 'black';
+               StartDate.style.borderColor = 'grey';
+               } 
+        if (strStartDate == '' && strEndDate != ''){
+                StartDate.style.borderColor = 'red';
+                alert('{!$Label.Blank_Date_Alert}');
+                return false;
+          }else if (strStartDate != '' && strEndDate != ''){
+                
+                var StartDate1 = formatDate(strStartDate);
+                var EndDate1 = formatDate(strEndDate);
+                if (EndDate1 < StartDate1) {
+                    EndDate.style.color = 'red';
+                    EndDate.style.borderColor = 'red';
+                    alert('{!$Label.Imp_Date_Alert}');
+                    return false;
+                }
+                else{
+                    EndDate.style.color = 'black';
+                    EndDate.style.borderColor = 'grey';
+                 }
+             }else{
+                actSaveChanges();
+               }
+             actSaveChanges();
+    }
+    
+    //TCS 5/12/2014: FeedBack#7: Moved the script from bottom of the page as it was not working
+    // Using the script on onclick event of Save Changes Button
+     function validateSave(){
+            var listSize = '{!lstCN.size}'; 
+            var blnCheck = 'false';   
+            var blnkdate = 'false';
+            for(var i=0;i<listSize;i++){
+                var strStartDate = document.getElementById('page1:frm:rptRP:'+i+':optStartDate').value;
+                var strEndDate = document.getElementById('page1:frm:rptRP:'+i+':inpEndDate').value;
+                
+                if(strStartDate != '' && strEndDate != ''){
+                    var StartDate1 = formatDate(strStartDate);
+                    var EndDate1 = formatDate(strEndDate);
+                   // var StartDate = new Date('StartDate1');
+                    //var EndDate = new Date('EndDate1');
+                    if (StartDate1.getFullYear() < '2014'){
+                       document.getElementById('page1:frm:rptRP:'+i+':optStartDate').style.color = 'red';
+                       document.getElementById('page1:frm:rptRP:'+i+':optStartDate').style.borderColor = 'red';
+                       blncheck = 'true';
+                     }
+                    if (EndDate1 < StartDate1) {
+                        document.getElementById('page1:frm:rptRP:'+i+':inpEndDate').style.color = 'red';
+                        document.getElementById('page1:frm:rptRP:'+i+':inpEndDate').style.borderColor = 'red';
+                        blnCheck = 'true';
+                    }
+                  }
+               else if (strStartDate != '' && strEndDate == '') {
+                 document.getElementById('page1:frm:rptRP:'+i+':inpEndDate').style.color = 'red';
+                 document.getElementById('page1:frm:rptRP:'+i+':inpEndDate').style.borderColor = 'red';
+                 blnCheck = 'true';
+                 }  
+              else if (strStartDate == '' && strEndDate != ''){
+                document.getElementById('page1:frm:rptRP:'+i+':optStartDate').style.color = 'red';
+                document.getElementById('page1:frm:rptRP:'+i+':optStartDate').style.borderColor = 'red';
+                blnCheck = 'true';
+              }
+            }
+            if(blnCheck == 'true'){
+                alert('{!$Label.Save_Button_Alert}');
+                return false;
+                } 
+            actSaveChanges();
+               
+                
+        }
+        
+        function formatDate(Date1){
+            try{
+                var strDate = '';
+                var array = Date1.split('/');
+                var dd = array[0];
+                var mm = array[1];
+                var yyyy = array[2];
+                //strDate = yyyy + "-" + mm + "-" + dd;
+                strDate = new Date(yyyy,mm,dd);
+                return strDate;
+            }catch(err){
+                return null;
+            }
+        }
+       
+       
+    </script>
+    
+    <style>
+     
+    
+    .pageTitleIcon {
+        background-image: url("/img/icon/custom51_100/globe32.png");
+        background-position: 0 0;
+        height: 32px;
+        width: 32px;
+    }
+    .h3 {
+        font-size:24px;
+        line-height: 24px;
+        font-weight:bold;
+    }
+    .h2 {
+        font-size:18px;
+        line-height: 18px;
+        font-weight:bold;
+    }
+    table {
+        font-size:14px;
+    }
+    td .middle{
+        vertical-align:middle;
+     }
+    .countryselect{
+        font-size:16px;
+        color:black;
+    }
+    .link{
+        color:#2E7BBB;
+        text-decoration:underline;
+    }
+    .dateFormat{
+       visibility:hidden;
+    }
+    .webkitright {
+        text-align: right;
+        white-space: nowrap;
+    };
+    .headerSearchContainer {
+        margin-top: -20px !important;
+    }    
+    .phHeaderCustomLogo .headerSearchLeftRoundedCorner {
+        margin-top: -20px !important;
+    } 
+        </style>
+     <script>
+      $(document).ready(function () {
+          $('label.tree-toggler').click(function () {
+              $(this).parent().children('ul.tree').toggle(300);
+          });
+          
+           if ( $.browser.webkit ) {
+            $("#phHeaderLogoImage").parents("table").find("td").eq(2).removeClass("right").addClass("webkitright");  
+            //$("#phHeaderLogoImage").parents("table").find("td").eq(0).removeClass("left").addClass("webkitleft1");           
+           };
+      });
+    </script>
+    <apex:form id="frm">
+    
+     
+    <div style="padding:20px">                   
+                    <div style="margin-bottom:12px">
+                        <span class="h3">
+                           <!-- Concept Notes-->{!$Label.Open_Notes_Header}                       
+                        </span>
+                        <span class="pull-right">
+                            <img src="/img/func_icons/util/info16.png" style="padding-bottom:5px"/>
+                            <!-- TCS 09/09/2014: Replaced the if condition in href from "if(CONTAINS($Profile.Name,$Label.PR_Read_Only)||CONTAINS($Profile.Name,$Label.PR_Admin)||CONTAINS($Profile.Name,$Label.PR_Read_Write_Edit)||CONTAINS($Profile.Name,$Label.LFA_GM_Admin_Portal_User)||CONTAINS($Profile.Name,$Label.LFA_GM_Editor_Portal_User)||CONTAINS($Profile.Name,$Label.LFA_Portal_User)||CONTAINS($Profile.Name,$Label.Applicant_CM_Admin)||CONTAINS($Profile.Name,$Label.Applicant_CM_Read_Write)||CONTAINS($Profile.Name,$Label.Applicant_CM_Read_Only)" to blnExternalPro  -->
+                            <a href="{!if(blnExternalPro==true,'/GM','')}/apex/CN_Guidance_New?Id={!strGuidanceId}&lang={!strLanguage}" target="_blank" class="link h2">{!$Label.See_Help}<!--See Help--></a>
+                        </span>
+                    </div>
+                    <div id="Infopanel" class="alert alert-info">
+                        <button type="button" class="close" data-dismiss="alert" onclick="closePanel();">
+                            ×
+                        </button>
+                        <b>
+                            <!--Use this page to access your Concept Notes, indicate TRP review window, and provide Implementation Period dates.-->
+                            {!$Label.Open_Notes_Instructions}
+                        </b>
+                    </div>
+                    <div>
+                        <apex:selectList size="1" value="{!CountryId}" styleclass="countryselect" rendered="{!if(CONTAINS($Profile.Name,'PR')||CONTAINS($Profile.Name,'CM')||CONTAINS($Profile.Name,'CCM'),false,true)}">
+                            <apex:selectOptions value="{!selOptCountry}"/>
+                            <apex:actionSupport event="onchange" action="{!ConceptNoteByCountry}" reRender="frm"/>
+                        </apex:selectList>
+                    </div>
+                    <div>
+                        <!--During the country dialogue, the applicant will decide how best to distribute indicative funding across relevant disease programs and HCSS. The original indicative disease split is presented below. You may propose a different split of Indicative Funding (keeping  the total the same).-->
+                        {!$Label.Open_Notes_Text}
+                    </div>
+        </div>
+        <!--TABLE OF CONCEPT NOTES-->
+        <div id="totalAllocation" rendered="{!if(lstCN.size > 0,true,false)}" style="margin-left:20px">
+        <table>
+          <tr>
+            <td colspan="2">
+                <b><!--Total Allocated Funding-->{!$Label.Communicated_Allocated_Split}:&nbsp;</b>
+            </td>
+            <td>
+                <apex:outputText value="{!$Label.USD} {0,number,##,###,###,###}" style="font-weight:bold;display:{!if(TotalIndicativeAmount==null,$Label.None,'')}">
+                    <apex:param value="{!TotalIndicativeAmount}"/>
+                </apex:outputText>
+            </td>
+          </tr>
+        </table>
+        </div>
+        
+        
+        <div id="pBlock" rendered="{!if(lstCN.size == 1,false,true)}" style="padding:20px">
+            <table id="pbTable" style=" table-layout: fixed;" value="{!lstCN}" var="CN" class="table table-striped" width="100%" cellspacing="0" cellpadding="0" border="0">
+                <tr style="font-weight:bold">
+                    <!--<th style="min-width : 51px; min-height : 51px;" ></th>-->
+                    <!--********************************************************************************
+                     TO remove the Fixed styling for the table Just remove the style section from 
+                     from all the <TH> tags and <TABLE> tag
+                    ************************************************************************************-->
+                    <th style="width : 51px; min-height : 51px;" ></th>
+                    <th style="max-width : 117px ;white-space: normal;" ><!--Concept Note-->{!$Label.Concept_Note}</th>
+                    <th style="max-width : 123px ;white-space: normal;"><!--Allocated Amount-->{!$Label.Communicated_Allocated_Split}<br/><!--{!$Label.By_Component} by Component--></th>
+                    <th style="max-width : 165px ;white-space: normal;"><!--Agreed Program Split-->{!$Label.Agreed_Program_Split}</th>
+                    <th style="max-width : 160px ;white-space: normal;"><!--Concept Note Status-->{!$Label.Concept_Note_Status}</th>
+                    <th style="max-width : 190px ;white-space: normal;"><!--Implementation Start-->{!$Label.Implementation_Start}</th>
+                    <th style="max-width : 190px ;white-space: normal;"><!--Implementation End-->{!$Label.Implementation_End}</th>
+                    <th style="max-width : 233px ;white-space: normal;"><!--TRP Review Window-->{!$Label.CN_Submission_Date}</th>
+                </tr>
+                
+            <apex:repeat id="rptRP" value="{!lstCN}" var="CN">
+                <tr>
+                    <td  width="10%">
+                    <!-- Keeping the image consistent for translations -->
+                      <img src="{!if(CN.Component__c=='Tuberculosis',$Resource.TB,if(CN.Component__c=='HIV/AIDS',$Resource.HIV,if(CN.Component__c=='Malaria',$Resource.Malaria,if(CN.Component__c=='Health Systems Strengthening',$Resource.Other,if(CN.Component__c == 'HIV/TB', $Resource.HIVTB,'')))))}"/>
+                    </td>
+                    <!--ZK 21/08/14 Added Country name on hover-->
+                    <td class="middle" width="10%">
+                        <!-- TCS 09/09/2014: Replaced the if condition in href from "if(CONTAINS($Profile.Name,$Label.PR_Read_Only)||CONTAINS($Profile.Name,$Label.PR_Admin)||CONTAINS($Profile.Name,$Label.PR_Read_Write_Edit)||CONTAINS($Profile.Name,$Label.LFA_GM_Admin_Portal_User)||CONTAINS($Profile.Name,$Label.LFA_GM_Editor_Portal_User)||CONTAINS($Profile.Name,$Label.LFA_Portal_User)||CONTAINS($Profile.Name,$Label.Applicant_CM_Admin)||CONTAINS($Profile.Name,$Label.Applicant_CM_Read_Write)||CONTAINS($Profile.Name,$Label.Applicant_CM_Read_Only)" to blnExternalPro  -->
+                        <a href="{!if(blnExternalPro==true,'/GM','')}/apex/CNoverview?Id={!CN.Id}" class="link" title="{!CN.CCM_New__r.Country__r.Name}">
+                            {!CN.Name}
+                        </a>
+                    </td>
+                    <td class="middle" width="5%">
+                        {!IF((NOT(ISBLANK(CN.Communicated_Allocation_USD__c))&& CN.CurrencyIsoCode=='USD')||(NOT(ISBLANK(CN.Communicated_Allocation_EUR__c))&& CN.CurrencyIsoCode=='EUR'),CN.CurrencyIsoCode,'')}&nbsp;
+                        <apex:outputtext value="{0,number,##,###,###,###}">
+                            <apex:param value="{!IF(CN.CurrencyIsoCode=='USD',CN.Communicated_Allocation_USD__c,CN.Communicated_Allocation_EUR__c)}"/>
+                        </apex:outputtext>  
+                    </td>
+                    <td class="middle" width="5%" style="text-align:center">
+                        <!-- TCS 09/09/2014: Replaced the if condition in action from "if(CONTAINS($Profile.Name,$Label.PR_Read_Only)||CONTAINS($Profile.Name,$Label.PR_Admin)||CONTAINS($Profile.Name,$Label.PR_Read_Write_Edit)||CONTAINS($Profile.Name,$Label.LFA_GM_Admin_Portal_User)||CONTAINS($Profile.Name,$Label.LFA_GM_Editor_Portal_User)||CONTAINS($Profile.Name,$Label.LFA_Portal_User)||CONTAINS($Profile.Name,$Label.Applicant_CM_Admin)||CONTAINS($Profile.Name,$Label.Applicant_CM_Read_Write)||CONTAINS($Profile.Name,$Label.Applicant_CM_Read_Only)" to blnExternalPro  -->
+                        <apex:commandlink styleclass="link" action="/apex{!if(blnExternalPro==true,'/GM','')}/CNProgramSplit?ID={!CN.Program_Split__c}">
+                            <apex:outputtext value="{!$Label.Not_yet_agreed}" rendered="{!!CN.Program_Split__r.Agreed__c}"/>
+                            {!IF(CN.Program_Split__r.Agreed__c,CN.CurrencyIsoCode + ' ',null)}
+                            <apex:outputText value="{0,number,##,###,###,###}" rendered="{!CN.Program_Split__r.Agreed__c}">
+                                <apex:param value="{!IF(CN.CurrencyIsoCode=='USD',CN.Agreed_Split_USD__c,CN.Agreed_Split_EUR__c)}" />
+                            </apex:outputText>
+                        </apex:commandlink>
+                    </td>                        
+                    <td class="middle" width="5%">
+                        <apex:outputField value="{!CN.Status__c}"/>
+                    </td>
+                    <!-- TCS 5/13/2014: Added onchange event on inputField to validate Start date -->
+                    <!-- Vera Solutions 5/27/2014: Added output field for submitted Concept Notes (CM profiles only) -->
+                    <td class="middle" width="5%">
+                        <!-- TCS 09/09/2014: Replaced rendering condition from rendered="{!!CONTAINS($Profile.Name,'CM') || CN.Status__c == 'Not yet submitted'}" -->
+                        <apex:inputField id="optStartDate" value="{!CN.Start_Date__c}" onchange="return validateDate(this,document.getElementById('{!$Component.inpEndDate}'));" rendered="{!((blnAppCM && CN.Status__c == 'Not yet submitted') || blnStartDate)}"/>
+                        <!-- TCS 09/09/2014: Replaced rendering condition from rendered="{!!CONTAINS($Profile.Name,'CM') && CN.Status__c == 'Submitted to the Global Fund'" -->
+                        <apex:outputField value="{!CN.Start_Date__c}" rendered="{!(blnAppCM  || !blnStartDate)&& (CN.Status__c == 'Submitted to the Global Fund' || CN.Status__c == 'Reviewed and OK for TRP/GAC1')}"/>
+                    </td>
+                    <!-- TCS 5/13/2014: Added onchange event on inputField to validate End date -->
+                    <!-- Vera Solutions 5/27/2014: Added output field for submitted Concept Notes (CM profiles only) -->
+                    <td class="middle" width="5%">
+                        <!-- TCS 09/09/2014: Replaced rendering condition from rendered="{!!CONTAINS($Profile.Name,'CM') || CN.Status__c == 'Not yet submitted'}" -->
+                        <apex:inputField id="inpEndDate" value="{!CN.Funding_End_Date__c}" onchange="return validateDate(document.getElementById('{!$Component.optStartDate}'),this);" rendered="{!(blnAppCM && CN.Status__c == 'Not yet submitted') || blnEndDate}"/>
+                        <!-- TCS 09/09/2014: Replaced rendering condition from rendered="{!!CONTAINS($Profile.Name,'CM') && CN.Status__c == 'Submitted to the Global Fund'}" -->
+                        <apex:outputField value="{!CN.Funding_End_Date__c}" rendered="{!(blnAppCM  || !blnEndDate) && (CN.Status__c == 'Submitted to the Global Fund' || CN.Status__c == 'Reviewed and OK for TRP/GAC1')}"/>
+                    </td>
+                    <!-- Vera Solutions 5/27/2014: Added output field for submitted Concept Notes (CM profiles only) -->
+                    <!-- Tcs Changes: Added link for Submission date for CCM Profiles to select Submission date -->
+                    <td width="5%" class="middle">
+                      <!--  <apex:inputfield id="subSelect" value="{!CN.Concept_Note_Submission_Date__c}" style="width:150px" onchange="actSaveChanges();" rendered="{!CN.Concept_Note_Submission_Date__c ==null}"/>
+                        <apex:outputText value="{!CN.Concept_Note_Submission_Date__c}" rendered="{!CN.Concept_Note_Submission_Date__c !=''}"/> -->
+                      <!-- <apex:inputfield id="subSelect" value="{!CN.Concept_Note_Submission_Date__c}" style="width:150px" onchange="actSaveChanges();" rendered="{!IF(NOT(CONTAINS($Profile.Name,'CM'))  && (CN.Concept_Note_Submission_Date__c ==''),true,false)}"/>-->
+                       <!-- apex:outputText value="Not Yet Registered" rendered="{!IF( (CN.Concept_Note_Submission_Date__c =''),true,false)}"/-->
+                       <apex:outputField value="{!CN.Revised_Submission_Date__c}" rendered="{!IF( (CN.Revised_Submission_Date__c !=''),true,false)}"/>
+                       <apex:outputField value="{!CN.Concept_Note_Submission_Date__c}" rendered="{!IF( (CN.Concept_Note_Submission_Date__c !='' && CN.Revised_Submission_Date__c ==''),true,false)}"/>
+                       <!-- TCS 09/09/2014: Replaced rendering condition from IF( (CONTAINS($Profile.Name,'CM Admin')|| CONTAINS($Profile.Name,'System Administrator') || CONTAINS($Profile.Name,'Country Team')) -->
+                       <apex:CommandLink styleclass="link" id="cmdlnk1" value="{!$Label.Not_yet_Registered}" rendered="{!if((blnSubDate && (CN.Concept_Note_Submission_Date__c =='')),true,false)}" action="{!if(blnExternalPro==true ,'/GM','')}/apex/CNoverview?ID={!CN.Id}&param=openpopup" />
+                       <!-- TCS 09/09/2014: Replaced rendering condition from IF(CONTAINS($Profile.Name,'CM Admin') || CONTAINS($Profile.Name,'System Administrator') || CONTAINS($Profile.Name,'Country Team')-->
+                       <apex:outputText value="{!$Label.Not_yet_Registered}" rendered="{!IF((blnSubDate ||(CN.Concept_Note_Submission_Date__c !='')),false,true)}"/>
+                       
+                    </td>
+                    <apex:inputhidden value="{!CN.Id}" id="hcid"/>
+                   
+                   
+                </tr>
+                </apex:repeat>
+                <tr style="display:{!if(lstCN.size > 0,'','none')}">
+                    <td colspan="8"></td>
+                 </tr>
+                 <tr style="display:{!if(lstCN.size > 0,'none','')}">
+                     <td colspan="8">
+                         <!--There are no concept notes currently open.-->{!$Label.No_Open_CN}
+                    </td>
+                 </tr>
+            </table>
+           
+            
+           
+             
+            <br/>
+            <center>  
+                 <!-- TCS 5/12/2014: Removed commentted line from apex:actionFunction, Make reRendered= " false" from "frm" -->        
+                 <apex:actionFunction action="{!SaveChanges}" reRender="false" name="actSaveChanges"/>
+                  <!-- TCS 5/12/2014: Added onclick event in apex:commandButton to validate Implementations dates and Removed action="{!SaveChanges}" from the save button-->
+                <apex:commandButton value="{!$Label.Save_Changes}" status="Processing" onclick="return validateSave();"/>
+                <!--<apex:commandButton value="{!$Label.Submit_Approval}"/>-->
+            </center>
+        </div>
+        
+      <style>
+        .ProcessingBackground
+        {
+            background-color: black;
+            opacity: 0.50;
+            filter: alpha(opacity = 50);
+            width: 100%;
+            height: 100%;
+            position: fixed;
+            z-index: 9999;
+            top:0;
+            left:0;
+        }
+        .Processing
+        {
+            z-index: 9999;
+            left: 50%;
+            top: 50%;
+            text-align: center;
+            position: fixed;
+        }        
+        </style>
+        <div id="divProcessing" style="display:none;">
+            <div class="ProcessingBackground"></div>
+            <div class="Processing">
+                <apex:image alt="Processing" url="{!$Resource.LoadingCircle}" />
+            </div>
+        </div>  
+        <apex:actionStatus id="Processing" onstart="document.getElementById('divProcessing').style.display = '';" onstop="document.getElementById('divProcessing').style.display = 'none';" />                            
+       <!--  </apex:actionStatus>  -->
+    
+    
+    <script>
+        var nodes = document.getElementsByTagName('input');
+        for(var i = 0; i < nodes.length; i++)
+        {
+            if(nodes[i].type == "text" && nodes[i].id != 'phSearchInput'){
+                nodes[i].disabled = {!blnReadOnly};
+            }
+        }
+        var subSelectIDPrefix= 'page1:frm:rptRP:';
+        var subSelectIDPostfix= ':subSelect';
+        var count = 0;
+        var nodesSelect = document.getElementById(subSelectIDPrefix+count+subSelectIDPostfix);
+        while(nodesSelect != null)
+        {
+            nodesSelect.disabled = {!blnReadOnly};
+            count++;
+            nodesSelect = document.getElementById(subSelectIDPrefix+count+subSelectIDPostfix);
+        }
+     </script>
+    
+        
+    </apex:form>
+    <script>
+        <!--function CalculateProposedAmount(id){
+            TotalProposedAmount();
+        }-->
+        function closePanel(){
+                document.getElementById('Infopanel').style.display = 'none';
+        }
+        
+        function calculateNumber(endDate,stDate,number){
+            var strEndDate = endDate.value;
+            var strStartDate = document.getElementById(stDate).value;
+            
+            var StartDate1 = formatDate(strStartDate);
+            var EndDate1 = formatDate(strEndDate);
+            
+            var StartDate = new Date(StartDate1);
+            var EndDate = new Date(EndDate1);
+            if(StartDate.getDate() == 1){
+                var a = ((EndDate.getFullYear() - StartDate.getFullYear()) * 12) + ((EndDate.getMonth() - StartDate.getMonth()) + 1);
+                document.getElementById(number).innerHTML = a;
+                if(a < 0){
+                    document.getElementById(number).style.color = 'red';
+                }else{
+                    document.getElementById(number).style.color = 'black';
+                }
+            }else{
+                var a = ((EndDate.getFullYear() - StartDate.getFullYear()) * 12) + ((EndDate.getMonth() - StartDate.getMonth()));
+                document.getElementById(number).innerHTML = a;
+                if(a < 0){
+                    document.getElementById(number).style.color = 'red';
+                }else{
+                    document.getElementById(number).style.color = 'black';
+                }
+            }
+            
+        }
+      <!--START GA TRACKING CODE-->
+      <!--END GA TRACKING CODE-->
+      
+    </script>
+    <!--<script>
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+      ga('create', 'UA-51564466-1', 'force.com');
+      ga('send', 'pageview');
+
+    </script>
+    <site:googleAnalyticsTracking/>-->
+</apex:page>

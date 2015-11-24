@@ -1,0 +1,82 @@
+<apex:page standardController="Vendor__c" extensions="CreateVendorExtension" showHeader="false" sidebar="false">
+<script>
+window.onload=function(){
+    var params = getUrlParams();
+    var accIdTxtBox = document.getElementById('{!$Component.frm.pb.pbs.AccountId}');
+    accIdTxtBox.value = params.accId;
+    accIdTxtBox.disabled = "disabled";
+    var vendor = String(params.vName).replace(/\+/g," ");  
+    document.getElementById('{!$Component.frm.pb.pbs.vName}').value = vendor;
+    document.getElementById('{!$Component.frm.pb.pbs.vLName}').value = String(params.vLName).replace(/\+/g," ");
+    document.getElementById('{!$Component.frm.pb.pbs.prType}').value = params.prType;
+    document.getElementById('{!$Component.frm.pb.pbs.prSubType}').value = params.prSubType;
+    document.getElementById('{!$Component.frm.pb.pbs.countryName}').value = params.countryName;
+    document.getElementById('{!$Component.frm.pb.pbs.countryId}').value = params.countryId;
+    
+};
+function getUrlParams() {
+
+  var paramMap = {};
+  if (location.search.length == 0) {
+    return paramMap;
+  }
+  var parts = location.search.substring(1).split("&");
+
+  for (var i = 0; i < parts.length; i ++) {
+    var component = parts[i].split("=");
+    paramMap [decodeURIComponent(component[0])] = decodeURIComponent(component[1]);
+  }
+  return paramMap;
+}
+
+function reDirectToAccount() {
+   // ================================================================//
+   // Working in Chrome
+   window.opener.location.href = "/{!$CurrentPage.parameters.accId}";
+   //window.opener.location.href="/{!$CurrentPage.parameters.accId}";
+   window.top.close();
+   // ================================================================//
+   //window.opener.reload();
+   //window.opener.location.href="/{!$CurrentPage.parameters.accId}";
+   //window.close();
+}
+</script>
+    <apex:form id="frm">
+        <apex:actionFunction name="saveActionFunc" action="{!Save}"/>
+        <apex:sectionHeader title="Create Vendor"/>
+        <apex:pageBlock id="pb" rendered="{!IF($CurrentPage.parameters.exVendor='TRUE' || blnAccountLocked, false, true)}">
+            <apex:pageblockButtons >
+                <apex:commandButton value="Save" action="{!saveRecord}" oncomplete="reDirectToAccount();"/>
+                <apex:commandButton value="Cancel" oncomplete="reDirectToAccount()"/>
+            </apex:pageblockButtons> 
+            <apex:pageblockSection id="pbs" columns="2" collapsible="false">
+                <apex:inputField value="{!Vendor__c.Name}" id="vName"/>
+                <apex:inputField value="{!Vendor__c.Legal_Name__c}" id="vLName"/>
+                <apex:inputText label="Country Name" value="{!countryName}" id="countryName" disabled="true"/>       
+                <apex:inputField value="{!Vendor__c.PR_Type__c}" id="prType"/>   
+                <apex:inputField value="{!Vendor__c.Country_Id__c}" id="countryId"/>           
+                <apex:inputField value="{!Vendor__c.PR_Sub_Type__c}" id="prSubType"/>
+                <apex:inputField label="Account Id" value="{!Vendor__c.AccountId__c}" id="AccountId"/>
+                
+                
+                <script>
+                document.getElementById('{!$Component.frm.pb.pbs.vName}').disabled = "TRUE";
+                document.getElementById('{!$Component.frm.pb.pbs.vLName}').disabled = "TRUE";
+                document.getElementById('{!$Component.frm.pb.pbs.prType}').disabled = "TRUE";
+                document.getElementById('{!$Component.frm.pb.pbs.prSubType}').disabled = "TRUE";
+                document.getElementById('{!$Component.frm.pb.pbs.countryId}').disabled = "TRUE";            
+
+                </script>
+                
+            </apex:pageblockSection>
+        </apex:pageBlock>
+        
+        <apex:pageBlock rendered="{!$CurrentPage.parameters.exVendor == 'TRUE' && !blnAccountLocked}">
+        <h2>A Vendor already exists. Please close this window.</h2>
+        </apex:pageBlock>
+        <apex:pageBlock rendered="{!blnAccountLocked}">
+        <h2>This PR record is locked and may not be edited.</h2>
+        </apex:pageBlock>
+        
+    </apex:form>
+</apex:page>

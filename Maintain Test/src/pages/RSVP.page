@@ -1,0 +1,87 @@
+<apex:page controller="RSVPextension" showheader="false" cache="false">
+
+    <div  style="margin:40px"><img src="{!$Resource.TGF_logo}" /></div><br/>
+    <apex:sectionHeader title="RSVP Form: {!camp.Name}" rendered="{!!campaignMember.HasResponded}"/>
+    
+    <!-- Show this If Responded Checkbox is true -->
+    <apex:form id="frm1" rendered="{!campaignMember.HasResponded}">
+        <apex:define name="body"> 
+            <br/>
+            <br/>
+            <center><div style="font-size:20px"><b><apex:outputText value="You have already submitted a response for this event. If you need to change your response or require additional information, please contact The Global Fund at events@theglobalfund.org."/></b></div></center>
+            <br/>
+            <br/>
+        </apex:define> 
+    </apex:form>
+    
+    <!-- Show this If Responded Checkbox is False -->
+    <apex:form id="frm" rendered="{!!campaignMember.HasResponded}">
+        <apex:pagemessages ></apex:pagemessages>
+        <apex:pageBlock >
+            <apex:pageBlockButtons location="bottom">
+               <apex:commandButton value="Submit" action="{!SaveNew}"/>
+            </apex:pageBlockButtons>
+        
+            <apex:pageblockSection columns="1">
+        
+                <apex:outputText label="Event Description" value="{!camp.Description}"/>
+                <apex:outputText label="Name" value="{!contact.Name}"/>
+
+              
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="Will you attend this event?" />
+                    <apex:outputPanel >
+                        <div class="requiredInput">
+                            <div class="requiredBlock"></div>
+                      <apex:selectList style="width: 156px;"  value="{!strResponse}" multiselect="false" size="1">
+                      <apex:selectOptions value="{!Responses}" />
+                            
+                       </apex:selectList>
+                        </div>
+                    </apex:outputPanel>
+                </apex:pageBlockSectionItem>
+
+                <apex:selectList style="width: 156px;" id="selectList" label="Will any guests be joining you?" value="{!strAnyGuests}" multiselect="false" size="1" rendered="{!Camp.Guests_Permitted__c}" >
+                      <apex:selectOptions value="{!AnyGuests}" />
+                      <apex:actionSupport event="onchange" action="{!showMember}" reRender="frm" status="processing"/>
+                </apex:selectList> 
+           
+               
+                <apex:outputpanel rendered="{!If(showmember==true,true,false)}" id="noOfGuests" >
+                    <table width="100%">
+                        <tr>
+                           <td width="18%" style="text-align:right">
+                               <apex:outputlabel value="If so, how many?" style="margin-right:11px;font-weight: bold;color: #4a4a56;font-size: 91%"/>
+                           </td>
+                           <td style="text-align:left">
+                               <apex:selectList style="width: 156px;" value="{!campaignMember.Number_of_Guests__c}" multiselect="false" size="1">
+                                   <apex:selectOptions value="{!MaxNumberOfGuests}" />
+                                   <apex:actionSupport event="onchange" action="{!totalmembers}" reRender="frm" status="processing"/>
+                               </apex:selectList>
+                           </td>
+                        </tr>
+                    </table>
+                    <apex:outputPanel id="mem"  rendered="{!if(anyMembers == True,True,False)}">
+                        <apex:variable value="{!1}" var="Count"/>
+                        <table width="100%">
+                            <apex:repeat value="{!lstMembers}" id="member" var="mem" >
+                                <tr>
+                                    <td width="18%" style="text-align:right">
+                                        <apex:outputlabel value="Guest {!Count}" style="margin-right:11px;font-weight: bold;color: #4a4a56;font-size: 91%"/>
+                                    </td>
+                                    <td style="text-align:left">
+                                        <apex:inputfield value="{!mem.name}" style="width:152px"/>
+                                    </td> 
+                                 </tr>
+                                 <apex:variable value="{!Count+1}" var="Count"/>
+                            </apex:repeat>
+                        </table>
+                    </apex:outputpanel>
+               </apex:outputpanel>
+ 
+               <apex:inputTextArea label="Comments" value="{!campaignMember.Comments__c}" style="width:400px;height:100px;"/>
+
+            </apex:pageblockSection>  
+        </apex:pageBlock>
+    </apex:form>
+</apex:page>

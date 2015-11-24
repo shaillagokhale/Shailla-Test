@@ -1,0 +1,273 @@
+<apex:page id="page" standardController="LFA_Work_Plan__c" sidebar="false" contentType="application/vnd.ms-excel#{!strWorkPlanName}.xls"  extensions="ctrlWPNegotiation" cache="true">
+<!-- contenttype="application/vnd.ms-excel#{!LFA_Work_Plan__c.Name}.xls" -->
+    <!--<apex:image url="https://theglobalfund--tgftest.cs17.my.salesforce.com/resource/1364026700000/TGF_logo" alt="no image"/>-->
+    
+    <h2>LFA Work Plan: {!LFA_Work_Plan__c.Name}</h2> 
+    <apex:outputtext value="All amounts are in USD. Please note that this is an output from The Global Fund's online system. This sheet does not contain active formulas."/>
+            <br/>
+            <table style="border-collapse:collapse;" border="1" width="30%" cellpadding="5px">
+                <tr>        
+                    <th width="10%" style="border-bottom:2px solid;background-color:#E5E4E2"></th>
+                    <th style="text-align:left;font-size:11px;font-weight:bold;border-bottom:2px solid;background-color:#E5E4E2">Budgeted</th>
+                </tr>
+                <tr>            
+                    <td style="width:100px;font-size:11px">
+                        <b>LOE</b> 
+                    </td>
+                    <td style="text-align:left;font-size:11px">
+                        <apex:outputtext value="{0, number,###,###,##0}">
+                            <apex:param value="{!lstWorkPlanToUpdate[0].LOE__C}"/>
+                        </apex:outputtext> days
+                    </td>                    
+                </tr>
+                <tr>            
+                    <td style="width:100px;font-size:11px">
+                        <b>Labor</b> 
+                    </td>
+                    <td style="text-align:left;font-size:11px">
+                        <apex:outputtext value="{0, number,###,###,##0}">
+                            <apex:param value="{!lstWorkPlanToUpdate[0].Budgeted_Labor__C}"/>
+                        </apex:outputtext>
+                    </td>
+                </tr>
+                <tr>                    
+                    <td style="width:100px;font-size:11px;border-bottom:2px solid">
+                        <b>ODC</b> 
+                    </td>
+                    <td style="text-align:left;font-size:11px;border-bottom:2px solid">
+                        <apex:outputtext value="{0, number,###,###,##0}">
+                            <apex:param value="{!lstWorkPlanToUpdate[0].Budgeted_ODC__C}"/>
+                        </apex:outputtext>
+                    </td>                    
+                </tr>
+                <tr>                    
+                    <td style="width:100px;font-size:11px;background-color:#E5E4E2">
+                        <b>Total</b> 
+                    </td>
+                    <td style="text-align:left;font-size:11px;font-weight:bold;background-color:#E5E4E2">
+                        <apex:outputtext value="{!lstWorkPlanToUpdate[0].Total_Budget__C}"/>
+                    </td>
+                </tr>                
+            </table>
+            <br/>
+            <table width="100%" cellspacing="0" cellpadding="5" border="0"><tr><td valign="top" style="border-collapse:collapse">
+            <table width="100%" id="ServiceTable" cellspacing="0" cellpadding="5" border="0" style="border-collapse:collapse;">
+                <thead>
+                    <tr>
+                        <th colspan="3"></th>
+                        <th colspan="3" style="border:1px solid #838282;text-align:center;font-size:11px;background-color:#E5E4E2;">Risks</th>
+                        <th  style="border:1px solid #838282;text-align:center;font-size:11px;background-color:#E5E4E2;">Service Status</th>
+                        <th colspan="2" style="border:1px solid #838282;text-align:center;font-size:11px;background-color:#E5E4E2;">Actual</th>
+                        <th colspan="2" style="border:1px solid #838282;text-align:center;font-size:11px;background-color:#E5E4E2;">Budgeted</th>
+                        <th colspan="2" style="border:1px solid #838282;text-align:center;font-size:11px;background-color:#E5E4E2;">Approved</th>
+                    </tr>  
+                    <tr>
+                        <th colspan="2" style="width:150px;border-left:1px solid #838282;border-bottom:1px solid #838282;border-top:1px solid #838282;background-color:#0066BB;color:white;font-weight:bold;font-size:11px">Service</th>
+                        <th width="9%" style="border-left:1px solid #838282;border-bottom:1px solid #838282;border-right:1px solid #838282;border-top:1px solid #838282;background-color:#0066BB;color:white;font-weight:bold;font-size:11px">Grant</th>
+                        <th width="10%" style="border-bottom:1px solid #838282;background-color:#0066BB;color:white;font-weight:bold;"><apex:outputtext value="Financial & Fiduciary" style="font-size:11px;font-weight:bold"/></th>
+                        <th style="width:150px;border-bottom:1px solid #838282;background-color:#0066BB;color:white;font-weight:bold;"><apex:outputtext value="Programmatic & Performance" style="font-size:11px;font-weight:bold"/></th>
+                        <th width="10%" style="border-bottom:1px solid #838282;border-right:1px solid #838282;background-color:#0066BB;color:white;font-weight:bold;"><apex:outputtext value="Health Services & Products" style="font-size:11px;font-weight:bold"/></th>                        
+                        <th width="8%" style="border-bottom:1px solid #838282;border-right:1px solid #838282;background-color:#0066BB;color:white;font-weight:bold;font-size:11px"></th>
+                        <th width="8%" style="border-bottom:1px solid #838282;background-color:#0066BB;color:white;font-weight:bold;font-size:11px"> LOE</th>
+                        <th width="8%" style="border-bottom:1px solid #838282;border-right:1px solid #838282;background-color:#0066BB;color:white;font-weight:bold;font-size:11px">Cost</th>
+                        <th width="8%" style="border-bottom:1px solid #838282;background-color:#0066BB;color:white;font-weight:bold;font-size:11px"> LOE</th>
+                        <th width="8%" style="border-bottom:1px solid #838282;border-right:1px solid #838282;background-color:#0066BB;color:white;font-weight:bold;font-size:11px">Cost</th>
+                  
+                        <th width="8%" style="border-bottom:1px solid #838282;background-color:#0066BB;color:white;font-weight:bold;font-size:11px"> LOE</th>
+                        <th width="8%" style="border-bottom:1px solid #838282;border-right:1px solid #838282;background-color:#0066BB;color:white;font-weight:bold;font-size:11px">Cost</th>
+                  
+                    </tr>  
+                </thead>
+                <apex:variable var="CountST" value="{!0}" />                
+                <apex:repeat id="repeatUpper" value="{!lstwrapServicesType}" var="wrapST">
+                    <tr style="page-break-inside:avoid">
+                        <th colspan="6" style="background-color:orange;font-size:11px;border-left:1px solid #838282;border-right:1px solid #838282;border-bottom:1px solid #838282;text-align:left">
+                            <apex:outputText value="{!wrapST.ServiceType}"/>
+                        </th>
+                        <th style="background-color:orange;font-size:11px;border-bottom:1px solid #838282;text-align:right;border-right:1px solid #838282;">
+                           
+                        </th>
+                          <th style="background-color:orange;font-size:11px;border-bottom:1px solid #838282;text-align:right">
+                            <apex:outputText value="{!wrapST.TotalCurrentLOE}" rendered="{!if(wrapST.TotalCurrentLOE!= null && wrapST.TotalCurrentLOE!= 0,true,false)}"></apex:outputText>
+                        </th>
+                        <th style="background-color:orange;font-size:11px;border-right:1px solid #838282;border-bottom:1px solid #838282;text-align:right">
+                            <apex:outputText value="{0, number,###,###,##0}" rendered="{!if(wrapST.TotalCurrentCost!= null && wrapST.TotalCurrentCost!= 0,true,false)}">
+                                <apex:param value="{!wrapST.TotalCurrentCost}"/>
+                            </apex:outputText>
+                        </th>    
+                        
+                        <th style="background-color:orange;font-size:11px;border-bottom:1px solid #838282;text-align:right">
+                            <apex:outputText value="{!wrapST.TotalLFAProposedLOE}" rendered="{!if(wrapST.TotalLFAProposedLOE!= null && wrapST.TotalLFAProposedLOE!= 0,true,false)}"></apex:outputText>
+                        </th>
+                        <th style="background-color:orange;font-size:11px;border-right:1px solid #838282;border-bottom:1px solid #838282;text-align:right">
+                            <apex:outputText value="{0, number,###,###,##0}" rendered="{!if(wrapST.TotalLFAProposedCost!= null && wrapST.TotalLFAProposedCost!= 0,true,false)}">
+                                <apex:param value="{!wrapST.TotalLFAProposedCost}"/>
+                            </apex:outputText>
+                        </th>     
+                        <th style="background-color:orange;font-size:11px;border-bottom:1px solid #838282;text-align:right">
+                            <apex:outputText value="{!wrapST.TotalPOLOE}" rendered="{!if(wrapST.TotalPOLOE != null && wrapST.TotalPOLOE != 0,true,false)}"></apex:outputText>
+                        </th>
+                        <th style="background-color:orange;font-size:11px;border-right:1px solid #838282;border-bottom:1px solid #838282;text-align:right">
+                            <apex:outputText value="{0, number,###,###,##0}" rendered="{!if(wrapST.TotalPOCost != null && wrapST.TotalPOCost != 0,true,false)}">
+                                <apex:param value="{!wrapST.TotalPOCost}"/>
+                            </apex:outputText>
+                        </th>     
+                                                          
+                    </tr>
+                    <tbody id="inlinetablesec{!CountST}">
+                        <apex:variable var="Count" value="{!0}" />
+                        <apex:repeat id="repeat" value="{!wrapST.lstwrapServices}" var="Service">   
+                            <tr style="page-break-inside:avoid">
+                                <td colspan="2" style="border-top:1px solid #838282;border-bottom:1px solid #838282;border-left:1px solid #838282;background-color:#E5E4E2;font-size:11px">
+                                    <apex:outputtext value="{!Service.objService.Name}" style="float:left;font-size:11px"/>
+                                    <apex:outputtext value=": {!Service.objService.Other_Sub_Category__c}" rendered="{!if(Service.objService.Name == 'Other LFA Services','true',if(Service.objService.Name == 'Other Procurement Related Services','true','false'))}"/>                                                                                                                                                                   
+                                </td>
+                                <td style="border-top:1px solid #838282;border-bottom:1px solid #838282;border-left:1px solid #838282;border-right:1px solid #838282;background-color:#E5E4E2;font-size:11px">
+                                    <apex:outputtext value="{!Service.objService.Grant__r.Name}"/>                                
+                                    <apex:outputtext value="Multiple Grants" rendered="{!if(Service.objService.id != null && Service.objService.Grant__c == null,true,false)}"/>
+                                </td>                                
+                                <td style="font-size:11px;border-top:1px solid #838282;border-bottom:1px solid #838282;background-color:{!if(Service.objService.Grant__r.Financial_and_Fiduciary_Risks__c == 'High','#F75D59',if(Service.objService.Grant__r.Financial_and_Fiduciary_Risks__c == 'Medium','yellow',if(Service.objService.Grant__r.Financial_and_Fiduciary_Risks__c == 'Low','#C3FDB8','#E5E4E2')))}">
+                                    <apex:outputtext value="{!Service.objService.Grant__r.Financial_and_Fiduciary_Risks__c}" rendered="{!if(Service.objService.id != null,true,false)}"/>
+                                </td>
+                                <td style="border-top:1px solid #838282;border-bottom:1px solid #838282;font-size:11px;background-color:{!if(Service.objService.Grant__r.Programmatic_and_Performance_Risks__c == 'High','#F75D59',if(Service.objService.Grant__r.Programmatic_and_Performance_Risks__c == 'Medium','yellow',if(Service.objService.Grant__r.Programmatic_and_Performance_Risks__c == 'Low','#C3FDB8','#E5E4E2')))}">
+                                    <apex:outputtext value="{!Service.objService.Grant__r.Programmatic_and_Performance_Risks__c}" rendered="{!if(Service.objService.id != null,true,false)}"/>
+                                </td>    
+                                <td style="border-right:1px solid #838282;border-top:1px solid #838282;border-bottom:1px solid #838282;font-size:11px;background-color:{!if(Service.objService.Grant__r.Health_Services_and_Products_Risks__c == 'High','#F75D59',if(Service.objService.Grant__r.Health_Services_and_Products_Risks__c == 'Medium','yellow',if(Service.objService.Grant__r.Health_Services_and_Products_Risks__c == 'Low','#C3FDB8','#E5E4E2')))}">
+                                    <apex:outputtext value="{!Service.objService.Grant__r.Health_Services_and_Products_Risks__c}" rendered="{!if(Service.objService.id != null,true,false)}"/>
+                                </td>
+                                <td style="border-top:1px solid #838282;background-color:#E5E4E2;font-size:11px;border-bottom:1px solid #838282;border-right:1px solid #838282;">
+                                    <apex:outputtext value="{!Service.objService.Status__c}"/>
+                                </td>
+                                
+                                 <td style="border-top:1px solid #838282;background-color:#E5E4E2;font-size:11px;border-bottom:1px solid #838282;">
+                                    <apex:outputtext value="{!Service.objService.Actual_LOE__c}"/>
+                                </td>
+                                <td style="border-top:1px solid #838282;border-right:1px solid #838282;font-size:11px;background-color:#E5E4E2;border-bottom:1px solid #838282" >
+                                    <apex:outputtext value="{0, number,###,###,##0}">
+                                        <apex:param value="{!Service.objService.Actual_Cost__c}"/>
+                                    </apex:outputtext>                                    
+                                </td> 
+                                <td style="border-top:1px solid #838282;background-color:#E5E4E2;font-size:11px;border-bottom:1px solid #838282;">
+                                    <apex:outputtext value="{!Service.objService.LOE__c}"/>
+                                </td>
+                                <td style="border-top:1px solid #838282;border-right:1px solid #838282;font-size:11px;background-color:#E5E4E2;border-bottom:1px solid #838282" >
+                                    <apex:outputtext value="{0, number,###,###,##0}">
+                                        <apex:param value="{!Service.objService.Cost__c}"/>
+                                    </apex:outputtext>                                    
+                                </td> 
+                                <td style="border-top:1px solid #838282;background-color:#E5E4E2;font-size:11px;border-bottom:1px solid #838282;">
+                                    <apex:outputtext value="{!Service.objService.PO_LOE__c}"/>
+                                </td>
+                                <td style="border-top:1px solid #838282;border-right:1px solid #838282;font-size:11px;background-color:#E5E4E2;border-bottom:1px solid #838282" >
+                                    <apex:outputtext value="{0, number,###,###,##0}">
+                                        <apex:param value="{!Service.objService.PO_Cost__c}"/>
+                                    </apex:outputtext>                                    
+                                </td> 
+                                                                                              
+                            </tr>
+                            <apex:repeat value="{!Service.lstwrapResource}" var="ServiceResource">
+                                <tr id="inlinetablesecResource{!CountST}{!Count}" style="page-break-inside:avoid">
+                                    <td colspan="2" style="border-left:1px solid #838282;"></td>
+                                    <td style="border-bottom:1px solid #E0E3E5;border-right:1px solid #838282;font-size:11px;border-left:1px solid #838282">
+                                        <apex:outputText value="{!ServiceResource.RoleName}" />
+                                    </td>
+                                    <td colspan="2" style="border-bottom:1px solid #E0E3E5;font-size:11px;">
+                                        <apex:outputText value="{!ServiceResource.ContactName}" />
+                                    </td>
+                                     <td style="border-bottom:1px solid #E0E3E5;font-size:11px;border-right:1px solid #838282;">
+                                      
+                                    </td>
+                                    <td style="border-bottom:1px solid #E0E3E5;border-right:1px solid #838282;font-size:11px;">
+                                        <apex:outputtext value="{!ServiceResource.objResource.Rate__c}" />
+                                    </td>
+                                      <td style="border-bottom:1px solid #E0E3E5;font-size:11px">
+                                        <apex:outputtext value="{!ServiceResource.objResource.Actual_LOE__c}"/>
+                                    </td>                                    
+                                    <td style="border-bottom:1px solid #E0E3E5;border-right:1px solid #838282;font-size:11px">
+                                        <apex:outputtext value="{0, number,###,###,##0}">
+                                            <apex:param value="{!ServiceResource.objResource.Actual_Cost__c}"/>
+                                        </apex:outputtext>
+                                    </td>  
+                                    <td style="border-bottom:1px solid #E0E3E5;font-size:11px">
+                                        <apex:outputtext value="{!ServiceResource.objResource.LOE__c}"/>
+                                    </td>                                    
+                                    <td style="border-bottom:1px solid #E0E3E5;border-right:1px solid #838282;font-size:11px">
+                                        <apex:outputtext value="{0, number,###,###,##0}">
+                                            <apex:param value="{!ServiceResource.objResource.Cost__c}"/>
+                                        </apex:outputtext>
+                                    </td> 
+                                     <td style="border-bottom:1px solid #E0E3E5;font-size:11px">
+                                        <apex:outputtext value="{!ServiceResource.objResource.PO_LOE__c}"/>
+                                    </td>                                    
+                                    <td style="border-bottom:1px solid #E0E3E5;border-right:1px solid #838282;font-size:11px">
+                                        <apex:outputtext value="{0, number,###,###,##0}">
+                                            <apex:param value="{!ServiceResource.objResource.PO_Cost__c}"/>
+                                        </apex:outputtext>
+                                    </td> 
+                                                                     
+                                </tr>
+                            </apex:repeat>
+                            <tr id="ResourceHeader{!CountST}{!Count}" > <!--style="display:{!if(Service.blnExpandResourceSection == true,'','none')};">-->
+                                <td style="border:none"></td>
+                                <td class="headerRowResource" style="border:none;background-color:peachpuff !important;" colspan="5">
+                                    <b>Comments:</b>{!Service.objService.Comments__c}
+                                </td>
+                                <td id="CTth" class="headerRowResource"/> <!-- style="display:{!if($Profile.Name != 'LFA',if(blnShowCTPlanned == true,'','none'),'none')};"></td>-->
+                                <td id="CTth" class="headerRowResource"/> <!-- style="display:{!if($Profile.Name != 'LFA',if(blnShowCTPlanned == true,'','none'),'none')};"></td>-->
+                            </tr>
+                            <apex:variable var="Count" value="{!Count+1}" />
+                        </apex:repeat>
+                    </tbody>
+                    <apex:variable var="CountST" value="{!CountST+1}" />                    
+                </apex:repeat>
+                <tfoot>
+                    <tr >
+                        <th colspan="6" style="border-top:1px solid #838282;"></th>
+                        <th style="border-bottom:1px solid #838282;border-right:1px solid white;border-top:1px solid #838282;background-color:#0066BB;color:white;font-weight:bold;font-size:11px">
+                            <apex:outputText value="Total Labor"></apex:outputText>
+                        </th>
+                          <th style="border-bottom:1px solid #838282;border-top:1px solid #838282;background-color:#0066BB;color:white;font-weight:bold;font-size:11px;text-align:right">
+                            <apex:outputText value="{!CurrentLOE}" rendered="{!if(CurrentLOE != 0,true,false)}"></apex:outputText>
+                        </th>
+                        <th style="border-bottom:1px solid #838282;border-right:1px solid white;border-top:1px solid #838282;background-color:#0066BB;color:white;font-weight:bold;font-size:11px;text-align:right">
+                            <apex:outputText value="{0, number,###,###,##0}" rendered="{!if(CurrentCost != 0,true,false)}">
+                                <apex:param value="{!CurrentCost}"/>
+                            </apex:outputText>
+                        </th> 
+                        <th style="border-bottom:1px solid #838282;border-top:1px solid #838282;background-color:#0066BB;color:white;font-weight:bold;font-size:11px;text-align:right">
+                            <apex:outputText value="{!LFAProposedLOE}" rendered="{!if(LFAProposedLOE!= 0,true,false)}"></apex:outputText>
+                        </th>
+                        <th style="border-bottom:1px solid #838282;border-right:1px solid white;border-top:1px solid #838282;background-color:#0066BB;color:white;font-weight:bold;font-size:11px;text-align:right">
+                            <apex:outputText value="{0, number,###,###,##0}" rendered="{!if(LFAProposedCost!= 0,true,false)}">
+                                <apex:param value="{!LFAProposedCost}"/>
+                            </apex:outputText>
+                        </th>  
+                        <th style="border-bottom:1px solid #838282;border-top:1px solid #838282;background-color:#0066BB;color:white;font-weight:bold;font-size:11px;text-align:right">
+                            <apex:outputText value="{!POLOE}" rendered="{!if(POLOE != 0,true,false)}"></apex:outputText>
+                        </th>
+                        <th style="border-bottom:1px solid #838282;border-right:1px solid white;border-top:1px solid #838282;background-color:#0066BB;color:white;font-weight:bold;font-size:11px;text-align:right">
+                            <apex:outputText value="{0, number,###,###,##0}" rendered="{!if(POCost != 0,true,false)}">
+                                <apex:param value="{!POCost}"/>
+                            </apex:outputText>
+                        </th>  
+                                                                                          
+                    </tr>
+                </tfoot>
+            </table>
+            </td>            
+            </tr>          
+         </table>
+         <br/>
+         <table width="100%" border="0"> 
+         <tr>
+             <td>
+                 <span style="color:red">
+                 Confidential
+                 </span>
+             </td>
+             <td align="right">         
+                 Generated {!NOW()}
+             </td>
+         </tr>
+         </table>
+</apex:page>

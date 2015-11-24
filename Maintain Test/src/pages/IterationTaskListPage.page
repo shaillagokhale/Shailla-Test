@@ -1,0 +1,69 @@
+<apex:page extensions="IterationTasksControllerExtension" standardcontroller="Iteration__c"> 
+<apex:form >
+  <apex:pageblock mode="inlineEdit">
+    <apex:pageBlockButtons >
+        <apex:commandButton action="{!saveEdits}" id="saveButton" value="Save"/>
+    </apex:pageBlockButtons>
+    <apex:pageblocktable value="{!wpList}" var="wp" id="productBklg">
+     <apex:column headervalue="Action">
+       <apex:outputLink title="" value="/{!wp.id}/e?retURL=/apex/{!$CurrentPage.Name}">Edit</apex:outputLink>&nbsp;|&nbsp;
+       <a href="javascript:if (window.confirm('Are you sure?')) DeleteAccount('{!wp.id}');">Del</a>
+     </apex:column>
+      <apex:column headervalue="Work Product Name">
+        <strong><apex:outputfield value="{!wp.name}">
+          <apex:inlineEditSupport showOnEdit="saveButton, cancelButton" 
+                                hideOnEdit="editButton" event="ondblclick" 
+                                changedStyleClass="myBoldClass" resetFunction="resetInlineEdit"/>
+        </apex:outputfield></strong>
+            <apex:outputpanel >
+            <apex:pageblocktable value="{!wp.Work_Product_Task__r}" var="wpt" id="wptCont" rendered="{!(wp.Work_Product_Task__r.size != 0)}">
+                 <apex:column headervalue="Action">
+                 <apex:outputLink title="" value="/{!wpt.id}/e?retURL=/apex/{!$CurrentPage.Name}">Edit</apex:outputLink>&nbsp;|&nbsp;
+                 <a href="javascript:if (window.confirm('Are you sure?')) DeleteAccount('{!wpt.id}');">Del</a>
+                </apex:column>
+                <apex:column headervalue="Task Name">
+                  <apex:outputfield value="{!wpt.name}"/>
+                </apex:column>
+                <apex:column headervalue="Rank">
+                  <apex:outputfield value="{!wpt.Rank__c}"/>
+                </apex:column>
+                <apex:column headervalue="Blocked">
+                  <apex:inputCheckbox value="{!wpt.Blocked__c}" disabled="true"/>
+                </apex:column>
+                <apex:column headervalue="State">
+                  <apex:outputfield value="{!wpt.State__c}"/>
+                </apex:column>  
+                <apex:column headervalue="Estimate">
+                  <apex:outputfield value="{!wpt.Estimate__c}"/>
+                </apex:column>    
+                <apex:column headervalue="To Do">
+                  <apex:outputfield value="{!wpt.To_Do__c}"/>
+                </apex:column>        
+              </apex:pageblocktable>
+            </apex:outputpanel>
+      </apex:column>
+      <apex:column headervalue="Rank">
+        <apex:outputfield value="{!wp.Rank__c}"/>
+      </apex:column>
+      <apex:column headervalue="Record Type">
+        <apex:outputfield value="{!wp.Record_Type_Name__c}"/>
+      </apex:column>
+      <apex:column headervalue="Blocked">
+        <apex:inputCheckbox value="{!wp.Blocked__c}" disabled="true"/>
+      </apex:column>
+      <apex:column headervalue="State">
+        <apex:outputfield value="{!wp.State__c}"/>
+      </apex:column>
+      <apex:column headervalue="Estimate">
+        <apex:outputfield value="{!wp.Plan_Estimate__c}"/>
+      </apex:column>
+      <apex:column headervalue="Task Estimate">
+        <apex:outputfield value="{!wp.Task_Estimate__c}"/>
+      </apex:column>
+      <apex:column headervalue="Task To-Do">
+        <apex:outputfield value="{!wp.Task_To_Do__c}"/>
+      </apex:column>
+    </apex:pageblocktable>
+  </apex:pageblock>
+</apex:form>
+</apex:page>

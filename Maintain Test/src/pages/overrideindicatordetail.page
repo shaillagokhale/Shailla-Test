@@ -1,0 +1,202 @@
+<apex:page StandardController="Grant_Indicator__c" extensions="overrideindicatordetailext">
+<apex:includeScript value="{URLFOR(!$Resource.GoalsJs, 'assets/js/bootstrap.js')}" />    
+     <style>
+      .bPageBlock .pbHeader{
+         display:none;
+       }
+
+  .titles{
+        vertical-align:middle;
+        font-size:100%;
+        width:25%;
+        font-weight:bold;
+       }
+       .title{
+        vertical-align:middle;
+        font-size:125%;
+        width:25%;
+        font-weight:bold;
+       }
+       .Processing
+        {
+            z-index: 9999;
+            left: 50%;
+            top: 50%;
+            text-align: center;
+            position: fixed;
+        } 
+        .ProcessingBackground
+        {
+            background-color: black;
+            opacity: 0.50;
+            filter: alpha(opacity = 50);
+            width: 100%;
+            height: 100%;
+            position: fixed;
+            z-index: 9999;
+            top:0;
+            left:0;
+        }  
+        .custPopupHistory{
+            background-color: white;
+            border-width: 0px;
+            border-radius:10px;
+            border-style: solid;
+            /*z-index: 9999;*/
+            z-index: 51;
+            left: 12%;
+            padding:10px;
+            position: absolute;
+            top:8%;
+        }
+        .popupBackgroundHistory{
+            background-color:black;
+            opacity: 0.20;
+            filter: alpha(opacity = 20);
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            /*z-index: 9998;*/
+            z-index: 50;
+            top: 0;
+            left: 0;
+           
+        } 
+        .Image{
+        cursor:pointer;
+        height:13px;
+        width:13px;
+        vertical-align:middle;
+    }        
+     </style>
+
+      <chatter:feedWithFollowers entityId="{!Grant_Indicator__c.id}" /><br/><br/>
+      <apex:form id="frm">
+        <!--    <apex:commandLink reRender="HistoryPopup" status="Processing" action="{!ShowHistoryPopup}"  rendered="{!if(Grant_Indicator__c.Indicator_Type__c != 'Impact' && Grant_Indicator__c.Indicator_Type__c != 'Outcome',true,false )}">
+                       <apex:image styleClass="Image" url="{!$Resource.History}" title="{!$Label.View_History}" style="height: 25px;width: 20px;float:right;" rendered="{!if(Grant_Indicator__c.Indicator_Type__c != 'Impact' && Grant_Indicator__c.Indicator_Type__c != 'Outcome',true,false )}" />  
+                </apex:commandLink>  -->
+                
+          <apex:panelGrid columns="5" style="margin-left:450px;">
+                <!--<apex:commandButton value="Edit"  action="{!edit}" rendered="{!editBasedOnStatus}"/>
+                <apex:commandButton value="Delete" action="{!deleteind}" rendered="{!editBasedOnStatus}"/>-->
+                <apex:commandLink value="Edit"  action="{!edit}" rendered="{!editBasedOnStatus}" styleClass="btn" style="text-decoration:none;padding:4px;"/>
+                <apex:commandLink value="Delete" action="{!deleteind}" rendered="{!editBasedOnStatus}" styleClass="btn" style="text-decoration:none;padding:4px;"/>
+                <apex:commandLink value="See Help" action="{!openGuidance}" target="_blank" styleClass="btn" style="text-decoration:none;padding:4px;"/>
+                    
+          </apex:panelGrid>    
+            
+                                     <apex:outputPanel id="HistoryPopup" >
+                                            <apex:outputPanel id="popupBackgroundH" styleClass="popupBackgroundHistory" rendered="{! if(blnHistory == true,true,false)}" />
+                                            <apex:outputPanel id="custPopupH" styleClass="custPopupHistory" rendered="{! if(blnHistory == true,true,false)}">
+                                               
+                                                    <table>
+                                                    <tr>
+                                                        <td>
+                                                            <c:GrantCoverageHistory TargetRecordId="{!Grant_Indicator__c.id}" TagetObjectAPIname="Grant_Indicator__c" RecordTitle="{!if(strLanguage == 'FRENCH',Grant_Indicator__c.French_Name__c,if(strLanguage == 'RUSSIAN',Grant_Indicator__c.Russian_Name__c,if(strLanguage == 'SPANISH',Grant_Indicator__c.Spanish_Name__c,Grant_Indicator__c.Indicator_Full_Name__c)))}"  /> 
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td align="center" style="">
+                                                            <apex:commandButton value="{!$Label.OK}"  action="{!HidePopupHistory}" style="width:50px" reRender="frm" status="Processing"> 
+                                                        </apex:commandButton>
+                                                        </td>
+                                                    </tr>
+                                                    </table>                                                                                                                                                     
+                                            </apex:outputPanel>
+                                            </apex:outputPanel>
+       
+        <div id="divProcessing" style="display:none;">
+            <div class="ProcessingBackground"></div>
+            <div class="Processing">
+                <apex:image alt="Processing" url="{!$Resource.LoadingCircle}" />
+            </div>
+        </div>  
+        <apex:actionStatus id="Processing" onstart="document.getElementById('divProcessing').style.display = '';" onstop="document.getElementById('divProcessing').style.display = 'none';">                            
+        </apex:actionStatus>
+       </apex:form> 
+           <br/>
+      <apex:outputLabel value="{!if(Grant_Indicator__c.Indicator_Type__c== 'Coverage/Output','Coverage/output Indicator',if(Grant_Indicator__c.Indicator_Type__c== 'Outcome','Outcome Indicator','Impact Indicator'))}" styleClass="title"></apex:outputLabel> <br/><br/>   
+      <apex:pageBlock mode="maindetail" title="Indicator Detail" >
+            <apex:pageBlockSection title="Grant Information">
+                  <apex:outputField value="{!Grant_Indicator__c.Grant_Implementation_Period__c}"/>
+                  <apex:outputField value="{!Grant_Indicator__c.Performance_Framework__c}"/>
+                  <apex:outputField value="{!Grant_Indicator__c.Parent_Module__c}" rendered="{!if(Grant_Indicator__c.Indicator_Type__c== 'Coverage/Output',true,false)}"/>
+            </apex:pageBlockSection>
+            <apex:pageBlockSection title="Indicatordetail">
+                 <apex:outputField value="{!Grant_Indicator__c.Indicator_Full_Name__c}" rendered="{!if(Grant_Indicator__c.Is_Disaggregated__c == false,true,false)}"/> 
+                 <!-- apex:outputField value="{!Grant_Indicator__c.Name_Disaggregated__c}" rendered="{!if(Grant_Indicator__c.Is_Disaggregated__c == true,true,false)}"/ -->
+                 <apex:outputField value="{!Grant_Indicator__c.Standard_or_Custom__c}"/>
+                 <apex:outputField value="{!Grant_Indicator__c.Indicator__c}" rendered="{!if(Grant_Indicator__c.Standard_or_Custom__c == 'Standard',true,false)}"/>
+                 <apex:outputField value="{!Grant_Indicator__c.Indicator_Type__c}"/>
+                 <apex:outputField value="{!Grant_Indicator__c.Data_Type__c}"/>
+                 <apex:outputField value="{!Grant_Indicator__c.Reporting_Frequency__c}" rendered="{!if(Grant_Indicator__c.Indicator_Type__c== 'Coverage/Output',true,false)}"/>
+                 <apex:outputField value="{!Grant_Indicator__c.Target_Accumulation__c}" rendered="{!if(Grant_Indicator__c.Indicator_Type__c== 'Coverage/Output',true,false)}"/>
+                 <apex:outputField value="{!Grant_Indicator__c.Target_Area__c}" rendered="{!if(Grant_Indicator__c.Indicator_Type__c== 'Coverage/Output',true,false)}"/>
+                 <apex:outputField value="{!Grant_Indicator__c.Reason__c}" rendered="{!if(Grant_Indicator__c.Indicator_Type__c== 'Coverage/Output' && Grant_Indicator__c.Standard_or_Custom__c == 'Standard',true,false)}"/>
+                 <apex:outputField value="{!Grant_Indicator__c.Sub_National_Area__c}" rendered="{!if((Grant_Indicator__c.Indicator_Type__c== 'Coverage/Output' && Grant_Indicator__c.Target_Area__c = 'Sub-National') ,true,false)}"/>
+                 <apex:outputField value="{!Grant_Indicator__c.Subset_Of__c}" rendered="{!if(Grant_Indicator__c.Indicator_Type__c== 'Coverage/Output',true,false)}"/>
+            </apex:pageBlockSection>
+            <apex:pageblocksection showHeader="true" title="BaseLine" columns="2" id="pbs3" >
+                      <apex:pageBlockSectionItem rendered="{!if(Grant_Indicator__c.Indicator_Type__c== 'Coverage/Output' && Grant_Indicator__c.Data_Type__c=='Number and Percent',true,false)}">
+                        <apex:outputText value="Baseline Numerator" />
+                        <apex:outputText id="num" value="{!if(Grant_Indicator__c.Decimal_Places__c == '0','{0,number,####}',if(Grant_Indicator__c.Decimal_Places__c == '1','{0,number,###0.0}',if(Grant_Indicator__c.Decimal_Places__c == '2','{0,number,###0.00}',if(Grant_Indicator__c.Decimal_Places__c == '3','{0,number,###0.000}',if(Grant_Indicator__c.Decimal_Places__c == '4','{0,number,###0.0000}','{0,number,###0.0000}')))))}" rendered="{!if(Grant_Indicator__c.Data_Type__c=='Number and Percent',true,false)}">
+                             <apex:param value="{!(Grant_Indicator__c.Baseline_numerator__c)}"/>
+                         </apex:outputText>
+                       </apex:pageBlockSectionItem> 
+                        <!--  apex:outputfield id="num" value="{!Grant_Indicator__c.Baseline_numerator__c}" rendered="{!if(Grant_Indicator__c.Data_Type__c=='Number and Percent',true,false)}"  >
+                        </apex:outputfield>-->
+                        <apex:pageBlockSectionItem rendered="{!if(Grant_Indicator__c.Indicator_Type__c== 'Coverage/Output' && Grant_Indicator__c.Data_Type__c=='Number and Percent',true,false)}">
+                        <apex:outputText value="Baseline Denominator" />
+                        <apex:outputText id="den" value="{!if(Grant_Indicator__c.Decimal_Places__c == '0','{0,number,####}',if(Grant_Indicator__c.Decimal_Places__c == '1','{0,number,###0.0}',if(Grant_Indicator__c.Decimal_Places__c == '2','{0,number,###0.00}',if(Grant_Indicator__c.Decimal_Places__c == '3','{0,number,###0.000}',if(Grant_Indicator__c.Decimal_Places__c == '4','{0,number,###0.0000}','{0,number,###0.0000}')))))}" rendered="{!if(Grant_Indicator__c.Data_Type__c=='Number and Percent',true,false)}">
+                             <apex:param value="{!(Grant_Indicator__c.Baseline_Denominator__c)}"/>
+                         </apex:outputText>
+                        </apex:pageBlockSectionItem>
+                        <!--  apex:outputfield id="den" value="{!Grant_Indicator__c.Baseline_Denominator__c}" >
+                        </apex:outputfield>-->
+                        <apex:pageBlocksectionItem id="baseline" >
+                        <apex:outputText value="Baseline Value" />
+                        <apex:panelgrid columns="2">
+                        <apex:outputfield id="basev" value="{!Grant_Indicator__c.Baseline_Value1__c}" /> 
+                        
+                        </apex:panelgrid>
+                        </apex:pageBlocksectionItem>
+                        <apex:outputfield value="{!Grant_Indicator__c.Baseline_Year__c}"/>
+                        <apex:outputfield value="{!Grant_Indicator__c.Baseline_Sources__c}" />
+                        <apex:outputField value="{!Grant_Indicator__c.Please_Specify_BaseLine_Sources__c}" rendered="{!if(Grant_Indicator__c.Baseline_Sources__c == 'Other (specify)' || Grant_Indicator__c.Baseline_Sources__c == 'Other survey, specify' || Grant_Indicator__c.Baseline_Sources__c == 'Other survey (specify)',true, false)}" /> 
+                  </apex:pageblocksection>
+      </apex:pageBlock>
+      <apex:detail relatedList="false" >
+      </apex:detail><br/>
+      <apex:form >
+       <apex:panelGrid columns="3" style="margin-left:500px;">
+                <!--<apex:commandButton value="Edit"  action="{!edit}" rendered="{!editBasedOnStatus }"/>
+                <apex:commandButton value="Delete" action="{!deleteind}" rendered="{!editBasedOnStatus }"/>                
+                <apex:commandButton value="See Help" action="{!openGuidance}"/>-->
+                
+                <apex:commandLink value="Edit"  action="{!edit}" rendered="{!editBasedOnStatus}" styleClass="btn" style="text-decoration:none;padding:4px;"/>
+                <apex:commandLink value="Delete" action="{!deleteind}" rendered="{!editBasedOnStatus}" styleClass="btn" style="text-decoration:none;padding:4px;"/>
+                <apex:commandLink value="See Help" action="{!openGuidance}" target="_blank" styleClass="btn" style="text-decoration:none;padding:4px;"/>
+                
+               
+       </apex:panelGrid>
+        
+        <!-- Field History -->
+                    
+       </apex:form>
+           <br/>
+       
+ <apex:pageBlock rendered="{!if(Grant_Indicator__c.Standard_or_Custom__c == 'Standard',true,false)}" > 
+ <apex:pAgeBlockSection >
+ <apex:outputText value="Disaggregation Information" styleClass="titles"></apex:outputText> 
+ </apex:pAgeBlockSection>
+<apex:relatedList list="Grant_Indicator__r"  title="Grant Disaggrgation">
+</apex:relatedList>
+</apex:pageBlock>
+
+<apex:pageBlock rendered="{!if(Grant_Indicator__c.Indicator_Type__c == 'Impact' || Grant_Indicator__c.Indicator_Type__c == 'Outcome',true,false)}"> 
+ <apex:pAgeBlockSection >
+<apex:outputText value="Related Goals/Objectives" styleClass="titles"></apex:outputText>
+ </apex:pAgeBlockSection>
+<apex:relatedList list="Indicator_Goal_Junctions__r" /> 
+</apex:pageBlock>
+</apex:page>

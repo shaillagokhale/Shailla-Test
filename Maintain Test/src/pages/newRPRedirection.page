@@ -1,0 +1,3 @@
+<apex:page standardController="Period__c" extensions="saveAndNewRPController" action="{!createNewRPUrl}" >
+    <apex:pageMessages escape="false" />   
+</apex:page>

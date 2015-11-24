@@ -1,0 +1,384 @@
+<apex:page standardController="Grant_Indicator__c" extensions="CNTargets">
+<apex:stylesheet value="{!URLFOR($Resource.GoalsJs, 'assets/css/bootstrap.css')}"/>
+<apex:stylesheet value="{!URLFOR($Resource.GoalsJs, 'assets/css/bootstrap-responsive.css')}"/>   
+	<style>
+		.targets{
+        	display: inline-block;
+    	}
+    	.table th, .table td {
+        	padding: 7px !important;
+        	line-height: 5px !important;
+        }
+        .h5 {
+        	line-height: 10px !important;
+        }
+	</style>
+	<apex:form >
+        <!--apex:pageBlock id="CNTable" title="Concept Note Target table"-->
+			<div class="targets">
+            	<apex:outputPanel rendered="{!if(CNTarget.Data_Type__c != 'Number and Percent',true,false)}">
+                	<table width="100%" class="table table-bordered">                                                
+                    	<thead>
+                        	<tr>
+                                                        <th style="vertical-align: middle !important;">
+                                                            <h5 class="h5Class">{!$Label.Indicative_Above_Indicative}</h5>
+                                                        </th>
+                                                        <th>
+                                                            <h5 class="h5Class" >{!$Label.Year} 1</h5>
+                                                        </th>
+                                                        <th>
+                                                            <h5 class="h5Class" >{!$Label.Year} 2</h5>
+                                                        </th>
+                                                        <th>
+                                                            <h5 class="h5Class" >{!$Label.Year} 3</h5>
+                                                        </th>
+                                                        <th>
+                                                            <h5 class="h5Class" >{!$Label.Year} 4</h5>
+                                                        </th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr>
+                                                        <td class="calValueCell">
+                                                            {!$Label.Indicative}
+                                                        </td>
+                                                        <td class="calValueCell"> 
+                                                            <apex:outputText id="otIy1" value="{!if(CNTarget.Decimal_Places__c == '0','{0,number,####}',if(CNTarget.Decimal_Places__c == '1','{0,number,###0.0}',if(CNTarget.Decimal_Places__c == '2','{0,number,###0.00}',if(CNTarget.Decimal_Places__c == '3','{0,number,###0.000}',if(CNTarget.Decimal_Places__c == '4','{0,number,###0.0000}','{0,number,####.####}')))))}" >
+                                                                <apex:param value="{!(CNTarget.Indicative_Percent1__c)}"/>
+                                                            </apex:outputText>
+                                                           
+
+                                                            <apex:outputlabel style=" font-size:12px;display: inline !important; " value="{!if(CNTarget.Data_Type__c == 'Number','',if(CNTarget.Data_Type__c == 'Percent'||CNTarget.Data_Type__c == 'Number and Percent','%',if(CNTarget.Data_Type__c == 'Ratio',$Label.Per_100k,'')))}"/>
+                                                        </td>
+                                                        <td class="calValueCell"> 
+                                                            <apex:outputText id="otIy2" value="{!if(CNTarget.Decimal_Places__c == '0','{0,number,####}',if(CNTarget.Decimal_Places__c == '1','{0,number,###0.0}',if(CNTarget.Decimal_Places__c == '2','{0,number,###0.00}',if(CNTarget.Decimal_Places__c == '3','{0,number,###0.000}',if(CNTarget.Decimal_Places__c == '4','{0,number,###0.0000}','{0,number,####.####}')))))}" >
+                                                                <apex:param value="{!(CNTarget.Indicative_Percent2__c)}"/>
+                                                            </apex:outputText>
+                                                           
+   
+                                                            <apex:outputlabel style=" font-size:12px;display: inline !important; " value="{!if(CNTarget.Data_Type__c == 'Number','',if(CNTarget.Data_Type__c == 'Percent'||CNTarget.Data_Type__c == 'Number and Percent','%',if(CNTarget.Data_Type__c == 'Ratio',$Label.Per_100k,'')))}"/>
+                                                        </td>
+                                                        <td class="calValueCell"> 
+                                                            <apex:outputText id="otIy3" value="{!if(CNTarget.Decimal_Places__c == '0','{0,number,####}',if(CNTarget.Decimal_Places__c == '1','{0,number,###0.0}',if(CNTarget.Decimal_Places__c == '2','{0,number,###0.00}',if(CNTarget.Decimal_Places__c == '3','{0,number,###0.000}',if(CNTarget.Decimal_Places__c == '4','{0,number,###0.0000}','{0,number,####.####}')))))}" >
+                                                                <apex:param value="{!(CNTarget.Indicative_Percent3__c)}"/>
+                                                            </apex:outputText>
+                                                           
+
+                                                            <apex:outputlabel style=" font-size:12px;display: inline !important; " value="{!if(CNTarget.Data_Type__c == 'Number','',if(CNTarget.Data_Type__c == 'Percent'||CNTarget.Data_Type__c == 'Number and Percent','%',if(CNTarget.Data_Type__c == 'Ratio',$Label.Per_100k,'')))}"/>
+                                                        </td>
+                                                        <td class="calValueCell"> 
+                                                            <apex:outputText id="otIy4" value="{!if(CNTarget.Decimal_Places__c == '0','{0,number,####}',if(CNTarget.Decimal_Places__c == '1','{0,number,###0.0}',if(CNTarget.Decimal_Places__c == '2','{0,number,###0.00}',if(CNTarget.Decimal_Places__c == '3','{0,number,###0.000}',if(CNTarget.Decimal_Places__c == '4','{0,number,###0.0000}','{0,number,####.####}')))))}" >
+                                                                <apex:param value="{!(CNTarget.Indicative_Percent4__c)}"/>
+                                                            </apex:outputText>
+                                                           
+
+                                                            <apex:outputlabel style=" font-size:12px;display: inline !important; " value="{!if(CNTarget.Data_Type__c == 'Number','',if(CNTarget.Data_Type__c == 'Percent'||CNTarget.Data_Type__c == 'Number and Percent','%',if(CNTarget.Data_Type__c == 'Ratio',$Label.Per_100k,'')))}"/>
+                                                        </td>
+                             </tr>
+                             <tr>
+                                                        <td class="calValueCell">
+                                                            {!$Label.Above_Allocated}
+                                                        </td>
+                                                            
+                                                        <td class="calValueCell">
+                                                            <apex:outputText id="otAy1" value="{!if(CNTarget.Decimal_Places__c == '0','{0,number,####}',if(CNTarget.Decimal_Places__c == '1','{0,number,###0.0}',if(CNTarget.Decimal_Places__c == '2','{0,number,###0.00}',if(CNTarget.Decimal_Places__c == '3','{0,number,###0.000}',if(CNTarget.Decimal_Places__c == '4','{0,number,###0.0000}','{0,number,####.####}')))))}" >
+                                                                <apex:param value="{!(CNTarget.Above_Indicative_Percent1__c)}"/>
+                                                            </apex:outputText> 
+                                                           
+
+                                                            <apex:outputlabel style=" font-size:12px;display: inline !important; " value="{!if(CNTarget.Data_Type__c == 'Number','',if(CNTarget.Data_Type__c == 'Percent'||CNTarget.Data_Type__c == 'Number and Percent','%',if(CNTarget.Data_Type__c == 'Ratio',$Label.Per_100k,'')))}"/>
+                                                        </td>
+                                                        <td class="calValueCell"> 
+                                                            <apex:outputText id="otAy2" value="{!if(CNTarget.Decimal_Places__c == '0','{0,number,####}',if(CNTarget.Decimal_Places__c == '1','{0,number,###0.0}',if(CNTarget.Decimal_Places__c == '2','{0,number,###0.00}',if(CNTarget.Decimal_Places__c == '3','{0,number,###0.000}',if(CNTarget.Decimal_Places__c == '4','{0,number,###0.0000}','{0,number,####.####}')))))}" >
+                                                                <apex:param value="{!(CNTarget.Above_Indicative_Percent2__c)}"/>
+                                                            </apex:outputText> 
+                                                           
+
+                                                            <apex:outputlabel style=" font-size:12px;display: inline !important; " value="{!if(CNTarget.Data_Type__c == 'Number','',if(CNTarget.Data_Type__c == 'Percent'||CNTarget.Data_Type__c == 'Number and Percent','%',if(CNTarget.Data_Type__c == 'Ratio',$Label.Per_100k,'')))}"/>
+                                                        </td>
+                                                        <td class="calValueCell">
+                                                            <apex:outputText id="otAy3" value="{!if(CNTarget.Decimal_Places__c == '0','{0,number,####}',if(CNTarget.Decimal_Places__c == '1','{0,number,###0.0}',if(CNTarget.Decimal_Places__c == '2','{0,number,###0.00}',if(CNTarget.Decimal_Places__c == '3','{0,number,###0.000}',if(CNTarget.Decimal_Places__c == '4','{0,number,###0.0000}','{0,number,####.####}')))))}" >
+                                                                <apex:param value="{!(CNTarget.Above_Indicative_Percent3__c)}"/>
+                                                            </apex:outputText>
+                                                           
+                                                           
+                                                            <apex:outputlabel style=" font-size:12px;display: inline !important; " value="{!if(CNTarget.Data_Type__c == 'Number','',if(CNTarget.Data_Type__c == 'Percent'||CNTarget.Data_Type__c == 'Number and Percent','%',if(CNTarget.Data_Type__c == 'Ratio',$Label.Per_100k,'')))}"/>
+                                                        </td>
+                                                        <td class="calValueCell">
+                                                            <apex:outputText id="otAy4" value="{!if(CNTarget.Decimal_Places__c == '0','{0,number,####}',if(CNTarget.Decimal_Places__c == '1','{0,number,###0.0}',if(CNTarget.Decimal_Places__c == '2','{0,number,###0.00}',if(CNTarget.Decimal_Places__c == '3','{0,number,###0.000}',if(CNTarget.Decimal_Places__c == '4','{0,number,###0.0000}','{0,number,####.####}')))))}" >
+                                                                <apex:param value="{!(CNTarget.Above_Indicative_Percent4__c)}"/>
+                                                            </apex:outputText>
+                                                           
+
+                                                            <apex:outputlabel style=" font-size:12px;display: inline !important; " value="{!if(CNTarget.Data_Type__c == 'Number','',if(CNTarget.Data_Type__c == 'Percent'||CNTarget.Data_Type__c == 'Number and Percent','%',if(CNTarget.Data_Type__c == 'Ratio',$Label.Per_100k,'')))}"/>
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </apex:outputpanel>
+                                        <apex:outputPanel rendered="{!if((CNTarget.Data_Type__c == 'Number and Percent'),true,false)}">
+                                            <table width="100%" class="table table-bordered">                                               
+                                                <thead>
+                                                    <tr>
+                                                        
+                                                        <th rowspan="3" style="vertical-align: middle !important;">
+                                                            <h5 class="h5Class">{!$Label.Indicative_Above_Indicative}</h5>
+                                                        </th>
+                                                        
+                                                        <th colspan="2">
+                                                            <h5 class="h5Class" >{!$Label.Year} 1</h5>
+                                                        </th>
+                                                        <th colspan="2">
+                                                            <h5 class="h5Class" >{!$Label.Year} 2</h5>
+                                                        </th>
+                                                        <th colspan="2">
+                                                            <h5 class="h5Class" >{!$Label.Year} 3</h5>
+                                                        </th>
+                                                        <th colspan="2">
+                                                            <h5 class="h5Class" >{!$Label.Year} 4</h5>
+                                                        </th>
+                                                        
+                                                    </tr>
+                                                    <tr>
+                                                        
+                                                        <th>
+                                                            <h5 class="h5Class">N #</h5>
+                                                        </th>
+                                                        <th rowspan="2">
+                                                            <h5 class="h5Class">%</h5>
+                                                        </th>
+                                                        <th>
+                                                            <h5 class="h5Class">N #</h5>
+                                                        </th>
+                                                        <th rowspan="2">
+                                                            <h5 class="h5Class">%</h5>
+                                                        </th>
+                                                        <th>
+                                                            <h5 class="h5Class">N #</h5>
+                                                        </th>
+                                                        <th rowspan="2">
+                                                            <h5 class="h5Class">%</h5>
+                                                        </th>
+                                                        <th>
+                                                            <h5 class="h5Class">N #</h5>
+                                                        </th>
+                                                        <th rowspan="2">
+                                                            <h5 class="h5Class">%</h5>
+                                                        </th>
+                                                    </tr>
+                                                    <tr>
+                                                        <th>
+                                                            <h5 class="h5Class">D #</h5>
+                                                        </th>
+                                                        <th>
+                                                            <h5 class="h5Class">D #</h5>
+                                                        </th>
+                                                        <th>
+                                                            <h5 class="h5Class">D #</h5>
+                                                        </th>
+                                                        <th>
+                                                            <h5 class="h5Class">D #</h5>
+                                                        </th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr>
+                                                        <td class="calValueCell" rowspan="2">
+                                                            {!$Label.Indicative}
+                                                        </td>
+                                                        <td class="calValueCell" >
+                                                            <apex:outputText id="otEditNum1" value="{!if(CNTarget.Decimal_Places__c == '0','{0,number,####}',if(CNTarget.Decimal_Places__c == '1','{0,number,###0.0}',if(CNTarget.Decimal_Places__c == '2','{0,number,###0.00}',if(CNTarget.Decimal_Places__c == '3','{0,number,###0.000}',if(CNTarget.Decimal_Places__c == '4','{0,number,###0.0000}','{0,number,###0.0000}')))))}" >
+                                                                <apex:param value="{!CNTarget.IndicativeNumerator1__c}"/>
+                                                            </apex:outputText>                                                            
+                                                           
+                                                            
+                                                        </td>
+                                                        <td class="calValueCell" rowspan="2"> 
+                                                            <apex:outputText id="opPer1X" value="{!if(CNTarget.Decimal_Places__c == '0','{0,number,####}',if(CNTarget.Decimal_Places__c == '1','{0,number,###0.0}',if(CNTarget.Decimal_Places__c == '2','{0,number,###0.00}',if(CNTarget.Decimal_Places__c == '3','{0,number,###0.000}',if(CNTarget.Decimal_Places__c == '4','{0,number,###0.0000}','{0,number,###0.0000}')))))}" >
+                                                                <apex:param value="{!CNTarget.Indicative_Percent1__c}"/>
+                                                            </apex:outputText>
+                                                           
+                                                            
+                                                           
+                                                            <apex:outputlabel style="font-size:12px; display: inline !important; " value="{!if(CNTarget.Data_Type__c == 'Number','',if(CNTarget.Data_Type__c == 'Percent'||CNTarget.Data_Type__c == 'Number and Percent','%',if(CNTarget.Data_Type__c == 'Ratio',$Label.Per_100k,'')))}"/>
+                                                        </td>
+                                                        <td class="calValueCell" >
+                                                            <apex:outputText id="otEditNum2" value="{!if(CNTarget.Decimal_Places__c == '0','{0,number,####}',if(CNTarget.Decimal_Places__c == '1','{0,number,###0.0}',if(CNTarget.Decimal_Places__c == '2','{0,number,###0.00}',if(CNTarget.Decimal_Places__c == '3','{0,number,###0.000}',if(CNTarget.Decimal_Places__c == '4','{0,number,###0.0000}','{0,number,###0.0000}')))))}" >
+                                                                <apex:param value="{!CNTarget.IndicativeNumerator2__c}"/>
+                                                            </apex:outputText>
+                                                            
+                                                           
+                                                       </td>
+                                                        <td class="calValueCell" rowspan="2"> 
+                                                            <apex:outputText id="opPer2X" value="{!if(CNTarget.Decimal_Places__c == '0','{0,number,####}',if(CNTarget.Decimal_Places__c == '1','{0,number,###0.0}',if(CNTarget.Decimal_Places__c == '2','{0,number,###0.00}',if(CNTarget.Decimal_Places__c == '3','{0,number,###0.000}',if(CNTarget.Decimal_Places__c == '4','{0,number,###0.0000}','{0,number,###0.0000}')))))}" >
+                                                                <apex:param value="{!CNTarget.Indicative_Percent2__c}"/>
+                                                            </apex:outputText>
+                                                           
+                                                            <apex:outputlabel style="font-size:12px; display: inline !important; " value="{!if(CNTarget.Data_Type__c == 'Number','',if(CNTarget.Data_Type__c == 'Percent'||CNTarget.Data_Type__c == 'Number and Percent','%',if(CNTarget.Data_Type__c == 'Ratio',$Label.Per_100k,'')))}"/>
+                                                        </td>
+                                                        <td class="calValueCell" >
+                                                            <apex:outputText id="otEditNum3" value="{!if(CNTarget.Decimal_Places__c == '0','{0,number,####}',if(CNTarget.Decimal_Places__c == '1','{0,number,###0.0}',if(CNTarget.Decimal_Places__c == '2','{0,number,###0.00}',if(CNTarget.Decimal_Places__c == '3','{0,number,###0.000}',if(CNTarget.Decimal_Places__c == '4','{0,number,###0.0000}','{0,number,###0.0000}')))))}" >
+                                                                <apex:param value="{!CNTarget.IndicativeNumerator3__c}"/>
+                                                            </apex:outputText>
+                                                            
+                                                            
+                                                            
+                                                        </td>
+                                                        <td class="calValueCell" rowspan="2">
+                                                            <apex:outputText id="opPer3X" value="{!if(CNTarget.Decimal_Places__c == '0','{0,number,####}',if(CNTarget.Decimal_Places__c == '1','{0,number,###0.0}',if(CNTarget.Decimal_Places__c == '2','{0,number,###0.00}',if(CNTarget.Decimal_Places__c == '3','{0,number,###0.000}',if(CNTarget.Decimal_Places__c == '4','{0,number,###0.0000}','{0,number,###0.0000}')))))}" >
+                                                                <apex:param value="{!CNTarget.Indicative_Percent3__c}"/>
+                                                            </apex:outputText>
+                                                            
+                                                            <apex:outputlabel style="font-size:12px; display: inline !important; " value="{!if(CNTarget.Data_Type__c == 'Number','',if(CNTarget.Data_Type__c == 'Percent'||CNTarget.Data_Type__c == 'Number and Percent','%',if(CNTarget.Data_Type__c == 'Ratio',$Label.Per_100k,'')))}"/>
+                                                        </td>
+                                                        <td class="calValueCell" >
+                                                            <apex:outputText id="otEditNum4" value="{!if(CNTarget.Decimal_Places__c == '0','{0,number,####}',if(CNTarget.Decimal_Places__c == '1','{0,number,###0.0}',if(CNTarget.Decimal_Places__c == '2','{0,number,###0.00}',if(CNTarget.Decimal_Places__c == '3','{0,number,###0.000}',if(CNTarget.Decimal_Places__c == '4','{0,number,###0.0000}','{0,number,###0.0000}')))))}" >
+                                                                <apex:param value="{!CNTarget.IndicativeNumerator4__c}"/>
+                                                            </apex:outputText>
+                                                            
+                                                           
+                                                            
+                                                        </td>
+                                                        <td class="calValueCell" rowspan="2"> 
+                                                            <apex:outputText id="opPer4X" value="{!if(CNTarget.Decimal_Places__c == '0','{0,number,####}',if(CNTarget.Decimal_Places__c == '1','{0,number,###0.0}',if(CNTarget.Decimal_Places__c == '2','{0,number,###0.00}',if(CNTarget.Decimal_Places__c == '3','{0,number,###0.000}',if(CNTarget.Decimal_Places__c == '4','{0,number,###0.0000}','{0,number,###0.0000}')))))}" >
+                                                                <apex:param value="{!CNTarget.Indicative_Percent4__c}"/>
+                                                            </apex:outputText>
+                                                           
+                                                            <apex:outputlabel style="font-size:12px; display: inline !important; " value="{!if(CNTarget.Data_Type__c == 'Number','',if(CNTarget.Data_Type__c == 'Percent'||CNTarget.Data_Type__c == 'Number and Percent','%',if(CNTarget.Data_Type__c == 'Ratio',$Label.Per_100k,'')))}"/>
+                                                        </td>
+                                                    </tr>
+                                                    
+                                                    <tr>
+                                                        <td class="calValueCell"> 
+                                                            <apex:outputText id="otEditDen1" value="{!if(CNTarget.Decimal_Places__c == '0','{0,number,####}',if(CNTarget.Decimal_Places__c == '1','{0,number,###0.0}',if(CNTarget.Decimal_Places__c == '2','{0,number,###0.00}',if(CNTarget.Decimal_Places__c == '3','{0,number,###0.000}',if(CNTarget.Decimal_Places__c == '4','{0,number,###0.0000}','{0,number,###0.0000}')))))}" >
+                                                                <apex:param value="{!CNTarget.Indicative_Denominator1__c}"/>
+                                                            </apex:outputText>                                                            
+                                                            
+                                                            
+                                                        </td>
+                                                        <td class="calValueCell">
+                                                            <apex:outputText id="otEditDen2" value="{!if(CNTarget.Decimal_Places__c == '0','{0,number,####}',if(CNTarget.Decimal_Places__c == '1','{0,number,###0.0}',if(CNTarget.Decimal_Places__c == '2','{0,number,###0.00}',if(CNTarget.Decimal_Places__c == '3','{0,number,###0.000}',if(CNTarget.Decimal_Places__c == '4','{0,number,###0.0000}','{0,number,###0.0000}')))))}" >
+                                                                <apex:param value="{!CNTarget.Indicative_Denominator2__c}"/>
+                                                            </apex:outputText>                                                            
+                                                           
+                                                            
+                                                        </td>
+                                                        <td class="calValueCell">
+                                                            <apex:outputText id="otEditDen3" value="{!if(CNTarget.Decimal_Places__c == '0','{0,number,####}',if(CNTarget.Decimal_Places__c == '1','{0,number,###0.0}',if(CNTarget.Decimal_Places__c == '2','{0,number,###0.00}',if(CNTarget.Decimal_Places__c == '3','{0,number,###0.000}',if(CNTarget.Decimal_Places__c == '4','{0,number,###0.0000}','{0,number,###0.0000}')))))}" >
+                                                                <apex:param value="{!CNTarget.Indicative_Denominator3__c}"/>
+                                                            </apex:outputText>                                                            
+                                                           
+                                                            
+                                                        </td>
+                                                        <td class="calValueCell">
+                                                            <apex:outputText id="otEditDen4" value="{!if(CNTarget.Decimal_Places__c == '0','{0,number,####}',if(CNTarget.Decimal_Places__c == '1','{0,number,###0.0}',if(CNTarget.Decimal_Places__c == '2','{0,number,###0.00}',if(CNTarget.Decimal_Places__c == '3','{0,number,###0.000}',if(CNTarget.Decimal_Places__c == '4','{0,number,###0.0000}','{0,number,###0.0000}')))))}" >
+                                                                <apex:param value="{!CNTarget.Indicative_Denominator4__c}"/>
+                                                            </apex:outputText>                                                            
+                                                            
+                                                            
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="calValueCell" rowspan="2">
+                                                            {!$Label.Above_Allocated}
+                                                        </td>
+                                                        <td class="calValueCell" >
+                                                            <apex:outputText id="otEditAboveNum1" value="{!if(CNTarget.Decimal_Places__c == '0','{0,number,####}',if(CNTarget.Decimal_Places__c == '1','{0,number,###0.0}',if(CNTarget.Decimal_Places__c == '2','{0,number,###0.00}',if(CNTarget.Decimal_Places__c == '3','{0,number,###0.000}',if(CNTarget.Decimal_Places__c == '4','{0,number,###0.0000}','{0,number,###0.0000}')))))}" >
+                                                                <apex:param value="{!CNTarget.Above_Indicative_Numerator1__c}"/>
+                                                            </apex:outputText>   
+                                                           
+                                                            
+                                                        </td>
+                                                        <td class="calValueCell" rowspan="2"> 
+                                                            <apex:outputText id="opAbovePer1X"  value="{!if(CNTarget.Decimal_Places__c == '0','{0,number,####}',if(CNTarget.Decimal_Places__c == '1','{0,number,###0.0}',if(CNTarget.Decimal_Places__c == '2','{0,number,###0.00}',if(CNTarget.Decimal_Places__c == '3','{0,number,###0.000}',if(CNTarget.Decimal_Places__c == '4','{0,number,###0.0000}','{0,number,###0.0000}')))))}"  >
+                                                                <apex:param value="{!CNTarget.Above_Indicative_Percent1__c}"/>
+                                                            </apex:outputText>
+                                                            
+                                                            <apex:outputlabel style="font-size:12px; display: inline !important; " value="{!if(CNTarget.Data_Type__c == 'Number','',if(CNTarget.Data_Type__c == 'Percent'||CNTarget.Data_Type__c == 'Number and Percent','%',if(CNTarget.Data_Type__c == 'Ratio',$Label.Per_100k,'')))}"/>
+                                                        </td>
+                                                        <td class="calValueCell" >
+                                                            <apex:outputText id="otEditAboveNum2" value="{!if(CNTarget.Decimal_Places__c == '0','{0,number,####}',if(CNTarget.Decimal_Places__c == '1','{0,number,###0.0}',if(CNTarget.Decimal_Places__c == '2','{0,number,###0.00}',if(CNTarget.Decimal_Places__c == '3','{0,number,###0.000}',if(CNTarget.Decimal_Places__c == '4','{0,number,###0.0000}','{0,number,###0.0000}')))))}" >
+                                                                <apex:param value="{!CNTarget.Above_Indicative_Numerator2__c}"/>
+                                                            </apex:outputText>                                                              
+                                                            
+                                                            
+                                                        </td>
+                                                        <td class="calValueCell" rowspan="2"> 
+                                                            <apex:outputText id="opAbovePer2X"  value="{!if(CNTarget.Decimal_Places__c == '0','{0,number,####}',if(CNTarget.Decimal_Places__c == '1','{0,number,###0.0}',if(CNTarget.Decimal_Places__c == '2','{0,number,###0.00}',if(CNTarget.Decimal_Places__c == '3','{0,number,###0.000}',if(CNTarget.Decimal_Places__c == '4','{0,number,###0.0000}','{0,number,###0.0000}')))))}" >
+                                                                <apex:param value="{!CNTarget.Above_Indicative_Percent2__c}"/>
+                                                            </apex:outputText>
+                                                            
+                                                            <apex:outputlabel style="font-size:12px; display: inline !important; " value="{!if(CNTarget.Data_Type__c == 'Number','',if(CNTarget.Data_Type__c == 'Percent'||CNTarget.Data_Type__c == 'Number and Percent','%',if(CNTarget.Data_Type__c == 'Ratio',$Label.Per_100k,'')))}"/>
+                                                        </td>
+                                                        <td class="calValueCell" >
+                                                            <apex:outputText id="otEditAboveNum3" value="{!if(CNTarget.Decimal_Places__c == '0','{0,number,####}',if(CNTarget.Decimal_Places__c == '1','{0,number,###0.0}',if(CNTarget.Decimal_Places__c == '2','{0,number,###0.00}',if(CNTarget.Decimal_Places__c == '3','{0,number,###0.000}',if(CNTarget.Decimal_Places__c == '4','{0,number,###0.0000}','{0,number,###0.0000}')))))}" >
+                                                                <apex:param value="{!CNTarget.Above_Indicative_Numerator3__c}"/>
+                                                            </apex:outputText>                                                            
+                                                            
+                                                           
+                                                        </td>
+                                                        <td class="calValueCell" rowspan="2"> 
+                                                            <apex:outputText id="opAbovePer3X" value="{!if(CNTarget.Decimal_Places__c == '0','{0,number,####}',if(CNTarget.Decimal_Places__c == '1','{0,number,###0.0}',if(CNTarget.Decimal_Places__c == '2','{0,number,###0.00}',if(CNTarget.Decimal_Places__c == '3','{0,number,###0.000}',if(CNTarget.Decimal_Places__c == '4','{0,number,###0.0000}','{0,number,###0.0000}')))))}" >
+                                                                <apex:param value="{!CNTarget.Above_Indicative_Percent3__c}"/>
+                                                            </apex:outputText>
+                                                        
+                                                            <apex:outputlabel style="font-size:12px; display: inline !important; " value="{!if(CNTarget.Data_Type__c == 'Number','',if(CNTarget.Data_Type__c == 'Percent'||CNTarget.Data_Type__c == 'Number and Percent','%',if(CNTarget.Data_Type__c == 'Ratio',$Label.Per_100k,'')))}"/>
+                                                        </td>
+                                                        <td class="calValueCell" >
+                                                            <apex:outputText id="otEditAboveNum4" value="{!if(CNTarget.Decimal_Places__c == '0','{0,number,####}',if(CNTarget.Decimal_Places__c == '1','{0,number,###0.0}',if(CNTarget.Decimal_Places__c == '2','{0,number,###0.00}',if(CNTarget.Decimal_Places__c == '3','{0,number,###0.000}',if(CNTarget.Decimal_Places__c == '4','{0,number,###0.0000}','{0,number,###0.0000}')))))}" >
+                                                                <apex:param value="{!CNTarget.Above_Indicative_Numerator4__c}"/>
+                                                            </apex:outputText>
+                                                            
+                                                            
+                                                            
+                                                        </td>
+                                                        <td class="calValueCell" rowspan="2"> 
+                                                            <apex:outputText id="opAbovePer4X" value="{!if(CNTarget.Decimal_Places__c == '0','{0,number,####}',if(CNTarget.Decimal_Places__c == '1','{0,number,###0.0}',if(CNTarget.Decimal_Places__c == '2','{0,number,###0.00}',if(CNTarget.Decimal_Places__c == '3','{0,number,###0.000}',if(CNTarget.Decimal_Places__c == '4','{0,number,###0.0000}','{0,number,###0.0000}')))))}" >
+                                                                <apex:param value="{!CNTarget.Above_Indicative_Percent4__c}"/>
+                                                            </apex:outputText>
+                                                            
+                                                            <apex:outputlabel style="font-size:12px; display: inline !important; " value="{!if(CNTarget.Data_Type__c == 'Number','',if(CNTarget.Data_Type__c == 'Percent'||CNTarget.Data_Type__c == 'Number and Percent','%',if(CNTarget.Data_Type__c == 'Ratio',$Label.Per_100k,'')))}"/>
+                                                        </td>
+                                                    </tr>
+                                                    
+                                                    <tr>
+                                                        <td class="calValueCell"> 
+                                                            <apex:outputText id="otEditAboveDen1" value="{!if(CNTarget.Decimal_Places__c == '0','{0,number,####}',if(CNTarget.Decimal_Places__c == '1','{0,number,###0.0}',if(CNTarget.Decimal_Places__c == '2','{0,number,###0.00}',if(CNTarget.Decimal_Places__c == '3','{0,number,###0.000}',if(CNTarget.Decimal_Places__c == '4','{0,number,###0.0000}','{0,number,###0.0000}')))))}" >
+                                                                <apex:param value="{!CNTarget.Above_Indicative_Denominator1__c}"/>
+                                                            </apex:outputText>
+                                                            
+                                                           
+                                                            
+                                                        </td>
+                                                        <td class="calValueCell">
+                                                            <apex:outputText id="otEditAboveDen2" value="{!if(CNTarget.Decimal_Places__c == '0','{0,number,####}',if(CNTarget.Decimal_Places__c == '1','{0,number,###0.0}',if(CNTarget.Decimal_Places__c == '2','{0,number,###0.00}',if(CNTarget.Decimal_Places__c == '3','{0,number,###0.000}',if(CNTarget.Decimal_Places__c == '4','{0,number,###0.0000}','{0,number,###0.0000}')))))}" >
+                                                                <apex:param value="{!CNTarget.Above_Indicative_Denominator2__c}"/>
+                                                            </apex:outputText>
+                                                            
+                                                            
+                                                            
+                                                        </td>
+                                                        <td class="calValueCell">
+                                                            <apex:outputText id="otEditAboveDen3" value="{!if(CNTarget.Decimal_Places__c == '0','{0,number,####}',if(CNTarget.Decimal_Places__c == '1','{0,number,###0.0}',if(CNTarget.Decimal_Places__c == '2','{0,number,###0.00}',if(CNTarget.Decimal_Places__c == '3','{0,number,###0.000}',if(CNTarget.Decimal_Places__c == '4','{0,number,###0.0000}','{0,number,###0.0000}')))))}" >
+                                                                <apex:param value="{!CNTarget.Above_Indicative_Denominator3__c}"/>
+                                                            </apex:outputText>
+                                                            
+                                                            
+                                                            
+                                                        </td>
+                                                        <td class="calValueCell">
+                                                            <apex:outputText id="otEditAboveDen4" value="{!if(CNTarget.Decimal_Places__c == '0','{0,number,####}',if(CNTarget.Decimal_Places__c == '1','{0,number,###0.0}',if(CNTarget.Decimal_Places__c == '2','{0,number,###0.00}',if(CNTarget.Decimal_Places__c == '3','{0,number,###0.000}',if(CNTarget.Decimal_Places__c == '4','{0,number,###0.0000}','{0,number,###0.0000}')))))}" >
+                                                                <apex:param value="{!CNTarget.Above_Indicative_Denominator4__c}"/>
+                                                            </apex:outputText>
+                                                            
+                                                            
+                                                            
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </apex:outputpanel>
+                                    </div>
+                                    <!--/apex:pageBlock-->
+                                    </apex:form>
+                                    </apex:page>

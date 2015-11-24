@@ -1,0 +1,4 @@
+<apex:page standardController="Implementer__c" extensions="Delete_Controller" action="{!reDirect}">
+    <apex:pageMessages />
+    <a href="{!getBackUrl }">Back</a>
+</apex:page>

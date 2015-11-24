@@ -1,0 +1,337 @@
+<apex:page standardController="Implementation_Period__c" extensions="GMbudgetTableext">
+<!--<apex:stylesheet value="{!URLFOR($Resource.GoalsJs, 'assets/css/bootstrap.css')}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.GoalsJs, 'assets/css/bootstrap-responsive.css')}"/>   -->
+   <style>
+       table {
+        font-size:14px;
+        position:relative;
+        border-collapse: collapse;
+        width:700px;
+       }
+       table, th, td {
+        border: 1px solid black;
+       }
+       .bold{
+        font-weight:bold;
+    }
+   </style>
+      <apex:form >
+            <apex:outputPanel >
+                  <b>{!$Label.View_Costs} {!Implementation_Period__c.Currency_of_Grant_Agreement__c}) : </b>
+                  <apex:selectList size="1" onchange="onchangeView(this);" id="SelCategory">
+                        <apex:selectOption itemvalue="Module" />
+                        <apex:selectOption itemvalue="Cost Grouping" />
+                        <apex:selectOption itemvalue="Recipients" />
+                  </apex:selectList>
+            </apex:outputPanel><br/><br/>    
+              
+              <!--By Module -->    
+           <table id="moduleTable" style="" >
+             <tr><td >  <a href="{!If(blnExternalPro,'/GM','')}/{!$label.Total_Budget_by_Intervention}={!Implementation_Period__c.Name}&pv1={!BudgetName}" target="_blank" class="link">{!$label.View_Chart}</a></td></tr>
+                  
+                  <tr><td> <table  class="table table-striped" >
+                    
+                    <tr>
+                        <th style="width:150px">
+                           {!$label.Module}
+                        </th>
+                        <th style="width:150px">
+                           {!$Label.Intervention}
+                        </th>
+                        <th style="width:100px">
+                            {!Implementation_Period__c.Year_1__c}
+                        </th>
+                        <th style="width:100px">
+                            {!Implementation_Period__c.Year_2__c}
+                        </th>
+                        <th style="width:100px">
+                            {!Implementation_Period__c.Year_3__c}
+                        </th>
+                        <th style="display:{!if(Implementation_Period__c.Length_Years__c=='4','','none')}">
+                            {!Implementation_Period__c.Year_4__c}
+                        </th>
+                        <th style="width:100px">
+                            {!$label.Total}
+                        </th>
+                    </tr>
+                   
+                    <apex:repeat value="{!lstBLModule}" var="BLM">
+                        <tr style="background-color:{!IF(BLM.blnbckgrnd,'#C0C0C0','')}; font-weight:{!IF(BLM.blnbckgrnd,'bold','')};">
+                            <td >
+                                <apex:outputText value="{!BLM.ModuleName}"></apex:outputText>
+                            </td>
+                            <td >
+                                <apex:outputText value="{!BLM.InterventionName}"></apex:outputText>
+                            </td>
+                            <td>
+                                <apex:outputText value="{0, number,###,###,##0}">
+                                     
+                                     <apex:param value="{!BLM.ModuleCostY1}" />
+                                </apex:outputText>
+                            </td>
+                            <td>
+                                <apex:outputText value="{0, number,###,###,##0}">
+                                     
+                                     <apex:param value="{!BLM.ModuleCostY2}" />
+                                </apex:outputText>
+                            </td>
+                            <td>
+                                <apex:outputText value="{0, number,###,###,##0}">
+                                    
+                                     <apex:param value="{!BLM.ModuleCostY3}" />
+                                </apex:outputText>
+                            </td>
+                            <td style="display:{!if(Implementation_Period__c.Length_Years__c=='4','','none')}">
+                                <apex:outputText value="{0, number,###,###,##0}">
+                                     <apex:param value="{!BLM.ModuleCostY4}" />
+                                </apex:outputText>
+                            </td>
+                            <td>
+                                <apex:outputText value="{0, number,###,###,##0}" styleclass="bold">
+                                     <apex:param value="{!BLM.TotalModuleCost}" />
+                                </apex:outputText>
+                            </td>
+                        </tr>
+                    <tr>
+                    </tr>
+                    </apex:repeat>
+                    <tr>
+                        <th>
+                            {!$Label.Total}
+                        </th>
+                        <th>
+                        </th>
+                        <td>
+                            <apex:outputText styleclass="bold" value="{0, number,###,###,##0}"> 
+                                  <apex:param value="{!TotalModuleY1Cost}" />
+                            </apex:outputText>
+                        </td>
+                        <td>
+                            <apex:outputText styleclass="bold" value="{0, number,###,###,##0}"> 
+                                 <apex:param value="{!TotalModuleY2Cost}" />
+                            </apex:outputText>
+                        </td>
+                        <td>
+                            <apex:outputText styleclass="bold" value="{0, number,###,###,##0}"> 
+                                 <apex:param value="{!TotalModuleY3Cost}" />
+                            </apex:outputText>
+                        </td>
+                        <td style="display:{!if(Implementation_Period__c.Length_Years__c=='4','','none')}">
+                            <apex:outputText styleclass="bold" value="{0, number,###,###,##0}"> 
+                                  <apex:param value="{!TotalModuleY4Cost}" />
+                            </apex:outputText>
+                        </td>
+                        <td>
+                            <apex:outputText styleclass="bold" value="{0, number,###,###,##0}">
+                                  <apex:param value="{!AllYearModuleTotalCost}" />
+                             </apex:outputText>
+                        </td>
+                    </tr>
+                </table></td></tr>  
+           </table>   
+            
+             <!--By Cost Grouping-->   
+             <table id="CostGrouptable" style="display:none;">
+             <tr><td ><a href="{!If(blnExternalPro,'/GM','')}/{!$label.Total_Budget_by_Cost_Grouping}={!Implementation_Period__c.Name}&pv1={!BudgetName}" target="_blank" class="link">{!$label.View_Chart}</a></td></tr>
+             
+             <tr><td>
+                  <table class="table table-striped" >
+                 
+                    <tr>
+                        <th>
+                            {!$Label.Cost_Grouping}
+                        </th>
+                        <th>
+                            {!Implementation_Period__c.Year_1__c}
+                        </th>
+                        <th>
+                            {!Implementation_Period__c.Year_2__c}
+                        </th>
+                        <th>
+                            {!Implementation_Period__c.Year_3__c}
+                        </th>
+                        <th style="display:{!if(Implementation_Period__c.Length_Years__c=='4','','none')}">
+                            {!Implementation_Period__c.Year_4__c}
+                        </th>
+                        <th>
+                            {!$label.Total}
+                        </th>
+                    </tr>
+                    <apex:repeat value="{!lstBLCost}" var="BLM">
+                        <tr>
+                            <td >
+                                <apex:outputText value="{!BLM.CostGrouping}"></apex:outputText>
+                            </td>
+                            <td>
+                                <apex:outputText value="{0, number,###,###,##0}">
+                                     <apex:param value="{!BLM.CostY1}" />
+                                </apex:outputText>
+                            </td>
+                            <td>
+                                <apex:outputText value="{0, number,###,###,##0}">
+                                     <apex:param value="{!BLM.CostY2}" />
+                                </apex:outputText>
+                            </td>
+                            <td>
+                                <apex:outputText value="{0, number,###,###,##0}">
+                                      <apex:param value="{!BLM.CostY3}" />
+                                </apex:outputText>
+                            </td>
+                            <td style="display:{!if(Implementation_Period__c.Length_Years__c=='4','','none')}">
+                                <apex:outputText value="{0, number,###,###,##0}">
+                                     <apex:param value="{!BLM.CostY4}" />
+                                </apex:outputText>
+                            </td>
+                            <td>
+                                <apex:outputText value="{0, number,###,###,##0}" styleclass="bold">
+                                     <apex:param value="{!BLM.TotalCost}" />
+                                </apex:outputText>
+                            </td>
+                        </tr>
+                    </apex:repeat>
+                    <tr>
+                        <th>
+                            {!$Label.Total}
+                        </th>
+                        <td>
+                            <apex:outputText styleclass="bold" value="{0, number,###,###,##0}">
+                                  <apex:param value="{!TotalY1Cost}" />
+                            </apex:outputText>
+                        </td>
+                        <td>
+                            <apex:outputText styleclass="bold" value="{0, number,###,###,##0}">
+                                 <apex:param value="{!TotalY2Cost}" />
+                            </apex:outputText>
+                        </td>
+                        <td>
+                            <apex:outputText styleclass="bold" value="{0, number,###,###,##0}">
+                                 <apex:param value="{!TotalY3Cost}" />
+                            </apex:outputText>
+                        </td>
+                        <td style="display:{!if(Implementation_Period__c.Length_Years__c=='4','','none')}">
+                            <apex:outputText styleclass="bold" value="{0, number,###,###,##0}">
+                                  <apex:param value="{!round(TotalY4Cost/1000,0)}" />
+                            </apex:outputText>
+                        </td>
+                        <td>
+                            <apex:outputText styleclass="bold" value="{0, number,###,###,##0}">
+                                 <apex:param value="{!AllYearTotalCost}" />
+                            </apex:outputText>
+                        </td>
+                    </tr>
+                </table></td></tr>
+                </table>
+                <!--By Payee-->
+            <table style="display:none;"  id="Implementertable">
+            <tr><td ><a href="{!If(blnExternalPro,'/GM','')}/{!$label.Total_Budget_by_Recipient}={!Implementation_Period__c.Name}&pv1={!BudgetName}" target="_blank" class="link">{!$label.View_Chart}</a></td></tr>
+                  <tr><td>
+                <table class="table table-striped">
+                   
+                    <tr>
+                        <th>
+                            {!strRecipient}
+                        </th>
+                        <th>
+                            {!Implementation_Period__c.Year_1__c}
+                        </th>
+                        <th>
+                            {!Implementation_Period__c.Year_2__c}
+                        </th>
+                        <th>
+                            {!Implementation_Period__c.Year_3__c}
+                        </th>
+                        <th style="display:{!if(Implementation_Period__c.Length_Years__c=='4','','none')}">
+                            {!Implementation_Period__c.Year_4__c}
+                        </th>
+                        <th>
+                            {!$label.Total}
+                        </th>
+                    </tr>
+                    <apex:repeat value="{!lstBLPayee}" var="BLM">
+                        <tr>
+                            <td >
+                                <apex:outputText value="{!BLM.PayeeName}"></apex:outputText>
+                            </td>
+                            <td>
+                                <apex:outputText value="{0, number,###,###,##0}">
+                                   
+                                    <apex:param value="{!BLM.PayeeCostY1}" />
+                                </apex:outputText>
+                            </td>
+                            <td>
+                                <apex:outputText value="{0, number,###,###,##0}">
+               
+                                    <apex:param value="{!BLM.PayeeCostY2}" />
+                                </apex:outputText>
+                            </td>
+                            <td>
+                                <apex:outputText value="{0, number,###,###,##0}">
+               
+                                    <apex:param value="{!BLM.PayeeCostY3}" />
+                                </apex:outputText>
+                            </td>
+                            <td style="display:{!if(Implementation_Period__c.Length_Years__c=='4','','none')}">
+                                <apex:outputText value="{0, number,###,###,##0}">
+                                      <apex:param value="{!BLM.PayeeCostY4}" />
+                                </apex:outputText>
+                            </td>
+                            <td>
+                                <apex:outputText value="{0, number,###,###,##0}" styleclass="bold">
+                                      <apex:param value="{!BLM.TotalPayeeCost}" />
+                                </apex:outputText>
+                            </td>
+                        </tr>
+                    </apex:repeat>
+                    <tr>
+                        <th>
+                            {!$Label.Total}
+                        </th>
+                        <td>
+                            <apex:outputText styleclass="bold" value="{0, number,###,###,##0}">
+                                  <apex:param value="{!TotalPayeeY1Cost}" />
+                            </apex:outputText>
+                        </td>
+                        <td>
+                            <apex:outputText styleclass="bold" value="{0, number,###,###,##0}">
+                                  <apex:param value="{!TotalPayeeY2Cost}" />
+                            </apex:outputText>
+                        </td>
+                        <td>
+                            <apex:outputText styleclass="bold" value="{0, number,###,###,##0}">
+                                  <apex:param value="{!TotalPayeeY3Cost}" />
+                            </apex:outputText>
+                        </td>
+                        <td style="display:{!if(Implementation_Period__c.Length_Years__c=='4','','none')}">
+                            <apex:outputText value="{0, number,###,###,##0}">
+                                  <apex:param value="{!TotalPayeeY4Cost}" />
+                            </apex:outputText>
+                        </td>
+                        <td>
+                            <apex:outputText styleclass="bold" value="{0, number,###,###,##0}">
+                                  <apex:param value="{!AllYearPayeeTotalCost}" />
+                            </apex:outputText>
+                        </td>
+                    </tr>
+                </table></td></tr>
+            </table>
+            <script>
+               function onchangeView(viewValue){
+                   if(viewValue.value == 'Module'){
+                  
+                       document.getElementById('moduleTable').style.display = '';
+                       document.getElementById('CostGrouptable').style.display = 'none';
+                       document.getElementById('Implementertable').style.display = 'none';
+                   }else if(viewValue.value == 'Cost Grouping'){
+                   
+                       document.getElementById('moduleTable').style.display = 'none';
+                       document.getElementById('CostGrouptable').style.display = '';
+                       document.getElementById('Implementertable').style.display = 'none';
+                   }else if(viewValue.value == 'Recipients'){
+                       document.getElementById('moduleTable').style.display = 'none';
+                       document.getElementById('CostGrouptable').style.display = 'none';
+                       document.getElementById('Implementertable').style.display = '';
+                   }
+               }
+            </script>
+      </apex:form>
+</apex:page>

@@ -1,0 +1,171 @@
+<apex:page id="page1" sidebar="false" standardController="Country__c" extensions="ctrlOpenConceptNotes" tabstyle="Qualitative_Factors__tab">
+    <apex:stylesheet value="{!URLFOR($Resource.GoalsJs, 'assets/css/bootstrap.css')}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.GoalsJs, 'assets/css/bootstrap-responsive.css')}"/>
+    <head>
+        <title>Concept Note Homepage</title>
+    </head>
+    <script>function setFocusOnLoad() {}</script>
+    <style>
+    .pageTitleIcon {
+        background-image: url("/img/icon/custom51_100/globe32.png");
+        background-position: 0 0;
+        height: 32px;
+        width: 32px;
+    }
+    .h3 {
+        font-size:24px;
+        line-height: 20px;
+    }
+    table {
+        font-size:12px;
+        table-layout:fixed;        
+    }
+    td .middle{
+     vertical-align:middle;
+       }
+    .borderright {
+        border-right: 1px solid #C0C0C0 !important;
+        word-wrap:break-word;
+    }
+    .borderleft {
+        border-left: 1px solid #C0C0C0 !important;
+        word-wrap:break-word;
+    }
+    .borderbottom {
+        border-bottom: 1px solid #C0C0C0 !important;
+    }
+    .countryselect{
+    font-size:16px;
+    color:black;
+    }
+    .link{
+    color:#2E7BBB;
+    text-decoration:underline;
+    }
+    .dateFormat{
+       visibility:hidden;
+    }
+        </style>
+    <apex:form id="frm">        
+        <apex:actionFunction name="TotalProposedAmount" action="{!CalculateProposedAmount}" reRender="txtTotal"/>
+    <div style="padding:20px">
+                    <div id="Infopanel" class="alert alert-info">
+                        <button type="button" class="close" data-dismiss="alert" onclick="closePanel();">
+                         
+                        </button>
+                        <b>
+                        On this page you can review your list of components and open each one. 
+                    </b>
+                    </div>
+                    <span class="h3">
+                        Review of Qualitative Factors                       
+                    </span>
+                    <span class="pull-right">
+                        <a href="/servlet/servlet.FileDownload?file=015b0000000ZgJq" class="link">See details/guidance on qualitative factors</a>
+                    </span>
+                    <br/><br/>
+                    <div>
+                    <apex:selectList size="1" value="{!CountryId}" styleclass="countryselect">
+                          <apex:selectOptions value="{!selOptCountry}"/>
+                        <apex:actionSupport event="onchange" action="{!ConceptNoteByCountry}" reRender="frm"/>
+                    </apex:selectList>
+                    </div>
+                    <div>
+                        Country teams are required to review qualitative factors for each applicable component.  Please review qualitative factors for each component below.
+                    </div>
+        </div>
+
+        <div id="pBlock" rendered="{!if(lstCN.size == 1,false,true)}" style="padding:20px">
+            <table id="pbTable" value="{!lstCN}" var="CN" class="table table-striped" width="90%" cellspacing="0" cellpadding="0" border="0">
+                <tr>
+                    <th width="70px" class="borderleft"></th>
+                    <th class="borderright">Component</th>
+                    <th class="borderright">Performance, Impact,<br/> 
+                    Increasing Rates and Risk</th>
+                    <th class="borderright">Absorptive Capacity<br/> Finance Data Review</th>
+                    <th class="borderright">Absorptive Capacity and<br/> Other Considerations</th>
+                </tr>
+            <apex:repeat id="rptRP" value="{!lstCN}" var="CN">
+                <tr>
+                    <td class="borderleft borderbottom">
+                        <img src="{!if(CN.Component__c=='Tuberculosis',$Resource.TB,if(CN.Component__c=='HIV/AIDS',$Resource.HIV,if(CN.Component__c=='Malaria',$Resource.Malaria,if(CN.Component__c=='Health Systems Strengthening',$Resource.Other,if(CN.Component__c=='HIV/TB',$Resource.HIVTB,'')))))}"/>
+                    </td>
+                    <td class="middle borderright borderbottom">
+                        <a href="/apex/PCN_QualCriteria?Id={!CN.Id}" class="link">{!CN.Name}</a>
+                    </td>                       
+                    <td class="middle borderright borderbottom">
+                      <span class="label label-info" style="background:{!if(CN.P_I_IR_and_Risk_Status__c == 'Data Finalized' || CN.P_I_IR_and_Risk_Status__c == 'Accepted','#5BB75B',if(CN.P_I_IR_and_Risk_Status__c == 'Under Review','#2E9AFE',if(CN.P_I_IR_and_Risk_Status__c == 'Update Requested','#FAA732','none')))} !important;color:{!if(CN.P_I_IR_and_Risk_Status__c == 'Pre-Release','#000000','')}">
+                        <apex:outputField value="{!CN.P_I_IR_and_Risk_Status__c}"/>
+                      </span>
+                    </td>
+                    <td class="middle borderright borderbottom">
+                      <span class="label label-info" style="background:{!if(CN.Absorptive_Capacity_Initial_Alloc_Status__c == 'Data Finalized' || CN.Absorptive_Capacity_Initial_Alloc_Status__c == 'Accepted','#5BB75B',if(CN.Absorptive_Capacity_Initial_Alloc_Status__c == 'Under Review','#2E9AFE',if(CN.Absorptive_Capacity_Initial_Alloc_Status__c == 'Update Requested','#FAA732','none')))} !important;color:{!if(CN.Absorptive_Capacity_Initial_Alloc_Status__c == 'Pre-Release','#000000','')}">
+                        <apex:outputField value="{!CN.Absorptive_Capacity_Initial_Alloc_Status__c}"/>
+                      </span>
+                    </td>
+                    <td class="middle borderright borderbottom">
+                      <span class="label label-info" style="background:{!if(CN.Absorptive_Capacity_Review_Status__c == 'Data Finalized' || CN.Absorptive_Capacity_Review_Status__c == 'Accepted','#5BB75B',if(CN.Absorptive_Capacity_Review_Status__c == 'Under Review','#2E9AFE',if(CN.Absorptive_Capacity_Review_Status__c == 'Submitted','#FA5858',if(CN.Absorptive_Capacity_Review_Status__c == 'Update Requested','#FAA732','none'))))} !important;color:{!if(CN.Absorptive_Capacity_Review_Status__c == 'Pre-Release','#000000','')}">
+                        <apex:outputField value="{!CN.Absorptive_Capacity_Review_Status__c}"/>
+                      </span>
+                    </td>
+                </tr>
+                </apex:repeat>
+                
+                 <tr style="display:{!if(lstCN.size > 0,'none','')}">
+                     <td colspan="6">
+                         There are no components to review.
+                    </td>
+                 </tr>
+            </table>
+            <br/>
+        </div>
+        
+      <style>
+        .ProcessingBackground
+        {
+            background-color: black;
+            opacity: 0.50;
+            filter: alpha(opacity = 50);
+            width: 100%;
+            height: 100%;
+            position: fixed;
+            z-index: 9999;
+            top:0;
+            left:0;
+        }
+        .Processing
+        {
+            z-index: 9999;
+            left: 50%;
+            top: 50%;
+            text-align: center;
+            position: fixed;
+        }        
+        </style>
+        <div id="divProcessing" style="display:none;">
+            <div class="ProcessingBackground"></div>
+            <div class="Processing">
+                <apex:image alt="Processing" url="{!$Resource.LoadingCircle}" />
+            </div>
+        </div>  
+        <apex:actionStatus id="Processing" onstart="document.getElementById('divProcessing').style.display = '';" onstop="document.getElementById('divProcessing').style.display = 'none';">                            
+        </apex:actionStatus> 
+        
+    </apex:form>
+    <script>
+        function formatDate(Date1){
+            try{
+                var strDate = '';
+                var array = Date1.split('/');
+                var dd = array[0];
+                var mm = array[1];
+                var yyyy = array[2];
+                strDate = yyyy + "-" + mm + "-" + dd;
+                return strDate;
+            }catch(err){
+                return null;
+            }
+            
+        }
+    </script>
+</apex:page>

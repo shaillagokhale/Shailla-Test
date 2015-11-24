@@ -1,0 +1,93 @@
+<apex:page showHeader="false" sideBar="false" tabStyle="Account" id="pg" controller="BankAccountLookupController" title="Search">
+<script>
+
+function setValues(aId,aName){
+top.window.opener.document.getElementById('{!AccountTextBox}_lkid').value = aId;
+top.window.opener.document.getElementById('{!AccountTextBox}').value = aName;
+
+window.close();
+}
+</script>
+<body class="lookupTab">
+<div class="lookup">
+  <div class="bPageTitle">
+    <div class="ptBody secondaryPalette">
+      <div class="content">
+        <img title="" class="pageTitleIcon" alt="" src="/s.gif" />
+          <h1>Lookup</h1>
+      </div>
+    </div>
+  </div>
+</div>
+
+<apex:form id="frm">
+  <!-- IE 6.0 hack for single textBox -->
+  <input type="text" style="display:none" />
+
+  <apex:outputPanel id="top" layout="block" style="margin:5px;padding:10px;padding-top:2px;">
+    <apex:outputLabel value="Search" style="font-weight:Bold;padding-right:10px;" for="txtSearch"/>
+    <apex:inputText id="txtSearch" value="{!searchText}" />
+      <span style="padding-left:5px">
+        <apex:commandButton id="btnGo" value="Go" action="{!Search}" ></apex:commandButton>
+        &nbsp;<apex:actionStatus startStyle="color:Red;" startText="Sorting..." stopText="" id="myStatus"/>
+        <br/><br/>
+        You can use "*" as a wildcard next to other characters to improve your search results. For example, "ad*" returns all records with a word in one of the searched fields that begins with "ad".
+      </span>  
+  </apex:outputPanel>
+   <apex:actionFunction action="{!DoSort}" name="sortData" rerender="pnlAll" status="myStatus">
+       <apex:param name="sortField" assignTo="{!sortField}" value="" />
+   </apex:actionFunction>
+   <apex:outputPanel id="pnlAll" style="margin:10px;height:350px;overflow-Y:auto;" layout="block">
+        
+       
+        <apex:pageBlock id="pb"> 
+      
+      <apex:outputPanel id="navTop" styleClass="paginator" style="padding:10px;white-space: nowrap;align:center;float:right;" rendered="{!OR(ssController.HasNext,ssController.HasPrevious)}">
+      <apex:outputLabel rendered="{!ssController.HasPrevious}" styleClass="arrow">&lt;</apex:outputLabel>
+      <apex:commandLink styleClass="butt" rendered="{!ssController.HasPrevious}" action="{!ssController.previous}" >Previous Page</apex:commandLink>
+      <apex:outputPanel rendered="{!!ssController.HasPrevious}" style="color: #808080;" >&lt;Previous Page</apex:outputPanel>
+         &nbsp;|&nbsp;&nbsp;
+      <apex:commandLink action="{!ssController.next}" rendered="{!ssController.hasNext}" styleClass="butt" >Next Page</apex:commandLink>   
+      <apex:outputLabel rendered="{!ssController.hasNext}" styleClass="arrow">&gt;</apex:outputLabel>
+      <apex:outputPanel rendered="{!!ssController.hasNext}" style="color: #808080;" >Next Page&gt;</apex:outputPanel>
+     </apex:outputPanel> 
+     
+     
+      <apex:pageBlockTable value="{!Accounts}" var="acct" id="tblData">
+        <apex:facet name="footer">
+         <apex:outputText value="No match found." rendered="{!IF(listSize=0,true,false)}" />
+        </apex:facet>
+        
+        <apex:column value="{!acct.Bank_Account_Number_Protected__c}" headerValue="Bank Account Number" />
+        <apex:column >
+          <apex:facet name="header">
+            <apex:outputPanel > 
+              <apex:outputLink value="javascript:void(0);" onclick="sortData('Name')">Account Name<img src="{!IF(sortField = 'Name', IF(isAscending = true, '/img/sort_asc_arrow.gif','/img/sort_desc_arrow.gif'),'/s.gif')}" />
+              </apex:outputLink>
+            </apex:outputPanel>
+          </apex:facet>
+           <apex:outputLink value="javascript:top.window.opener.lookupPick2('{!FormTag}','{!AccountTextBox}_lkid','{!AccountTextBox}','{!acct.Id}','{!acct.Name}', false)" onclick="setValues('{!acct.Id}','{!acct.Name}');" rendered="{!NOT(ISNULL(acct.Id))}">{!acct.Bank_Account_Name_Beneficiary__c}</apex:outputLink>     
+        </apex:column>
+        <apex:column value="{!acct.Bank__r.Bank__r.Name__c}" headerValue="Bank Name" />
+        <apex:column value="{!acct.Bank_Account_Legal_Owner_Name__c}" headerValue="Bank Account Legal Owner Name" />
+      </apex:pageBlockTable>   
+      
+       <apex:outputPanel id="navBottom" styleClass="paginator" style="padding:10px;white-space: nowrap;align:center;float:right;" rendered="{!OR(ssController.HasNext,ssController.HasPrevious)}">
+      <apex:outputLabel rendered="{!ssController.HasPrevious}" styleClass="arrow">&lt;</apex:outputLabel>
+      <apex:commandLink styleClass="butt" rendered="{!ssController.HasPrevious}" action="{!ssController.previous}" >Previous Page</apex:commandLink>
+      <apex:outputPanel rendered="{!!ssController.HasPrevious}" style="color: #808080;" >&lt;Previous Page</apex:outputPanel>
+         &nbsp;|&nbsp;&nbsp;
+      <apex:commandLink action="{!ssController.next}" rendered="{!ssController.hasNext}" styleClass="butt" >Next Page</apex:commandLink>   
+      <apex:outputLabel rendered="{!ssController.hasNext}" styleClass="arrow">&gt;</apex:outputLabel>
+      <apex:outputPanel rendered="{!!ssController.hasNext}" style="color: #808080;" >Next Page&gt;</apex:outputPanel>
+     </apex:outputPanel> 
+        
+    </apex:pageBlock>
+    
+    
+    
+    </apex:outputPanel>
+   
+  </apex:form> 
+ </body> 
+</apex:page>

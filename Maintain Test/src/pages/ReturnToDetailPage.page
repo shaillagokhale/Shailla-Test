@@ -1,0 +1,9 @@
+<apex:page standardController="IP_Detail_Information__c" extensions="removeEdit" action="{!checkprof}">
+    <apex:form > 
+      <!--  <b><apex:outputtext value="{!$Label.Return_Detail_View}" style="color:red"/>--><br/><br/>
+        <apex:pageMessages />
+        <apex:commandlink styleClass="TGFbtn TGFbtn-mini TGFbtn-primary" style="margin-left:50px" action="{!returnDetailPage}">
+            <apex:outputLabel value="Detail View"/>
+        </apex:commandlink>
+    </apex:form>  
+</apex:page>

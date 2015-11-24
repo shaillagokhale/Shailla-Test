@@ -1,0 +1,1976 @@
+<apex:page id="page" standardController="CPF_Report__c" extensions="CPFReport" sidebar="false" contentType="application/vnd.ms-excel#ccd.xls" cache="true" standardStylesheets="false">
+ 
+    <span class="h3">
+        {!$Label.Financial_Gap_Analysis_CPF} - {!CPF_Report__c.Country__r.Name}
+    </span>
+
+    <br/>
+   <apex:form id="frm">    
+             <table id="myTable" border="1">
+            <tr>
+                <td>
+                    <apex:outputLabel id="lblCountry" value="{!$Label.Country}:"></apex:outputLabel>
+                </td>
+                <td>
+                  <apex:outputText id="txt" value="{!CPF_Report__c.Country__r.Name}"></apex:outputText>                    
+                </td>
+                <td>
+                 <apex:outputLabel value="{!$Label.Currency}:"></apex:outputLabel>
+                    </td>
+                    <td>
+                    <apex:outputText value="{!CPF_Report__c.Currency__c}"></apex:outputText>                    
+ 
+                </td>
+             </tr>  
+              <tr> 
+              <td>
+            
+                    <apex:outputLabel value="{!$Label.Component}:"></apex:outputLabel>
+                    </td>
+                    <td>
+                    <apex:outputText value="{!CPF_Report__c.Component__c}"></apex:outputText>              
+                </td>
+              <td>
+             
+                    <apex:outputLabel value="{!$Label.Cycle}:"></apex:outputLabel>
+                    </td>
+                    <td>
+                    <apex:outputText value="{!strImplementCycle}"></apex:outputText>
+                    <!-- <apex:inputfield value="{!objCPFReport.Implementation_Cycle__c}" onchange="changeStartAndEndMonth(this);"/> -->
+                    
+                    <!--{!CPF_Report__c.Cycle_Start_Month__c} - {!CPF_Report__c.Cycle_End_Month__c}-->
+                
+              </td>
+              </tr>
+                 
+                <!--  
+                    <apex:outputLabel value="Reporting Cycle:"></apex:outputLabel>
+                    <apex:inputfield value="{!objCPFReport.Reporting_Cycle__c}"/> -->
+               
+             <tr> 
+             <td>  
+              
+                    <apex:outputLabel value="{!$Label.Submission_Year}:" title="Year of CN Submission"></apex:outputLabel>
+                    </td>
+                    <td>
+                    <apex:outputText value="{!CPF_Report__c.Start_Year__c}"></apex:outputText>
+               
+             </td>   
+             </tr>   
+             </table>    
+            
+            
+      
+        
+        <table id="myTable" border="1">
+            <tr>
+                <td width="19%"></td>
+                <th colspan="3" class="LineThColor" style="width:36%"><center>{!$Label.Current_Previous}</center></th>
+                <td width="19%"></td>
+                <th colspan="3" class="LineThColor" style="width:36%"><center>{!$Label.Estimated}</center></th> 
+                <th class="LineThColor" style="width:36%"><center>{!$Label.CCM_Comments}</center></th> 
+                <th class="LineThColor" style="width:36%"><center>{!$Label.LFA_Comments}</center></th> 
+                <th class="LineThColor" style="width:36%"><center>{!$Label.GF_Comments}</center></th>                             
+            </tr>         
+            <tr>
+                <th colspan="8" class="headingFontAndColor"><center>{!$Label.NSP_Funding_Needs_Resources}<!--Part One: National Strategic Plan Funding Needs and Resources--></center></th>
+              <!--   <th style="width:8%">&nbsp;</th>  -->
+            </tr>
+            <tr>                
+                <th colspan="8" class="headingCollapse">
+                    <table>
+                        <tr>
+                            <td class="headingCollapse" style="border:1px !important">{!$Label.Funding_Needs}</td>
+                        </tr>
+                    </table>
+                </th>
+             <!-- <th style="width:8%">&nbsp;</th>  -->   
+            </tr>
+         
+            <tr id="LineASection">
+                <td width="19%" rowspan="2"> </td>
+                <th><center>{!intCurrentYear-2}</center></th>
+                <th><center>{!intCurrentYear-1}</center></th>
+                <th><center>{!intCurrentYear}</center></th>
+                <td class="smalltd" ></td>
+                <th><center>{!intCurrentYear+1}</center></th>
+                <th><center>{!intCurrentYear+2}</center></th>
+                <th><center>{!intCurrentYear+3}</center></th>
+            </tr>
+            <tr id="LineASection">
+                <th>
+                    <center>
+                        <span id="SM">{!strStartMonth}</span>/{!if(strImplementCycle == 'January - December',intCurrentYear-2,intCurrentYear-3)}
+                         - 
+                        <span id="EM">{!strEndMonth}</span>/{!intCurrentYear-2} 
+                    </center>
+                </th>
+                <th>
+                    <center>
+                        <span id="SM">{!strStartMonth}</span>/{!if(strImplementCycle == 'January - December',intCurrentYear-1,intCurrentYear-2)} 
+                         - 
+                        <span id="EM">{!strEndMonth}</span>/{!intCurrentYear-1} 
+                    </Center>
+                </th>
+                <th>
+                    <center>
+                        <span id="SM">{!strStartMonth}</span>/{!if(strImplementCycle == 'January - December',intCurrentYear,intCurrentYear-1)}
+                         - 
+                        <span id="EM">{!strEndMonth}</span>/{!intCurrentYear} 
+                    </Center>
+                </th>
+                <td class="smalltd"></td>
+                <th>
+                    <center>
+                        <span id="SM">{!strStartMonth}</span>/{!if(strImplementCycle == 'January - December',intCurrentYear+1,intCurrentYear)} 
+                         - 
+                        <span id="EM">{!strEndMonth}</span>/{!intCurrentYear+1} 
+                    </Center>
+                </th>                    
+                <th>
+                    <center>
+                        <span id="SM">{!strStartMonth}</span>/{!if(strImplementCycle == 'January - December',intCurrentYear+2,intCurrentYear+1)} 
+                         - 
+                        <span id="EM">{!strEndMonth}</span>/{!intCurrentYear+2} 
+                    </Center>
+                </th>
+                <th>
+                    <center>
+                        <span id="SM">{!strStartMonth}</span>/{!if(strImplementCycle == 'January - December',intCurrentYear+3,intCurrentYear+2)}  
+                         - 
+                        <span id="EM">{!strEndMonth}</span>/{!intCurrentYear+3} 
+                    </Center>
+                </th>
+            </tr>
+            
+            <apex:repeat id="rptInNational" value="{!lstWrapperFundingSourceNSF}" var="FS">
+                <tr id="LineASection">
+                    
+                    <td class="LineThColor" colspan="3" width="43%">
+                        <b>{!FS.strName}</b>
+                    </td> 
+                    <td class="tdcenter" width="12%">                   
+                   <apex:outputtext id="inpYear" value="{!FS.objFundingSource.Current_Year__c}" />
+                    </td> 
+                    <td class="smalltd"></td>
+                    <td class="tdcenter">                      
+                    <apex:outputtext id="inpYear1Plus" value="{!FS.objFundingSource.Year_plus_1__c}" />
+                    </td>  
+                    <td class="tdcenter">                    
+                     <apex:outputtext id="inpYear2Plus" value="{!FS.objFundingSource.Year_plus_2__c}" />   
+                   
+                    </td> 
+                    <td class="tdcenter">                   
+                    <apex:outputtext id="inpYear3Plus" value="{!FS.objFundingSource.Year_plus_3__c}" />     
+                    </td>  
+                    <td >                   
+                    <apex:outputtext id="inpBYear1Plus11" value="{!FS.objFundingSource.CCM_Comments__c}" />                    
+                    </td>
+                    <td class="tdcenter">                    
+                    <apex:outputtext id="inpBYear2Plus12" value="{!FS.objFundingSource.LFA_Comments__c}" />
+                    </td> 
+                    <td class="tdcenter">                   
+                    <apex:outputtext id="inpBYear3Plus13" value="{!FS.objFundingSource.Global_Fund_Comments__c}" />
+                    </td>                 
+                </tr>
+            </apex:repeat>
+            
+            <tr id="LineASection" style="border: 2px solid">
+                <th colspan="3" class="LineThColor">{!$Label.Line_A_Total_Funding_Needs}<!--LINE A: Total Funding needs for the National Strategic Plan--></th>               
+                <td colspan="5" class="ColorGraytd">
+                <apex:outputText id="opTextLineA" value="{0,number,###,###,###}">
+                    <apex:param value="{!CPF_Report__c.National_Strategic_Funding_Total__c}"/>
+                </apex:outputText>
+                <!--<apex:outputText id="opTextLineA" value="{!CPF_Report__c.National_Strategic_Funding_Total__c}"/>-->
+                </td>
+            </tr>
+            <tr><td colspan="8" style="border: 2px solid #000000;padding:0px;"></td></tr>
+            <tr>
+           <th colspan="8" class="headingCollapse">                    
+                    <table id="myTable1" border="1">
+                        <tr>
+                            <td>{!$Label.Domestic_Resources}</td>
+                        </tr>
+                    </table>
+                 </th>
+            </tr>
+            
+            <tr id="LineBSection">
+                <td width="19%" rowspan="2" style="border:1px;" ></td>
+                <th><center>{!intCurrentYear-2}</center></th>
+                <th><center>{!intCurrentYear-1}</center></th>
+                <th><center>{!intCurrentYear}</center></th>
+                <td class="smalltd"></td>
+                <th><center>{!intCurrentYear+1}</center></th>
+                <th><center>{!intCurrentYear+2}</center></th>
+                <th><center>{!intCurrentYear+3}</center></th>
+            </tr>
+            <tr id="LineBSection">
+                <th>
+                    <center>
+                        <span id="SM">{!strStartMonth}</span>/{!if(strImplementCycle == 'January - December',intCurrentYear-2,intCurrentYear-3)}
+                         - 
+                        <span id="EM">{!strEndMonth}</span>/{!intCurrentYear-2} 
+                    </center>
+                </th>
+                <th>
+                    <center>
+                        <span id="SM">{!strStartMonth}</span>/{!if(strImplementCycle == 'January - December',intCurrentYear-1,intCurrentYear-2)} 
+                         - 
+                        <span id="EM">{!strEndMonth}</span>/{!intCurrentYear-1} 
+                    </Center>
+                </th>
+                <th>
+                    <center>
+                        <span id="SM">{!strStartMonth}</span>/{!if(strImplementCycle == 'January - December',intCurrentYear,intCurrentYear-1)}
+                         - 
+                        <span id="EM">{!strEndMonth}</span>/{!intCurrentYear} 
+                    </Center>
+                </th>
+                <td class="smalltd"></td>
+                <th>
+                    <center>
+                        <span id="SM">{!strStartMonth}</span>/{!if(strImplementCycle == 'January - December',intCurrentYear+1,intCurrentYear)} 
+                         - 
+                        <span id="EM">{!strEndMonth}</span>/{!intCurrentYear+1} 
+                    </Center>
+                </th>                    
+                <th>
+                    <center>
+                        <span id="SM">{!strStartMonth}</span>/{!if(strImplementCycle == 'January - December',intCurrentYear+2,intCurrentYear+1)} 
+                         - 
+                        <span id="EM">{!strEndMonth}</span>/{!intCurrentYear+2} 
+                    </Center>
+                </th>
+                <th>
+                    <center>
+                        <span id="SM">{!strStartMonth}</span>/{!if(strImplementCycle == 'January - December',intCurrentYear+3,intCurrentYear+2)}  
+                         - 
+                        <span id="EM">{!strEndMonth}</span>/{!intCurrentYear+3} 
+                    </Center>
+                </th>
+            </tr>
+            <tr id="LineBSection">
+                <th colspan="8" class="LineThColor">
+                    <apex:outputPanel style="cursor:pointer !important;" >
+                            {!$Label.Total_Resources}
+                    </apex:outputPanel>
+                 
+                <!--  <apex:variable value="{!0}" var="Count"/>
+                    <apex:variable value="{!0}" var="Count1"/>  -->   
+                </th>
+                
+            </tr>
+            <apex:repeat id="rptLineBIn" value="{!lstWrapperFundingSourceB}" var="FS">            
+                <tr id="LineBSection">
+                    <td>
+                        {!FS.strName}
+                    </td>  
+                    <td class="tdcenter">                     
+                         <apex:outputtext id="inpBYear2" value="{!FS.objFundingSource.Year_2__c}" />
+                    </td>
+                    <td class="tdcenter">                    
+                    <apex:outputtext id="inpBYear1" value="{!FS.objFundingSource.Year_1__c}" />
+                    </td>
+                    <td class="tdcenter">                    
+                    <apex:outputtext id="inpBYear" value="{!FS.objFundingSource.Current_Year__c}" />
+                    </td>
+                    <td class="smalltd"></td>
+                    <td class="tdcenter">                   
+                    <apex:outputtext id="inpBYear1Plus" value="{!FS.objFundingSource.Year_plus_1__c}" />
+                    </td>
+                    <td class="tdcenter">                    
+                    <apex:outputtext id="inpBYear2Plus" value="{!FS.objFundingSource.Year_plus_2__c}" />
+                    </td> 
+                    <td class="tdcenter">                   
+                   <apex:outputtext id="inpBYear3Plus" value="{!FS.objFundingSource.Year_plus_3__c}" />                     
+                    </td>                    
+                    <td >                   
+                    <apex:outputtext id="inpBYear1Plus2" value="{!FS.objFundingSource.CCM_Comments__c}" />                    
+                    </td>
+                    <td class="tdcenter">                    
+                    <apex:outputtext id="inpBYear2Plus3" value="{!FS.objFundingSource.LFA_Comments__c}" />
+                    </td> 
+                    <td class="tdcenter">                   
+                    <apex:outputtext id="inpBYear3Plus4" value="{!FS.objFundingSource.Global_Fund_Comments__c}" />
+                    </td>                                       
+                </tr>
+            </apex:repeat>
+                
+            <tr id="LineBSection">
+                <th class="LineThColor">
+                    <apex:outputPanel style="cursor:pointer !important;">
+                            {!$Label.Line_B_Domestic_Resources}<!--LINE B: Domestic Resources-->
+                    </apex:outputPanel>
+                </th>
+                <!--<th class="LineThColor">LINE B: Total previous, current <br/> and anticipated <br/> DOMESTIC resources</th>-->
+                <td class="ColorGraytd">
+                 <!-- <apex:outputText id="optTextBYear2" value="{0,number,###,###,###}">
+                        <apex:param value="{!CPF_Report__c.B_Year_2_Total__c}"/>
+                    </apex:outputText>  -->   
+                <apex:outputText id="optTextBYear2" value="{!CPF_Report__c.B_Year_2_Total__c}"/>
+                
+                </td>
+                <td class="ColorGraytd">
+                   <!-- 
+                    <apex:outputText id="optTextBYear1" value="{0,number,###,###,###}">
+                        <apex:param value="{!CPF_Report__c.B_Year_1_Total__c}"/>
+                    </apex:outputText> -->
+                    <apex:outputText id="optTextBYear1" value="{!CPF_Report__c.B_Year_1_Total__c}"/>
+                </td>
+                <td class="ColorGraytd">
+                <!--<apex:outputText id="optTextBYear" value="{0,number,###,###,###}">
+                        <apex:param value="{!CPF_Report__c.B_Current_Year_Total__c}"/>
+                    </apex:outputText> -->
+                <apex:outputText id="optTextBYear" value="{!CPF_Report__c.B_Current_Year_Total__c}"/>
+                </td>
+                <td class="smalltd"></td>
+                <td class="ColorGraytd">
+                <!--<apex:outputText id="optTextBYear1Plus" value="{0,number,###,###,###}">
+                        <apex:param value="{!CPF_Report__c.B_Year_plus_1_Total__c}"/>
+                    </apex:outputText>-->
+                <apex:outputtext id="optTextBYear1Plus" value="{!CPF_Report__c.B_Year_plus_1_Total__c}"/>
+                </td>
+                <td class="ColorGraytd">
+                <!--<apex:outputText id="optTextBYear2Plus" value="{0,number,###,###,###}">
+                        <apex:param value="{!CPF_Report__c.B_Year_plus_2_Total__c}"/>
+                    </apex:outputText>-->
+                <apex:outputtext id="optTextBYear2Plus" value="{!CPF_Report__c.B_Year_plus_2_Total__c}"/>
+                </td>
+                <td class="ColorGraytd">
+                <!-- <apex:outputText id="optTextBYear3Plus" value="{0,number,###,###,###}">
+                        <apex:param value="{!CPF_Report__c.B_Year_3_Total__c}"/>
+                    </apex:outputText>-->
+               <apex:outputtext id="optTextBYear3Plus" value="{!CPF_Report__c.B_Year_3_Total__c}"/>
+                </td>
+            
+            </tr>
+            <tr><td colspan="8" style="border: 2px solid #000000;padding:0px;"></td></tr>
+            
+            </table>
+            <apex:outputPanel id="panel">
+            <table id="mytable7" border="1" >
+            <tr>
+                
+                <th width="92%" colspan="8" class="headingCollapse">
+                <!--<apex:inputHidden id="CollapseStatus" value="{!ModulePG.isShow}" />-->
+                    <table id="Mytable5" border="1">
+                        <tr>
+                            
+                            <td class="headingCollapse" style="border:1px !important">{!$Label.External_Resources}</td>
+                        </tr>
+                    </table>
+                </th>
+              <!-- <th style="width:8%">&nbsp;</th>  -->  
+            </tr>
+           
+            <tr id="LineCSection">
+                <td width="19%" rowspan="2" style="display:{!if(lstWrapperFundingSourceC.size > 0,'','none')};" ></td>
+                <th><center>{!intCurrentYear-2}</center></th>
+                <th><center>{!intCurrentYear-1}</center></th>
+                <th><center>{!intCurrentYear}</center></th>
+                <td class="smalltd"></td>
+                <th><center>{!intCurrentYear+1}</center></th>
+                <th><center>{!intCurrentYear+2}</center></th>
+                <th><center>{!intCurrentYear+3}</center></th>
+            </tr>
+            <tr id="LineCSection">
+                <th>
+                    <center>
+                        <span id="SM">{!strStartMonth}</span>/{!if(strImplementCycle == 'January - December',intCurrentYear-2,intCurrentYear-3)}
+                         - 
+                        <span id="EM">{!strEndMonth}</span>/{!intCurrentYear-2} 
+                    </center>
+                </th>
+                <th>
+                    <center>
+                        <span id="SM">{!strStartMonth}</span>/{!if(strImplementCycle == 'January - December',intCurrentYear-1,intCurrentYear-2)} 
+                         - 
+                        <span id="EM">{!strEndMonth}</span>/{!intCurrentYear-1} 
+                    </Center>
+                </th>
+                <th>
+                    <center>
+                        <span id="SM">{!strStartMonth}</span>/{!if(strImplementCycle == 'January - December',intCurrentYear,intCurrentYear-1)}
+                         - 
+                        <span id="EM">{!strEndMonth}</span>/{!intCurrentYear} 
+                    </Center>
+                </th>
+                <td class="smalltd"></td>
+                <th>
+                    <center>
+                        <span id="SM">{!strStartMonth}</span>/{!if(strImplementCycle == 'January - December',intCurrentYear+1,intCurrentYear)} 
+                         - 
+                        <span id="EM">{!strEndMonth}</span>/{!intCurrentYear+1} 
+                    </Center>
+                </th>                    
+                <th>
+                    <center>
+                        <span id="SM">{!strStartMonth}</span>/{!if(strImplementCycle == 'January - December',intCurrentYear+2,intCurrentYear+1)} 
+                         - 
+                        <span id="EM">{!strEndMonth}</span>/{!intCurrentYear+2} 
+                    </Center>
+                </th>
+                <th>
+                    <center>
+                        <span id="SM">{!strStartMonth}</span>/{!if(strImplementCycle == 'January - December',intCurrentYear+3,intCurrentYear+2)}  
+                         - 
+                        <span id="EM">{!strEndMonth}</span>/{!intCurrentYear+3} 
+                    </Center>
+                </th>
+            </tr>
+         <!--  <apex:variable value="{!1}" var="CountC"/>  -->  
+            <apex:repeat id="rptLineCIn" value="{!lstWrapperFundingSourceC}" var="FS">
+                <tr id="LineCSection">
+                    <td width="19%" style="padding-bottom:6px;">
+                        <table id="Mytable4" border="1" >
+                            <tr>                                
+                                <td align="right" style="border-top:1px !important;">                                   
+                                  <apex:outputtext value="{!FS.objFundingSource.External_Source_Type__c}" style="width:125px;" />                                 
+                                 <apex:outputtext id="OtherExSourceType" style="display:{!if(FS.objFundingSource.External_Source_Type__c=='Other','','none')};" value="{!FS.objFundingSource.Other_External_Source__c}"/>
+                                </td>
+                            </tr>                          
+                        </table>
+                    </td>  
+                    <td class="tdcenter" style="width:12%">                    
+                    <apex:outputtext id="inpCYear2" value="{!FS.objFundingSource.Year_2__c}" />
+                   
+                    </td>
+                    <td class="tdcenter" style="width:12%">                    
+                     <apex:outputtext id="inpCYear1" value="{!FS.objFundingSource.Year_1__c}" /> 
+                    </td>
+                    <td class="tdcenter" style="width:12%">                    
+                    <apex:outputtext id="inpCYear" value="{!FS.objFundingSource.Current_Year__c}" />
+                    </td>
+                    <td class="smalltd" width="1%"></td>
+                    <td class="tdcenter" width="12%">                  
+                   <apex:outputtext id="inpCYear1Plus" value="{!FS.objFundingSource.Year_plus_1__c}" />
+                   
+                    </td>
+                    <td class="tdcenter" width="12%">                   
+                   <apex:outputtext id="inpCYear2Plus" value="{!FS.objFundingSource.Year_plus_2__c}" /> 
+                    </td> 
+                    <td class="tdcenter" width="12%">                   
+                   <apex:outputtext id="inpCYear3Plus" value="{!FS.objFundingSource.Year_plus_3__c}" />
+                    </td>  
+                    <td >                   
+                    <apex:outputtext id="inpBYear1Plus5" value="{!FS.objFundingSource.CCM_Comments__c}" />                    
+                    </td>
+                    <td class="tdcenter">                    
+                    <apex:outputtext id="inpBYear2Plus6" value="{!FS.objFundingSource.LFA_Comments__c}" />
+                    </td> 
+                    <td class="tdcenter">                   
+                    <apex:outputtext id="inpBYear3Plus7" value="{!FS.objFundingSource.Global_Fund_Comments__c}" />
+                    </td>                    
+                </tr>
+            </apex:repeat>
+            </table>
+            </apex:outputPanel>
+
+            <table class="table table-striped" border="1">
+            <tr id="LineCSection">
+                 <th class="LineThColor" width="19%">
+                    <apex:outputPanel style="cursor:pointer !important;">
+                            {!$Label.Line_C_External_Resources}
+                    </apex:outputPanel>               
+                </th>
+                <!--<th width="19%" class="LineThColor">LINE C: Total <br/> previous, current <br/> and anticipated <br/> EXTERNAL Resources (non- <br/>Global Fund)</th>-->
+                <td width="12%" class="ColorGraytd" style="width:12%">
+                <apex:outputText id="optTextCYear2" value="{0,number,###,###,###}">
+                    <apex:param value="{!CPF_Report__c.C_Year_2_Total__c}"/>
+                </apex:outputText>
+                <!--<apex:outputText id="optTextCYear2" value="{!CPF_Report__c.C_Year_2_Total__c}"/>-->
+                </td>
+                <td width="12%" class="ColorGraytd" style="width:12%">
+                <apex:outputText id="optTextCYear1" value="{0,number,###,###,###}">
+                    <apex:param value="{!CPF_Report__c.C_Year_1_Total__c}"/>
+                </apex:outputText>
+                <!--<apex:outputText id="optTextCYear1" value="{!CPF_Report__c.C_Year_1_Total__c}"/>-->
+                </td>
+                <td width="12%" class="ColorGraytd" style="width:12%">
+                <apex:outputText id="optTextCYear" value="{0,number,###,###,###}">
+                    <apex:param value="{!CPF_Report__c.C_Current_Year_Total__c}"/>
+                </apex:outputText>
+                <!--<apex:outputText id="optTextCYear" value="{!CPF_Report__c.C_Current_Year_Total__c}"/>-->
+                </td>
+                <td width="1%" class="smalltd"></td>
+                <td width="12%" class="ColorGraytd">
+                <apex:outputText id="optTextCYear1Plus" value="{0,number,###,###,###}">
+                    <apex:param value="{!CPF_Report__c.C_Year_plus_1_Total__c}"/>
+                </apex:outputText>
+                <!--<apex:outputtext id="optTextCYear1Plus" value="{!CPF_Report__c.C_Year_plus_1_Total__c}"/>--></td>
+                <td width="12%" class="ColorGraytd">
+                <apex:outputText id="optTextCYear2Plus" value="{0,number,###,###,###}">
+                    <apex:param value="{!CPF_Report__c.C_Year_plus_2_Total__c}"/>
+                </apex:outputText>
+                <!--<apex:outputtext id="optTextCYear2Plus" value="{!CPF_Report__c.C_Year_plus_2_Total__c}"/>--></td>
+                <td width="12%" class="ColorGraytd">
+                <apex:outputText id="optTextCYear3Plus" value="{0,number,###,###,###}">
+                    <apex:param value="{!CPF_Report__c.C_Year_plus_3_Total__c}"/>
+                </apex:outputText>
+                </td>
+             <!-- <td width="8%">&nbsp;</td>  -->   
+           </tr>
+           <tr><td colspan="8" style="border: 2px solid #000000;padding:0px;"></td></tr>
+           <tr>
+                <th colspan="8" class="headingCollapse">
+                <!--<apex:inputHidden id="CollapseStatus" value="{!ModulePG.isShow}" />-->
+                    <table id="mytable7" border="1">
+                        <tr>                            
+                            <td class="headingCollapse" >{!$Label.Global_Fund_Resources}</td>
+                        </tr>
+                    </table>
+                </th>
+             <!-- <th width="8%">&nbsp;</th>  -->
+            </tr>
+            
+            <tr id="LineDSection">
+                <td width="19%" rowspan="2" style="border:1px;" ></td>
+                <th><center>{!intCurrentYear-2}</center></th>
+                <th><center>{!intCurrentYear-1}</center></th>
+                <th><center>{!intCurrentYear}</center></th>
+                <td class="smalltd"></td>
+                <th><center>{!intCurrentYear+1}</center></th>
+                <th><center>{!intCurrentYear+2}</center></th>
+                <th><center>{!intCurrentYear+3}</center></th>
+            </tr>
+            <tr id="LineDSection">
+                <th>
+                    <center>
+                        <span id="SM">{!strStartMonth}</span>/{!if(strImplementCycle == 'January - December',intCurrentYear-2,intCurrentYear-3)}
+                         - 
+                        <span id="EM">{!strEndMonth}</span>/{!intCurrentYear-2} 
+                    </center>
+                </th>
+                <th>
+                    <center>
+                        <span id="SM">{!strStartMonth}</span>/{!if(strImplementCycle == 'January - December',intCurrentYear-1,intCurrentYear-2)} 
+                         - 
+                        <span id="EM">{!strEndMonth}</span>/{!intCurrentYear-1} 
+                    </Center>
+                </th>
+                <th>
+                    <center>
+                        <span id="SM">{!strStartMonth}</span>/{!if(strImplementCycle == 'January - December',intCurrentYear,intCurrentYear-1)}
+                         - 
+                        <span id="EM">{!strEndMonth}</span>/{!intCurrentYear} 
+                    </Center>
+                </th>
+                <td class="smalltd"></td>
+                <th>
+                    <center>
+                        <span id="SM">{!strStartMonth}</span>/{!if(strImplementCycle == 'January - December',intCurrentYear+1,intCurrentYear)} 
+                         - 
+                        <span id="EM">{!strEndMonth}</span>/{!intCurrentYear+1} 
+                    </Center>
+                </th>                    
+                <th>
+                    <center>
+                        <span id="SM">{!strStartMonth}</span>/{!if(strImplementCycle == 'January - December',intCurrentYear+2,intCurrentYear+1)} 
+                         - 
+                        <span id="EM">{!strEndMonth}</span>/{!intCurrentYear+2} 
+                    </Center>
+                </th>
+                <th>
+                    <center>
+                        <span id="SM">{!strStartMonth}</span>/{!if(strImplementCycle == 'January - December',intCurrentYear+3,intCurrentYear+2)}  
+                         - 
+                        <span id="EM">{!strEndMonth}</span>/{!intCurrentYear+3} 
+                    </Center>
+                </th>
+            </tr>
+           <apex:repeat id="rptLineDIn" value="{!lstWrapperFundingSourceD}" var="FS">
+                <tr id="LineDSection">
+                    <td width="19%">
+                        {!FS.strName}
+                    </td>  
+                    <td class="tdcenter" width="12%">
+                     <!-- <apex:inputField id="inpDYear2" value="{!FS.objFundingSource.Year_2__c}" onchange="limitDecimalPlaces(this); onChangeLineD('{!lstWrapperFundingSourceD.size}','{!Count1}','2');"/>  -->   
+                        <apex:outputtext id="inpDYear2" value="{!FS.objFundingSource.Year_2__c}" />
+                    </td>
+                    <td class="tdcenter" width="12%">
+                    <!-- <apex:inputField id="inpDYear1" value="{!FS.objFundingSource.Year_1__c}" onchange="limitDecimalPlaces(this); onChangeLineD('{!lstWrapperFundingSourceD.size}','{!Count1}','1');"/>  -->    
+                        <apex:outputtext id="inpDYear1" value="{!FS.objFundingSource.Year_1__c}" />
+                    </td>
+                    <td class="tdcenter" width="12%">
+                     <!-- <apex:inputField id="inpDYear" value="{!FS.objFundingSource.Current_Year__c}" onchange="limitDecimalPlaces(this); onChangeLineD('{!lstWrapperFundingSourceD.size}','{!Count1}','');"/>  -->   
+                        <apex:outputtext id="inpDYear" value="{!FS.objFundingSource.Current_Year__c}" />
+                    </td>
+                    <td class="smalltd" width="1%"></td>
+                    <td class="tdcenter" width="12%">
+                     <!-- <apex:inputField id="inpDYear1Plus" value="{!FS.objFundingSource.Year_plus_1__c}" onchange="limitDecimalPlaces(this); onChangeLineD('{!lstWrapperFundingSourceD.size}','{!Count1}','1Plus');"/>  -->   
+                        <apex:outputtext id="inpDYear1Plus" value="{!FS.objFundingSource.Year_plus_1__c}" />
+                    </td>
+                    <td class="tdcenter" width="12%">
+                    <!-- <apex:inputField id="inpDYear2Plus" value="{!FS.objFundingSource.Year_plus_2__c}" onchange="limitDecimalPlaces(this); onChangeLineD('{!lstWrapperFundingSourceD.size}','{!Count1}','2Plus');"/>  -->    
+                         <apex:outputtext id="inpDYear2Plus" value="{!FS.objFundingSource.Year_plus_2__c}" />
+                    </td> 
+                    <td class="tdcenter" width="12%">
+                    <!-- <apex:inputField id="inpDYear3Plus" value="{!FS.objFundingSource.Year_plus_3__c}" onchange="limitDecimalPlaces(this); onChangeLineD('{!lstWrapperFundingSourceD.size}','{!Count1}','3Plus');"/>  -->    
+                        <apex:outputtext id="inpDYear3Plus" value="{!FS.objFundingSource.Year_plus_3__c}"  />
+                    </td> 
+                    <td class="borderNone" width="8%">
+                        <!--<apex:commandButton value="Comment" styleClass="dialougeButtonColor"  onclick="return openPopup('{!$Component.tstPopup}');"/>-->
+                        <table>
+                            <tr>
+                            <!---    <td style="padding:1px;">
+                                    <apex:commandLink action="{!actionShowHistoryPopUp}" status="Processing"  reRender="HistoryPopup">
+                                        <apex:image styleClass="Image" url="{!$Resource.History}" style="height: 20px;width: 20px;" />   
+                                        <apex:param value="{!FS.objFundingSource.id}" name="pramRecordId"/> 
+                                        <apex:param value="{!FS.objFundingSource.Name}" name="pramRecordName"/> 
+                                    </apex:commandLink>
+                                </td> --->
+                                <td style="padding:1px;">
+                              <!---      <apex:commandButton value="{!$Label.Comment}" styleClass="dialougeButtonColor"  onclick="return openPopup('{!$Component.tstPopup}');"/> --->
+                                </td>
+                            </tr>
+                        </table>                       
+                    </td>                    
+                </tr>
+            </apex:repeat>
+                
+            <tr id="LineDSection">
+                <th class="LineThColor" width="19%">
+                    <apex:outputPanel style="cursor:pointer !important;">
+                            {!$Label.Line_D_GF_Resources}
+                    </apex:outputPanel>
+               <!--     <apex:outputPanel style="cursor:pointer !important;" onmouseover="onMouseOverHelpTextShow('{!$Component.optLineD}','{!$Component.optTextLinkD}','','','','','');"
+                             onmouseout="onMouseOutHelpTextHide('{!$Component.optLineD}');" >
+                        <img class="helpOrb" title="" alt="" src="/s.gif"/>
+                    </apex:outputpanel> --->
+                   
+                </th>
+                <!--<th class="LineThColor">LINE D:  Total <br/> previous, current <br/> and anticipated <br/> Global Fund <br/> Resources from <br/> existing grants and <br/> approved proposals</th>-->
+                <td class="ColorGraytd">
+                <apex:outputText id="optTextDYear2" value="{0,number,###,###,###}">
+                    <apex:param value="{!objCPFReport.D_Year_2_Total__c}"/>
+                </apex:outputText>
+                </td>
+                
+                <td class="ColorGraytd">
+                <apex:outputText id="optTextDYear1" value="{0,number,###,###,###}">
+                    <apex:param value="{!objCPFReport.D_Year_1_Total__c}"/>
+                </apex:outputText></td>
+                
+                <td class="ColorGraytd">
+                <apex:outputText id="optTextDYear" value="{0,number,###,###,###}">
+                    <apex:param value="{!objCPFReport.D_Current_Year_Total__c}"/>
+                </apex:outputText>
+                </td>
+                
+                <td class="smalltd"></td>
+                <td class="ColorGraytd">
+                <apex:outputText id="optTextDYear1Plus" value="{0,number,###,###,###}">
+                    <apex:param value="{!objCPFReport.D_Year_plus_1_Total__c}"/>
+                </apex:outputText>
+                </td>
+                
+                <td class="ColorGraytd">
+                <apex:outputText id="optTextDYear2Plus" value="{0,number,###,###,###}">
+                    <apex:param value="{!objCPFReport.D_Year_plus_2_Total__c}"/>
+                </apex:outputText>
+                </td>
+                <td class="ColorGraytd">
+                <apex:outputText id="optTextDYear3Plus" value="{0,number,###,###,###}">
+                    <apex:param value="{!objCPFReport.D_Year_3_Total__c}"/>
+                </apex:outputText>
+                </td>
+           <!--     <td style="padding-left:30px;">
+                    <apex:commandButton value="{!$Label.Refresh}" styleClass="dialougeButtonColor" onclick="return RefreshLineDConfirm();"/>
+                </td> --->
+            </tr>
+            <tr><td colspan="8" style="border: 2px solid #000000;padding:0px;"></td></tr>
+            <!--<tr class="smalltr">
+                <td colspan="8"></td>
+            </tr>-->
+            <tr>
+                <th colspan="8" class="headingCollapse">
+                <!--<apex:inputHidden id="CollapseStatus" value="{!ModulePG.isShow}" />-->
+                    <table border="1">
+                        <tr>
+
+                            <td style="border:1px !important">{!$Label.Total_Request}</td>
+                        </tr>
+                    </table>
+                </th>
+            </tr>
+            
+            <tr id="LineEISection">
+                <td width="19%" rowspan="2" style="border:1px;" ></td>
+                <th><center>{!intCurrentYear-2}</center></th>
+                <th><center>{!intCurrentYear-1}</center></th>
+                <th><center>{!intCurrentYear}</center></th>
+                <td class="smalltd"></td>
+                <th><center>{!intCurrentYear+1}</center></th>
+                <th><center>{!intCurrentYear+2}</center></th>
+                <th><center>{!intCurrentYear+3}</center></th>
+            </tr>
+            <tr id="LineEISection">
+                <th>
+                    <center>
+                        <span id="SM">{!strStartMonth}</span>/{!if(strImplementCycle == 'January - December',intCurrentYear-2,intCurrentYear-3)}
+                         - 
+                        <span id="EM">{!strEndMonth}</span>/{!intCurrentYear-2} 
+                    </center>
+                </th>
+                <th>
+                    <center>
+                        <span id="SM">{!strStartMonth}</span>/{!if(strImplementCycle == 'January - December',intCurrentYear-1,intCurrentYear-2)} 
+                         - 
+                        <span id="EM">{!strEndMonth}</span>/{!intCurrentYear-1} 
+                    </Center>
+                </th>
+                <th>
+                    <center>
+                        <span id="SM">{!strStartMonth}</span>/{!if(strImplementCycle == 'January - December',intCurrentYear,intCurrentYear-1)}
+                         - 
+                        <span id="EM">{!strEndMonth}</span>/{!intCurrentYear} 
+                    </Center>
+                </th>
+                <td class="smalltd"></td>
+                <th>
+                    <center>
+                        <span id="SM">{!strStartMonth}</span>/{!if(strImplementCycle == 'January - December',intCurrentYear+1,intCurrentYear)} 
+                         - 
+                        <span id="EM">{!strEndMonth}</span>/{!intCurrentYear+1} 
+                    </Center>
+                </th>                    
+                <th>
+                    <center>
+                        <span id="SM">{!strStartMonth}</span>/{!if(strImplementCycle == 'January - December',intCurrentYear+2,intCurrentYear+1)} 
+                         - 
+                        <span id="EM">{!strEndMonth}</span>/{!intCurrentYear+2} 
+                    </Center>
+                </th>
+                <th>
+                    <center>
+                        <span id="SM">{!strStartMonth}</span>/{!if(strImplementCycle == 'January - December',intCurrentYear+3,intCurrentYear+2)}  
+                         - 
+                        <span id="EM">{!strEndMonth}</span>/{!intCurrentYear+3} 
+                    </Center>
+                </th>
+            </tr>
+            <tr id="LineEISection">
+                <th width="43%" colspan="3" class="LineThColor" align="right">{!$Label.Anticipated_Resources}<!--Total anticipated resources (annual amounts)--></th>
+                <td width="12%" class="ColorGraytd">
+                <apex:outputText id="ARYear" value="{0,number,###,###,###}">
+                    <apex:param value="{!CPF_Report__c.Anticipated_Resources_Current_Year__c}"/>
+                </apex:outputText></td>
+                <td width="1%" class="ColorGraytd"></td>
+                <td width="12%" class="ColorGraytd">
+                <apex:outputText id="ARYear1Plus" value="{0,number,###,###,###}">
+                    <apex:param value="{!CPF_Report__c.Anticipated_Resources_Year_1__c}"/>
+                </apex:outputText>
+                <!--<apex:outputText id="ARYear1Plus" value="{!CPF_Report__c.Anticipated_Resources_Year_1__c}"/>-->
+                </td>
+                <td width="12%" class="ColorGraytd">
+                <apex:outputText id="ARYear2Plus" value="{0,number,###,###,###}">
+                    <apex:param value="{!CPF_Report__c.Anticipated_Resources_Year_2__c}"/>
+                </apex:outputText></td>
+                
+                <td width="12%" class="ColorGraytd">
+                <apex:outputText id="ARYear3Plus" value="{0,number,###,###,###}">
+                    <apex:param value="{!CPF_Report__c.Anticipated_Resources_Year_3__c}"/>
+                </apex:outputText>
+                </td>
+             <!-- <td width="8%">&nbsp;</td>  -->   
+            </tr>
+            <tr id="LineEISection">
+                <th colspan="3" class="LineThColor" align="right">{!$Label.Line_E_Total_Resources}<!--LINE E : Total anticipated resources (Line B+C+D)--></th>
+                <td colspan="5" class="ColorGraytd">
+                <apex:outputText id="ARAllYearTotal" value="{0,number,###,###,###}">
+                    <apex:param value="{!CPF_Report__c.Anticipated_Resources_Total__c}"/>
+                </apex:outputText>
+                </td>
+            </tr>
+            <tr id="LineEISection"><td colspan="8" style="border: 2px solid #000000;padding:0px;"></td></tr>
+            <tr id="LineEISection">
+                <th colspan="3" class="LineThColor" align="right">{!$Label.Anticipated_Funding_Gap}<!--Annual Anticipated Funding Gap (Total funding <br/> need - Total  anticipated  funding gap)--></th>
+                <td class="ColorGraytd">
+                <apex:outputText id="AFGYear" value="{0,number,###,###,###}">
+                    <apex:param value="{!AnnualAnticipatedFundingGapCurr}"/>
+                </apex:outputText>
+                </td>
+                <td class="ColorGraytd"></td>
+                <td class="ColorGraytd">
+                <apex:outputText id="AFGYear1Plus" value="{0,number,###,###,###}">
+                    <!-- <apex:param value="{!CPF_Report__c.Anticipated_Funding_Gap_Year_1__c}"/> -->
+                    <apex:param value="{!AnnualAnticipatedFundingGap1}"/>
+                    
+                </apex:outputText>
+                </td>
+                <td class="ColorGraytd">
+                <apex:outputText id="AFGYear2Plus" value="{0,number,###,###,###}">
+                    <apex:param value="{!AnnualAnticipatedFundingGap2}"/>
+                    
+                </apex:outputText>
+                </td>
+                <td class="ColorGraytd">
+                <apex:outputText id="AFGYear3Plus" value="{0,number,###,###,###}">
+                    <apex:param value="{!AnnualAnticipatedFundingGap3}"/>
+                    
+                </apex:outputText>
+               </td>
+            </tr>
+            <tr id="LineEISection">
+                <th colspan="3" class="LineThColor" align="right">{!$Label.Line_F_Total_Funding_Gap}<!--LINE F: Total anticipated funding gap  (Line A - E)--></th>
+                <td colspan="5" class="ColorGraytd">
+                <apex:outputText id="AFGAllYearTotal" value="{0,number,###,###,###}">
+                    <apex:param value="{!CPF_Report__c.Anticipated_Funding_Gap_Total__c}"/>
+                </apex:outputText>
+               </td>
+            </tr>
+            <tr id="LineEISection"><td colspan="8" style="border: 2px solid #000000;padding:0px;"></td></tr>
+            <tr id="LineEISection">
+                <th colspan="3" class="LineThColor" align="right">{!$Label.Line_G_Total_Request}<!--LINE G: Total Funding Request to the Global Fund--></th>
+                <td class="ColorGraytd">
+                <apex:outputText id="TFRYear" value="{0,number,###,###,###}">
+                    <apex:param value="{!CPF_Report__c.Total_Y1__c}"/>
+                </apex:outputText>
+                </td>
+                <td class="ColorGraytd"></td>
+                <td class="ColorGraytd">
+                <apex:outputText id="TFRYear1Plus" value="{0,number,###,###,###}">
+                    <apex:param value="{!CPF_Report__c.Total_Y2__c}"/>
+                </apex:outputText>
+                </td>
+                <td class="ColorGraytd">
+                <apex:outputText id="TFRYear2Plus" value="{0,number,###,###,###}">
+                    <apex:param value="{!CPF_Report__c.Total_Y3__c}"/>
+                </apex:outputText>
+                </td>
+                <td class="ColorGraytd">
+                <apex:outputText id="TFRYear3Plus" value="{0,number,###,###,###}" style="display:{!if(CPF_Report__c.Concept_Note__r.Number_of_Years__c == '4',true,false)};">
+                    <apex:param value="{!CPF_Report__c.Total_Y4__c}"/>
+                </apex:outputText>
+               </td>
+            </tr>            
+            
+            <!--<apex:repeat id="rptLineIIn" value="{!lstWrapperFundingSourceI}" var="FS">
+                <tr id="LineEISection">
+                    <th class="LineThColor" colspan="4">{!FS.strName}</th>  
+                    <td class="smalltd"></td>
+                    <td class="ColorGraytd">
+                        <apex:outputtext id="inpIYear1Plus" value="{!FS.objFundingSource.Year_plus_1__c}"/>--> <!-- onchange="limitDecimalPlaces(this); return onChangeLineI('{!lstWrapperFundingSourceI.size}','1Plus');"/>-->
+                    <!--</td>  
+                    <td class="ColorGraytd">
+                        <apex:outputtext id="inpIYear2Plus" value="{!FS.objFundingSource.Year_plus_2__c}"/>
+                    </td> 
+                    <td class="ColorGraytd">
+                       <apex:outputtext id="inpIYear3Plus" value="{!FS.objFundingSource.Year_plus_3__c}"/>
+                    </td>
+                    <td class="borderNone" style="padding:0px;text-align: center;">
+                        <apex:commandButton value="Comment"  styleClass="dialougeButtonColor" onclick="return openPopup('{!$Component.tstPopup}');"/>
+                            <apex:outputPanel id="tstPopup" style="display:none;">
+                                <apex:outputPanel id="popupBackground1" styleClass="popupAssumptionBackground"/>
+                                <apex:outputPanel id="custPopup1" styleClass="custAssumptionPopup">
+                                <table style="border:1px solid black;width:100%">
+                                    <tr>
+                                        <th class="DiaglouePanelText">LFA Comments:</th>                  
+                                        <td><apex:inputField value="{!FS.objFundingSource.LFA_Comments__c}" styleclass="DiaglouePanelTextarea"/></td>
+                                    </tr>
+                                    <tr>
+                                        <th class="DiaglouePanelText">CCM Comments:</th>                  
+                                        <td><apex:inputField value="{!FS.objFundingSource.CCM_Comments__c}" styleclass="DiaglouePanelTextarea"/></td>
+                                    </tr>
+                                    <tr>
+                                        <th class="DiaglouePanelText">Global Fund Comments:</th>                  
+                                        <td><apex:inputField value="{!FS.objFundingSource.Global_Fund_Comments__c}" styleclass="DiaglouePanelTextarea"/></td>
+                                    </tr>
+                                    <tr>
+                                        <td align="center" colspan="2" style="text-align:center;">
+                                            <apex:commandButton value="OK" styleClass="DiaglouePanelButtonSaveAndCancel" onclick="return closePopup('{!$Component.tstPopup}');"/>
+                                            &nbsp;&nbsp;&nbsp;<apex:commandButton value="Close" styleClass="DiaglouePanelButtonSaveAndCancel" onclick="return closePopup('{!$Component.tstPopup}');"/>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </apex:outputPanel>
+                        </apex:outputPanel>
+                    </td>     
+                </tr>
+            </apex:repeat>-->
+            
+            <tr id="LineEISection">
+                <th colspan="3" class="LineThColor" align="right">{!$Label.Line_H_Funding_Request_Allocated_Amount}<!--LINE H: Funding request within the Indicative Amount--></th>
+                <td class="ColorGraytd">
+                    <apex:outputText id="FRYear" value="{0,number,###,###,###}">
+                        <apex:param value="{!CPF_Report__c.Indicative_Y1__c}"/>
+                    </apex:outputText>
+                </td>
+                <td class="ColorGraytd"></td>
+                <td class="ColorGraytd">
+                    <apex:outputText id="FRYear1Plus" value="{0,number,###,###,###}">
+                        <apex:param value="{!CPF_Report__c.Indicative_Y2__c}"/>
+                    </apex:outputText>
+                </td>
+                <td class="ColorGraytd">
+                    <apex:outputText id="FRYear2Plus" value="{0,number,###,###,###}">
+                        <apex:param value="{!CPF_Report__c.Indicative_Y3__c}"/>
+                    </apex:outputText>
+                </td>
+                <td class="ColorGraytd">
+                    <apex:outputText id="FRYear3Plus" value="{0,number,###,###,###}" style="display:{!if(CPF_Report__c.Concept_Note__r.Number_of_Years__c == '4',true,false)};">
+                        <apex:param value="{!CPF_Report__c.Indicative_Y4__c}"/>
+                    </apex:outputText>
+                </td>
+                
+            </tr>
+            <tr id="LineEISection">
+                <th colspan="3" class="LineThColor">{!$Label.Line_I_Funding_Request_Above_Allocated}<!--LINE I: Funding request above the Indicative Amount--></th>
+                <td class="ColorGraytd">
+                    <apex:outputText id="FRAYear" value="{0,number,###,###,###}">
+                        <apex:param value="{!CPF_Report__c.Above_Indicative_Y1__c}"/>
+                    </apex:outputText>
+                </td>
+                <td class="ColorGraytd"></td>
+                <td class="ColorGraytd">
+                    <apex:outputText id="FRAYear1Plus" value="{0,number,###,###,###}">
+                        <apex:param value="{!CPF_Report__c.Above_Indicative_Y2__c}"/>
+                    </apex:outputText>
+                </td>
+                <td class="ColorGraytd">
+                    <apex:outputText id="FRAYear2Plus" value="{0,number,###,###,###}">
+                        <apex:param value="{!CPF_Report__c.Above_Indicative_Y3__c}"/>
+                    </apex:outputText>
+                </td>
+                <td class="ColorGraytd">
+                    <apex:outputText id="FRAYear3Plus" value="{0,number,###,###,###}" style="display:{!if(CPF_Report__c.Concept_Note__r.Number_of_Years__c == '4',true,false)};">
+                        <apex:param value="{!CPF_Report__c.Above_Indicative_Y4__c}"/>
+                    </apex:outputText>
+                </td>
+            </tr>
+            <tr>
+                <th colspan="8" class="headingFontAndColor"><center>{!$Label.Government_Health_Spending_Overall}<!--Part Two: Overall Health Sector - Government Health Spending--></center></th>
+            </tr>
+            <tr>
+                <th colspan="8" class="headingCollapse">
+                
+                    <table id="MyTable8" border="1">
+                        <tr>
+                            <td class="headingCollapse" style="border:1px !important">{!$Label.Government_Health_Spending}</td>
+                        </tr>
+                    </table>
+                </th>
+            </tr>            
+            <tr id="LineJSection">
+                <td width="19%" rowspan="2" style="border:1px;" ></td>
+                <th><center>{!intCurrentYear-2}</center></th>
+                <th><center>{!intCurrentYear-1}</center></th>
+                <th><center>{!intCurrentYear}</center></th>
+                <td class="smalltd"></td>
+                <th><center>{!intCurrentYear+1}</center></th>
+                <th><center>{!intCurrentYear+2}</center></th>
+                <th><center>{!intCurrentYear+3}</center></th>
+            </tr>
+            <tr id="LineJSection">
+                <th>
+                    <center>
+                        <span id="SM">{!strStartMonth}</span>/{!if(strImplementCycle == 'January - December',intCurrentYear-2,intCurrentYear-3)}
+                         - 
+                        <span id="EM">{!strEndMonth}</span>/{!intCurrentYear-2} 
+                    </center>
+                </th>
+                <th>
+                    <center>
+                        <span id="SM">{!strStartMonth}</span>/{!if(strImplementCycle == 'January - December',intCurrentYear-1,intCurrentYear-2)} 
+                         - 
+                        <span id="EM">{!strEndMonth}</span>/{!intCurrentYear-1} 
+                    </Center>
+                </th>
+                <th>
+                    <center>
+                        <span id="SM">{!strStartMonth}</span>/{!if(strImplementCycle == 'January - December',intCurrentYear,intCurrentYear-1)}
+                         - 
+                        <span id="EM">{!strEndMonth}</span>/{!intCurrentYear} 
+                    </Center>
+                </th>
+                <td class="smalltd"></td>
+                <th>
+                    <center>
+                        <span id="SM">{!strStartMonth}</span>/{!if(strImplementCycle == 'January - December',intCurrentYear+1,intCurrentYear)} 
+                         - 
+                        <span id="EM">{!strEndMonth}</span>/{!intCurrentYear+1} 
+                    </Center>
+                </th>                    
+                <th>
+                    <center>
+                        <span id="SM">{!strStartMonth}</span>/{!if(strImplementCycle == 'January - December',intCurrentYear+2,intCurrentYear+1)} 
+                         - 
+                        <span id="EM">{!strEndMonth}</span>/{!intCurrentYear+2} 
+                    </Center>
+                </th>
+                <th>
+                    <center>
+                        <span id="SM">{!strStartMonth}</span>/{!if(strImplementCycle == 'January - December',intCurrentYear+3,intCurrentYear+2)}  
+                         - 
+                        <span id="EM">{!strEndMonth}</span>/{!intCurrentYear+3} 
+                    </Center>
+                </th>
+            </tr>
+            <apex:repeat id="rptLineJIn" value="{!lstWrapperFundingSourceJ}" var="FS">
+                <tr id="LineJSection">
+                    <td>
+                        {!FS.strName}
+                    </td>  
+                    <td class="tdcenter">                    
+                    <apex:outputText id="inpJYear2" value="{!FS.objFundingSource.Year_2__c}"/>
+                    </td>
+                    <td class="tdcenter">                     
+                      <apex:outputText id="inpJYear1" value="{!FS.objFundingSource.Year_1__c}" />
+                    </td>
+                    <td class="tdcenter">                     
+                     <apex:outputText id="inpJYear" value="{!FS.objFundingSource.Current_Year__c}" />
+                    </td>
+                    <td class="smalltd"></td>
+                    <td class="tdcenter">                    
+                     <apex:outputText id="inpJYear1Plus" value="{!FS.objFundingSource.Year_plus_1__c}" />
+                    </td>
+                    <td class="tdcenter">                     
+                     <apex:outputText id="inpJYear2Plus" value="{!FS.objFundingSource.Year_plus_2__c}" />
+                    </td> 
+                    <td class="tdcenter">                     
+                     <apex:outputText id="inpJYear3Plus" value="{!FS.objFundingSource.Year_plus_3__c}" />
+                    </td> 
+                    <td >                   
+                    <apex:outputtext id="inpBYear1Plus8" value="{!FS.objFundingSource.CCM_Comments__c}" />                    
+                    </td>
+                    <td class="tdcenter">                    
+                    <apex:outputtext id="inpBYear2Plus9" value="{!FS.objFundingSource.LFA_Comments__c}" />
+                    </td> 
+                    <td class="tdcenter">                   
+                    <apex:outputtext id="inpBYear3Plus10" value="{!FS.objFundingSource.Global_Fund_Comments__c}" />
+                    </td>
+                                                  
+                </tr>
+            </apex:repeat>
+                
+            <tr id="LineJSection">
+                <th class="LineThColor">
+                    <apex:outputPanel style="cursor:pointer !important;">
+                            {!$Label.Government_Health}
+                    </apex:outputPanel>
+                </th>
+                <td class="ColorGraytd">
+                 <apex:outputText value="{!CPF_Report__c.J_Year_2_Total__c}" />
+                </td>
+                <td class="ColorGraytd">
+                <apex:outputText value="{!CPF_Report__c.J_Year_1_Total__c}"/>
+                </td>
+                <td class="ColorGraytd">
+                <apex:outputText value="{!CPF_Report__c.J_Current_Year_Total__c}"/>
+                </td>
+                <td class="smalltd"></td>
+                <td class="ColorGraytd">
+                <apex:outputText value="{!CPF_Report__c.J_Year_plus_1_Total__c}"/>
+                </td>
+                <td class="ColorGraytd">
+                <apex:outputText value="{!CPF_Report__c.J_Year_plus_2_Total__c}"/>
+                </td>
+                <td class="ColorGraytd">
+                <apex:outputText value="{!CPF_Report__c.J_Year_3_Total__c}"/>
+                </td>
+            </tr>
+            <tr><td colspan="8" style="border: 2px solid #000000;padding:0px;"></td></tr>
+
+            <tr>
+                <th colspan="8" class="headingCollapse">
+                <!--<apex:inputHidden id="CollapseStatus" value="{!ModulePG.isShow}" />-->
+                    <table>
+                        <tr>                           
+                            <td class="headingCollapse" style="border:1px !important">{!$Label.Counterpart_Financing}</td>
+                        </tr>
+                    </table>
+                </th>
+            </tr>
+            <tr id="LineKPSection">
+                <td width="19%" rowspan="2" style="border:1px;" ></td>
+                <th><center>{!intCurrentYear-2}</center></th>
+                <th><center>{!intCurrentYear-1}</center></th>
+                <th><center>{!intCurrentYear}</center></th>
+                <td class="smalltd"></td>
+                <th><center>{!intCurrentYear+1}</center></th>
+                <th><center>{!intCurrentYear+2}</center></th>
+                <th><center>{!intCurrentYear+3}</center></th>
+            </tr>
+            <tr id="LineKPSection">
+                <th>
+                    <center>
+                        <span id="SM">{!strStartMonth}</span>/{!if(strImplementCycle == 'January - December',intCurrentYear-2,intCurrentYear-3)}
+                         - 
+                        <span id="EM">{!strEndMonth}</span>/{!intCurrentYear-2} 
+                    </center>
+                </th>
+                <th>
+                    <center>
+                        <span id="SM">{!strStartMonth}</span>/{!if(strImplementCycle == 'January - December',intCurrentYear-1,intCurrentYear-2)} 
+                         - 
+                        <span id="EM">{!strEndMonth}</span>/{!intCurrentYear-1} 
+                    </Center>
+                </th>
+                <th>
+                    <center>
+                        <span id="SM">{!strStartMonth}</span>/{!if(strImplementCycle == 'January - December',intCurrentYear,intCurrentYear-1)}
+                         - 
+                        <span id="EM">{!strEndMonth}</span>/{!intCurrentYear} 
+                    </Center>
+                </th>
+                <td class="smalltd"></td>
+                <th>
+                    <center>
+                        <span id="SM">{!strStartMonth}</span>/{!if(strImplementCycle == 'January - December',intCurrentYear+1,intCurrentYear)} 
+                         - 
+                        <span id="EM">{!strEndMonth}</span>/{!intCurrentYear+1} 
+                    </Center>
+                </th>                    
+                <th>
+                    <center>
+                        <span id="SM">{!strStartMonth}</span>/{!if(strImplementCycle == 'January - December',intCurrentYear+2,intCurrentYear+1)} 
+                         - 
+                        <span id="EM">{!strEndMonth}</span>/{!intCurrentYear+2} 
+                    </Center>
+                </th>
+                <th>
+                    <center>
+                        <span id="SM">{!strStartMonth}</span>/{!if(strImplementCycle == 'January - December',intCurrentYear+3,intCurrentYear+2)}  
+                         - 
+                        <span id="EM">{!strEndMonth}</span>/{!intCurrentYear+3} 
+                    </Center>
+                </th>
+            </tr>
+            <tr id="LineKPSection">
+                <th width="19%" class="LineThColor">
+                    <apex:outputPanel style="cursor:pointer !important;">
+                         {!$Label.Government_Resources}
+                    </apex:outputPanel>
+            
+
+                </th>
+                <td width="12%" class="ColorGraytd">
+                 <apex:outputText value="{!TotalK2}"/>
+                </td>
+                <td width="12%" class="ColorGraytd">
+                <apex:outputText value="{!TotalK1}"/> 
+                </td>
+                <td width="12%" class="ColorGraytd">
+                <apex:outputText value="{!TotalK}"/>
+                </td>
+
+            </tr>
+            <tr id="LineKPSection"><td colspan="8" style="border: 2px solid #000000;padding:0px;"></td></tr>
+            <tr id="LineKPSection">
+                <th class="LineThColor">
+                    <apex:outputPanel style="cursor:pointer !important;">
+                             {!$Label.Average_Government_Resources}
+                    </apex:outputPanel>
+            
+      
+                </th>
+                <td colspan="3" class="ColorGraytd">
+                <apex:outputText id="LAverage" value="{0,number,###,###,###}">
+                    <apex:param value="{!LAverage}"/>
+                </apex:outputText>                
+                </td>
+                <td class="smalltd"></td>
+                <td colspan="3"><apex:outputtext /></td>
+            </tr>
+            <tr id="LineKPSection"><td colspan="8" style="border: 2px solid #000000;padding:0px;"></td></tr>
+            <tr id="LineKPSection">
+                <th colspan="3" class="LineThColor">
+                    <apex:outputPanel style="cursor:pointer !important;">
+                            {!$Label.Average_Request_Allocated}<!--Average of request within indicative-->
+                    </apex:outputPanel>
+
+                </th>
+                
+                <!-- <td colspan="3" class="ColorGraytd"><apex:outputText id="MAverage" value="{!CPF_Report__c.M_Average__c}"/></td> -->
+               <td colspan="5" class="ColorGraytd"><apex:outputText id="MAverage" value="{0,number,###,###,###}"><apex:param value="{!MAverage}"/></apex:outputText></td>
+                
+            </tr>
+            <tr id="LineKPSection"><td colspan="8" style="border: 2px solid #000000;padding:0px;"></td></tr>
+            <tr id="LineKPSection">
+                <th colspan="7" class="YellowField">
+                    <apex:outputPanel style="cursor:pointer !important;">
+                            {!$Label.CPF_Existing_Commitments}<!--Counterpart financing based on existing commitments-->
+                    </apex:outputPanel>
+
+                  
+                </th>
+               <!-- <th colspan="7" class="YellowField">Line N: Counterpart financing based on existing Global Fund <br/> commitments and indicative financing = <br/> (calculation of government contribution)</th>-->
+                <td class="ColorGraytd"><apex:outputText id="NAverage" value="{!NAverage}"/>%<!--{!if(NAverage == 0,'','%')}--></td>
+            </tr>
+            <tr id="LineKPSection">
+                <th colspan="3" class="LineThColor">
+                    <apex:outputPanel style="cursor:pointer !important;">
+                             {!$Label.Average_Total_Request}<!--Average of total request-->
+                    </apex:outputPanel>
+                    <apex:outputPanel id="optLineO" styleClass="helpTextPopup" style="display:none;margin-top: 10px;top:90% !important;">
+                     <!---  {!$Label.Line_O_Average_Funding_Request_GF} ---><br/>
+                       <!--LINE O: Yearly average of Total Funding Request to the Global Fund (including existing commitments)-->
+                    <!---   {!$Label.Line_O_Average_D_G} --->
+                       <!--<br/>Line O = Average of Line D and Line G entries for upcoming Y1, Y2, Y3 funding request-->
+                       <!-- <table width="50%" border="1" cellpadding="0" cellspacing="0">
+                           
+                            <tr>
+                                <td colspan="3" style="align:center;background: lightgrey !important;">
+                                    <apex:outputText id="optTextLinkOTextFirst" value="LINE O: Yearly average of Total Funding Request to the Global Fund (including existing commitments)"/>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="3" style="align:center;background: lightgrey !important;">
+                                    <apex:outputText id="optTextLinkOText1" value="Line O = Average of Line D and Line G entries for upcoming Y1, Y2, Y3 funding request"/>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td rowspan="2" style="vertical-align:middle;background: lightgrey !important;">
+                                    <apex:outputText id="optTextLinkOText2" value="Line O ="/>
+                                </td>
+                                <td style="background: lightgrey !important;">
+                                    <apex:outputText id="optTextLinkOText3" style="align:center">
+                                        <center>[Average of total government resources for past 3 <br/>years(Line L)]</center>
+                                    </apex:outputText>
+                                </td>
+                                <td rowspan="2" style="vertical-align:middle;background: lightgrey !important;">
+                                    <apex:outputText id="optTextLinkOText4" value="X 100"/>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="background: lightgrey !important;">
+                                    <center><apex:outputText id="optTextLinkOText5">
+                                    [Average Global Fund resources for upcoming Y1, Y2, <br/>
+                                    Y3 (Line M)] + <br/>
+                                    [Average of total government resources for past 3 <br/>
+                                    years (Line L)]
+                                    </apex:outputText></center>
+                                </td>
+                            </tr>
+                        </table>-->
+                    </apex:outputPanel>
+                </th>
+                
+                <td colspan="5" class="ColorGraytd"><apex:outputText id="OAverage" value="{0,number,###,###,###}"><apex:param value="{!OAverage}"/></apex:outputText></td>
+            </tr>
+            <tr id="LineKPSection"><td colspan="8" style="border: 2px solid #000000;padding:0px;"></td></tr>
+            <tr id="LineKPSection">
+                <th colspan="7" class="YellowField">
+                    <apex:outputPanel style="cursor:pointer !important;" >
+                             {!$Label.CPF_Total_Request}<!--Counterpart financing based on total funding request-->
+                    </apex:outputPanel>
+
+                    
+                </th>
+                <td class="ColorGraytd"><apex:outputText id="PAverage" value="{!PAverage}"/>%<!--{!if(PAverage == 0,'','%')}-->
+                    
+                </td>
+            </tr>
+            
+        </table>
+        <script>
+            function onMouseOverHelpTextShow(PopupPanelId,HelpTextValueFirst,HelpTextValue1,HelpTextValue2,HelpTextValue3,HelpTextValue4,HelpTextValue5) {
+                if(HelpTextValueFirst.innerHTML != ''){
+                    document.getElementById(PopupPanelId).style.display = ''; 
+                }
+                if(HelpTextValue1.innerHTML != ''){
+                    document.getElementById(PopupPanelId).style.display = ''; 
+                }
+                if(HelpTextValue2.innerHTML != ''){
+                    document.getElementById(PopupPanelId).style.display = ''; 
+                }
+                if(HelpTextValue3.innerHTML != ''){
+                    document.getElementById(PopupPanelId).style.display = ''; 
+                }
+                if(HelpTextValue4.innerHTML != ''){
+                    document.getElementById(PopupPanelId).style.display = ''; 
+                }
+                if(HelpTextValue5.innerHTML != ''){
+                    document.getElementById(PopupPanelId).style.display = ''; 
+                }
+            }
+            function onMouseOutHelpTextHide(PopupPanelId){     
+              document.getElementById(PopupPanelId).style.display = 'none';        
+            }
+            
+            function RemoveComma(CostValue){
+                
+                var ReComma = new RegExp("\\,","g");
+                var ReQuate = new RegExp("\\'","g");
+                CostValue = CostValue.replace(ReComma,"");
+                CostValue = CostValue.replace(ReQuate,"");
+                CostValue = CostValue.replace(",.",".");
+                CostValue = CostValue.replace("'.",".");
+                return CostValue;
+            }
+            function updateAllValuesOfC(size){
+                var sizeC = size;//'{!lstWrapperFundingSourceC.size}';
+                for(var i=0;i<sizeC;i++){
+                    onChangeLineC(sizeC,i,'2');
+                    onChangeLineC(sizeC,i,'1');
+                    onChangeLineC(sizeC,i,'');
+                    onChangeLineC(sizeC,i,'1Plus');
+                    onChangeLineC(sizeC,i,'2Plus');
+                    onChangeLineC(sizeC,i,'3Plus');
+                }
+                if(sizeC == '0')
+                {
+                    document.getElementById('page:frm:optTextCYear1').innerHTML = '0';
+                    document.getElementById('page:frm:optTextCYear2').innerHTML = '0';
+                    document.getElementById('page:frm:optTextCYear').innerHTML = '0';
+                    document.getElementById('page:frm:optTextCYear1Plus').innerHTML = '0';
+                    document.getElementById('page:frm:optTextCYear2Plus').innerHTML = '0';
+                    document.getElementById('page:frm:optTextCYear3Plus').innerHTML = '0';
+                }
+            }
+            function onChangeNationalPlan(CurrentYear,Year1,Year2,Year3,Answer) {
+                var cy = document.getElementById(CurrentYear).value;
+                var y1 = document.getElementById(Year1).value;
+                var y2 = document.getElementById(Year2).value;
+                var y3 = document.getElementById(Year3).value;
+                
+                cy = RemoveComma(cy);
+                y1 = RemoveComma(y1);
+                y2 = RemoveComma(y2);
+                y3 = RemoveComma(y3);
+                
+                if(cy == '') cy = 0;
+                if(y1 == '') y1 = 0;
+                if(y2 == '') y2 = 0;                
+                if(y3 == '') y3 = 0;
+                
+                document.getElementById(Answer).innerHTML = addCommas(parseFloat(cy)+parseFloat(y1)+parseFloat(y2)+parseFloat(y3));
+                
+                var totalAFGCY = parseFloat(cy) - parseFloat(RemoveComma(document.getElementById('page:frm:ARYear').innerHTML));
+                document.getElementById('page:frm:AFGYear').innerHTML = addCommas(totalAFGCY);
+                
+                var totalAFG1 = parseFloat(y1) - parseFloat(RemoveComma(document.getElementById('page:frm:ARYear1Plus').innerHTML));
+                document.getElementById('page:frm:AFGYear1Plus').innerHTML = addCommas(totalAFG1);
+               
+                var totalAFG2 = parseFloat(y2) - parseFloat(RemoveComma(document.getElementById('page:frm:ARYear2Plus').innerHTML));
+                document.getElementById('page:frm:AFGYear2Plus').innerHTML = addCommas(totalAFG2);
+               
+                var totalAFG3 = parseFloat(y3) - parseFloat(RemoveComma(document.getElementById('page:frm:ARYear3Plus').innerHTML));
+                document.getElementById('page:frm:AFGYear3Plus').innerHTML = addCommas(totalAFG3); 
+                
+                document.getElementById('page:frm:AFGAllYearTotal').innerHTML = addCommas(totalAFGCY + totalAFG1 + totalAFG2 + totalAFG3);
+                
+            }
+            
+            function CalculateTotalAR(){
+                var ARYear = 0;
+                var val = RemoveComma(document.getElementById('page:frm:ARYear').innerHTML);
+                if(val != ''){
+                    ARYear = parseFloat(val);
+                }
+                var AR1Plus = 0;
+                var val = RemoveComma(document.getElementById('page:frm:ARYear1Plus').innerHTML);
+                if(val != ''){
+                    AR1Plus = parseFloat(val);
+                }
+                var AR2Plus = 0;
+                var val = RemoveComma(document.getElementById('page:frm:ARYear2Plus').innerHTML);
+                if(val != ''){
+                    AR2Plus = parseFloat(val);
+                }
+                var AR3Plus = 0;
+                var val = RemoveComma(document.getElementById('page:frm:ARYear3Plus').innerHTML);
+                if(val != ''){
+                    AR3Plus = parseFloat(val);
+                }                        
+                document.getElementById('page:frm:ARAllYearTotal').innerHTML = addCommas(ARYear + AR1Plus + AR2Plus + AR3Plus);
+            }
+            
+            function CalculateTotalAFG(){
+                
+                var ARCurr = 0;
+                var val = RemoveComma(document.getElementById('page:frm:AFGYear').innerHTML);
+                if(val != ''){
+                    ARCurr = parseFloat(val);
+                    
+                }
+                
+                var AR1Plus = 0;
+                var val = RemoveComma(document.getElementById('page:frm:AFGYear1Plus').innerHTML);
+                if(val != ''){
+                    AR1Plus = parseFloat(val);
+                    
+                }
+                var AR2Plus = 0;
+                var val = RemoveComma(document.getElementById('page:frm:AFGYear2Plus').innerHTML);
+                if(val != ''){
+                    AR2Plus = parseFloat(val);
+                    
+                }
+                var AR3Plus = 0;
+                var val = RemoveComma(document.getElementById('page:frm:AFGYear3Plus').innerHTML);
+                if(val != ''){
+                    AR3Plus = parseFloat(val);
+                    
+                }                        
+                document.getElementById('page:frm:AFGAllYearTotal').innerHTML = addCommas(ARCurr + AR1Plus + AR2Plus + AR3Plus);
+            }
+            
+            function onChangeLineB(lstSize,Count,Num) {
+                if(lstSize > 0){
+                    var Total = 0;
+                    
+                    for(var i=0;i<lstSize;i++) {
+                        if(document.getElementById('page:frm:rptLineBIn:'+i+':inpBYear'+Num) != null) {
+                            var val = RemoveComma(document.getElementById('page:frm:rptLineBIn:'+i+':inpBYear'+Num).value);
+                            if( val == '' || isNaN(val) == true) {
+                                Total += 0;
+                            } else {
+                                Total += parseFloat(val);
+                            }
+                        }
+                    }
+                    if(Total > 0){
+                        document.getElementById('page:frm:optTextBYear'+Num).innerHTML = addCommas(Total);
+                    }else{
+                        document.getElementById('page:frm:optTextBYear'+Num).innerHTML = '';
+                    }
+                    
+                    if(Num == '1' || Num == '2' || Num == ''){
+                        var TotalK = 0;
+                        var val = RemoveComma(document.getElementById('page:frm:rptLineBIn:0:inpBYear'+Num).value);
+                        if(val == '' || isNaN(val) == true) {
+                            TotalK += 0; 
+                        }else{
+                            TotalK += parseFloat(val);
+                        }
+                        var val = RemoveComma(document.getElementById('page:frm:rptLineBIn:1:inpBYear'+Num).value);
+                        if(val == '' || isNaN(val) == true) {
+                            TotalK += 0; 
+                        }else{
+                            TotalK += parseFloat(val);
+                        }
+                        var val = RemoveComma(document.getElementById('page:frm:rptLineBIn:2:inpBYear'+Num).value);
+                        if(val == '' || isNaN(val) == true) {
+                            TotalK += 0; 
+                        }else{
+                            TotalK += parseFloat(val);
+                        }
+                        var val = RemoveComma(document.getElementById('page:frm:rptLineBIn:3:inpBYear'+Num).value);
+                        if(val == '' || isNaN(val) == true) {
+                            TotalK += 0; 
+                        }else{
+                            TotalK += parseFloat(val);
+                        }
+                        if(TotalK > 0){
+                            document.getElementById('page:frm:optTotalK'+Num).innerHTML = addCommas(TotalK);
+                        }else{
+                            document.getElementById('page:frm:optTotalK'+Num).innerHTML = '';
+                        }
+                        
+                        var NumAlt1;
+                        var NumAlt2;
+                        if(Num == '1') {
+                            NumAlt1 = '2';
+                            NumAlt2 = '';
+                        }else if(Num == '2'){
+                            NumAlt1 = '1';
+                            NumAlt2 = '';
+                        }else if(Num == ''){
+                            NumAlt1 = '1';
+                            NumAlt2 = '2';
+                        }
+                        var BYear1 = 0;
+                        var val = RemoveComma(document.getElementById('page:frm:optTextBYear'+NumAlt1).innerHTML);
+                        if(val != ''){
+                            BYear1 = parseFloat(val);
+                        }
+                        var BYear2 = 0;
+                        var val = RemoveComma(document.getElementById('page:frm:optTextBYear'+NumAlt2).innerHTML);
+                        if(val != ''){
+                            BYear2 = parseFloat(val);
+                        }
+                        
+                        //document.getElementById('page:frm:LAverage').innerHTML = addCommas((Total + BYear1 + BYear2)/3);
+                        //document.getElementById('page:frm:LAverage').innerHTML = addCommas(TotalK/3);
+                        
+                        var totalForLAvg = parseFloat(RemoveComma(document.getElementById('page:frm:optTotalK2').innerHTML)) + parseFloat(RemoveComma(document.getElementById('page:frm:optTotalK1').innerHTML)) + parseFloat(RemoveComma(document.getElementById('page:frm:optTotalK').innerHTML));
+                        if(totalForLAvg > 0){
+                            document.getElementById('page:frm:LAverage').innerHTML = addCommas(parseFloat(totalForLAvg/3));
+                        }else{
+                            document.getElementById('page:frm:LAverage').innerHTML = ''
+                        }
+                        
+                        
+                        var totalForN = parseFloat(RemoveComma(document.getElementById('page:frm:LAverage').innerHTML)) + parseFloat(RemoveComma(document.getElementById('page:frm:MAverage').innerHTML));
+                        if(totalForN > 0){
+                            document.getElementById('page:frm:NAverage').innerHTML = addCommas((parseFloat(RemoveComma(document.getElementById('page:frm:LAverage').innerHTML))/totalForN)*100);
+                        }else{
+                            document.getElementById('page:frm:NAverage').innerHTML = ''
+                        }
+                        
+                        var totalForP = parseFloat(RemoveComma(document.getElementById('page:frm:OAverage').innerHTML)) + parseFloat(RemoveComma(document.getElementById('page:frm:LAverage').innerHTML));
+                        if(totalForP > 0){
+                            document.getElementById('page:frm:PAverage').innerHTML = addCommas((parseFloat(RemoveComma(document.getElementById('page:frm:LAverage').innerHTML)))/totalForP*100);
+                        }else{
+                            document.getElementById('page:frm:PAverage').innerHTML = ''
+                        }
+                    }
+                    
+                    if(Num == '1Plus' || Num == '2Plus' || Num == '3Plus' || Num == ''){
+                        var TotalC = 0;
+                        var val = RemoveComma(document.getElementById('page:frm:optTextCYear'+Num).innerHTML);
+                        if(val != ''){
+                            TotalC = parseFloat(val);
+                        }
+                        var TotalD = 0;
+                        var val = RemoveComma(document.getElementById('page:frm:optTextDYear'+Num).innerHTML);
+                        if(val != ''){
+                            TotalD = parseFloat(val);
+                        }
+                        
+                        var TotalAR = 0;
+                        var TotalAR = Total + TotalC + TotalD;
+                        if(TotalAR > 0){
+                            document.getElementById('page:frm:ARYear'+Num).innerHTML = addCommas(TotalAR);
+                        }else{
+                            document.getElementById('page:frm:ARYear'+Num).innerHTML = '';
+                        }                   
+                        //document.getElementById('page:frm:AFGYear'+Num).innerHTML = addCommas(Total - TotalAR);
+                        
+                        document.getElementById('page:frm:AFGYear'+Num).innerHTML = addCommas(parseFloat(RemoveComma(document.getElementById('page:frm:rptInNational:0:inpYear'+Num).value)) - TotalAR);
+                        
+                        CalculateTotalAR();
+                        CalculateTotalAFG();
+                    }
+                }
+            }
+            function onChangeLineC(lstSize,Count,Num) {
+                if(lstSize > 0){
+                    var Total = 0;
+                    for(var i=0;i<lstSize;i++) {
+                        if(document.getElementById('page:frm:rptLineCIn:'+i+':inpCYear'+Num) != null) {
+                            var val = RemoveComma(document.getElementById('page:frm:rptLineCIn:'+i+':inpCYear'+Num).value);
+                            if(val == '' || isNaN(val) == true) {
+                                Total += 0;
+                            } else {
+                                Total += parseFloat(val);
+                            }
+                        }
+                    }
+                    if(Total > 0){
+                        document.getElementById('page:frm:optTextCYear'+Num).innerHTML = addCommas(Total);
+                    }else{
+                        document.getElementById('page:frm:optTextCYear'+Num).innerHTML = '0';
+                    }
+                    if(Num == '1Plus' || Num == '2Plus' || Num == '3Plus' || Num == ''){
+                        var TotalB = 0;
+                        var val = RemoveComma(document.getElementById('page:frm:optTextBYear'+Num).innerHTML);
+                        if(val != ''){
+                            TotalB = parseFloat(val);
+                        }
+                        var TotalD = 0;
+                        var val = RemoveComma(document.getElementById('page:frm:optTextDYear'+Num).innerHTML);
+                        if(val != ''){
+                            TotalD = parseFloat(val);
+                        }
+                        
+                        var TotalAR = 0;
+                        var TotalAR = Total + TotalB + TotalD;
+                        if(TotalAR > 0){
+                            document.getElementById('page:frm:ARYear'+Num).innerHTML = addCommas(TotalAR);
+                        }else{
+                            document.getElementById('page:frm:ARYear'+Num).innerHTML = '';
+                        }                   
+                        
+                        //document.getElementById('page:frm:AFGYear'+Num).innerHTML = addCommas(Total - TotalAR);
+                        if(document.getElementById('page:frm:rptInNational:0:inpYear'+Num).value == ''){
+                            document.getElementById('page:frm:AFGYear'+Num).innerHTML = addCommas(0 - TotalAR);
+                        }else{
+                            document.getElementById('page:frm:AFGYear'+Num).innerHTML = addCommas(parseFloat(RemoveComma(document.getElementById('page:frm:rptInNational:0:inpYear'+Num).value)) - TotalAR);
+                        }
+                        CalculateTotalAR();
+                        CalculateTotalAFG();
+                        
+                    }
+                }
+           }
+           function onChangeLineD(lstSize,Count,Num) {
+                if(lstSize > 0){
+                    var Total = 0;
+                    for(var i=0;i<lstSize;i++) {
+                        if(document.getElementById('page:frm:rptLineDIn:'+i+':inpDYear'+Num) != null) {
+                            var val = RemoveComma(document.getElementById('page:frm:rptLineDIn:'+i+':inpDYear'+Num).value);
+                            if(val == '' || isNaN(val) == true) {
+                                Total += 0;
+                            } else {
+                                Total += parseFloat(val);
+                            }
+                        }
+                    }
+                    if(Total > 0){
+                        document.getElementById('page:frm:optTextDYear'+Num).innerHTML = addCommas(Total);
+                    }
+                    if(Num == '1Plus' || Num == '2Plus' || Num == '3Plus' || Num == ''){
+                        var TotalC = 0;
+                        var val = RemoveComma(document.getElementById('page:frm:optTextCYear'+Num).innerHTML);
+                        if(val != ''){
+                            TotalC = parseFloat(val);
+                        }
+                        var TotalB = 0;
+                        var val = RemoveComma(document.getElementById('page:frm:optTextBYear'+Num).innerHTML);
+                        if(val != ''){
+                            TotalB = parseFloat(val);
+                        }
+                        
+                        var TotalAR = 0;
+                        var TotalAR = Total + TotalC + TotalB;
+                        if(TotalAR > 0){
+                            document.getElementById('page:frm:ARYear'+Num).innerHTML = addCommas(TotalAR);
+                        }else{
+                            document.getElementById('page:frm:ARYear'+Num).innerHTML = '';
+                        }                   
+                        //document.getElementById('page:frm:AFGYear'+Num).innerHTML = addCommas(Total - TotalAR);                      
+                        document.getElementById('page:frm:AFGYear'+Num).innerHTML = addCommas(parseFloat(RemoveComma(document.getElementById('page:frm:rptInNational:0:inpYear'+Num).innerHTML)) - TotalAR);
+                        
+                        CalculateTotalAR();
+                        CalculateTotalAFG();
+                    }
+                    if(Num == '1Plus' || Num == '2Plus' || Num == '3Plus' || Num == ''){
+                        var NumAlt1;
+                        var NumAlt2;
+                        if(Num == '1Plus') {
+                            NumAlt1 = '2Plus';
+                            NumAlt2 = '3Plus';
+                        }else if(Num == '2Plus'){
+                            NumAlt1 = '1Plus';
+                            NumAlt2 = '3Plus';
+                        }else if(Num == '3Plus'){
+                            NumAlt1 = '1Plus';
+                            NumAlt2 = '2Plus';
+                        }
+                        var DYear1 = 0
+                        var val = RemoveComma(document.getElementById('page:frm:optTextDYear'+NumAlt1).innerHTML);
+                        if(val != ''){
+                            DYear1 = parseFloat(val);
+                        }
+                        var DYear2 = 0;
+                        var val = RemoveComma(document.getElementById('page:frm:optTextDYear'+NumAlt2).innerHTML);
+                        if(val != ''){
+                            DYear2 = parseFloat(val);
+                        }
+                        
+                        var CountAvgM = 1;
+                        var FRA = 0;
+                        var val = RemoveComma(document.getElementById('page:frm:FRYear').innerHTML);
+                        if(val != '' || isNaN(val) != true){
+                            FRA = parseFloat(val);
+                        }
+                        var FRA1 = 0;
+                        var val = RemoveComma(document.getElementById('page:frm:FRYear1Plus').innerHTML);
+                        if(val != '' || isNaN(val) != true){
+                            FRA1 = parseFloat(val);
+                            CountAvgM ++;
+                        }
+                        var FRA2 = 0;
+                        var val = RemoveComma(document.getElementById('page:frm:FRYear2Plus').innerHTML);
+                        if(val != '' || isNaN(val) != true){
+                            FRA2 = parseFloat(val);
+                            CountAvgM ++;
+                        }
+                        var FRA3 = 0;
+                        var val = RemoveComma(document.getElementById('page:frm:FRYear3Plus').innerHTML);
+                        if(val != '' || isNaN(val) != true){
+                            FRA3 = parseFloat(val);
+                            CountAvgM ++;
+                        }
+                        
+                        var CountAvgO = 1;
+                        var FR = 0;
+                        var val = RemoveComma(document.getElementById('page:frm:TFRYear').innerHTML);
+                        if(val != '' || isNaN(val) != true){
+                            FR = parseFloat(val);
+                        }
+                        
+                        var FR1 = 0;
+                        var val = RemoveComma(document.getElementById('page:frm:TFRYear1Plus').innerHTML);
+                        if(val != '' || isNaN(val) != true){
+                            FR1 = parseFloat(val);
+                            CountAvgO ++;
+                        }
+                        
+                        var FR2 = 0;
+                        var val = RemoveComma(document.getElementById('page:frm:TFRYear2Plus').innerHTML);
+                        if(val != '' || isNaN(val) != true){
+                            FR2 = parseFloat(val);
+                            CountAvgO ++;
+                        }
+                        var FR3 = 0;
+                        var val = RemoveComma(document.getElementById('page:frm:TFRYear3Plus').innerHTML);
+                        if(val != '' || isNaN(val) != true){
+                            FR3 = parseFloat(val);
+                            CountAvgO ++;
+                        }
+                        
+                        //document.getElementById('page:frm:MAverage').innerHTML = addCommas((Total + DYear1 + DYear2 + FRA1 + FRA2 + FRA3)/3);
+                        document.getElementById('page:frm:MAverage').innerHTML = addCommas((FRA + FRA1 + FRA2 + FRA3)/CountAvgM);
+                        if(isNaN(document.getElementById('page:frm:MAverage').innerHTML) == true){
+                            document.getElementById('page:frm:MAverage').innerHTML = '';
+                        }
+                        
+                        //document.getElementById('page:frm:OAverage').innerHTML = addCommas((Total + DYear1 + DYear2 + FR1 + FR2 + FR3)/3);
+                        document.getElementById('page:frm:OAverage').innerHTML = addCommas((FR + FR1 + FR2 + FR3)/CountAvgO);
+                        if(isNaN(document.getElementById('page:frm:OAverage').innerHTML) == true){
+                            document.getElementById('page:frm:OAverage').innerHTML = '';
+                        }
+                        var totalForN = parseFloat(RemoveComma(document.getElementById('page:frm:LAverage').innerHTML)) + parseFloat(RemoveComma(document.getElementById('page:frm:MAverage').innerHTML));
+                        if(totalForN > 0){
+                            document.getElementById('page:frm:NAverage').innerHTML = addCommas((parseFloat(document.getElementById('page:frm:LAverage').innerHTML)/totalForN)*100);
+                        }else{
+                            document.getElementById('page:frm:NAverage').innerHTML = ''
+                        }
+                        
+                        var totalForP = parseFloat(RemoveComma(document.getElementById('page:frm:OAverage').innerHTML)) + parseFloat(RemoveComma(document.getElementById('page:frm:LAverage').innerHTML));
+                        if(totalForP > 0){
+                            document.getElementById('page:frm:PAverage').innerHTML = addCommas((parseFloat(document.getElementById('page:frm:LAverage').innerHTML))/totalForP*100);
+                        }else{
+                            document.getElementById('page:frm:PAverage').innerHTML = ''
+                        }
+                    }
+                }
+           }
+           
+           function onChangeLineJ(lstSize,Count,Num) {
+                if(lstSize > 0){
+                    var Total = 0;
+                    for(var i=0;i<lstSize;i++) {
+                        if(document.getElementById('page:frm:rptLineJIn:'+i+':inpJYear'+Num) != null) {
+                            var val = RemoveComma(document.getElementById('page:frm:rptLineJIn:'+i+':inpJYear'+Num).value);
+                            if(val == '' || isNaN(val) == true) {
+                                Total += 0;
+                            } else {
+                                Total += parseFloat(val);
+                            }
+                        }
+                    }
+                    if(Total > 0){
+                        document.getElementById('page:frm:optTextJYear'+Num).innerHTML = addCommas(Total);
+                    }else{
+                        document.getElementById('page:frm:optTextJYear'+Num).innerHTML = '';
+                    }
+               }
+           }
+           function CalculateTotalFR(FR,FRA,Total){
+                var TotalFR = 0;
+                var val = RemoveComma(document.getElementById(FR).value);
+                if(val == '' || isNaN(val) == true){
+                    TotalFR += 0;
+                }else{
+                    TotalFR += parseFloat(val);
+                }
+                var val = RemoveComma(document.getElementById(FRA).value);
+                if(val == '' || isNaN(val) == true){
+                    TotalFR += 0;
+                }else{
+                    TotalFR += parseFloat(val);
+                }
+                if(TotalFR > 0){
+                    document.getElementById(Total).innerHTML = addCommas(TotalFR);
+                }else{
+                    document.getElementById(Total).innerHTML = '';
+                }
+            }
+            function onChangeLineI(lstSize,Num){
+                if(lstSize > 0){
+                    var Total = 0;
+                    for(var i=0;i<lstSize;i++) {
+                        if(document.getElementById('page:frm:rptLineIIn:'+i+':inpIYear'+Num) != null) {
+                            var val = RemoveComma(document.getElementById('page:frm:rptLineIIn:'+i+':inpIYear'+Num).value);
+                            if(val == '' || isNaN(val) == true) {
+                                Total += 0;
+                            } else {
+                                Total += parseFloat(val);
+                            }
+                        }
+                    }
+                    if(Total > 0){
+                        document.getElementById('page:frm:TFRYear'+Num).innerHTML = addCommas(Total);
+                    }else{
+                        document.getElementById('page:frm:TFRYear'+Num).innerHTML = '';
+                    }
+               }    
+            
+            }
+            function openPopup(popupId){
+                document.getElementById(popupId).style.display = '';
+                return false;
+            }
+            function closePopup(popupId){
+                document.getElementById(popupId).style.display = 'none';
+                return false;
+            }
+            function OpenDeletePopup(popupId){
+                document.getElementById(popupId).style.display = '';
+                return false;
+            }
+            function CloseDeletePopup(popupId){
+                document.getElementById(popupId).style.display = 'none';
+                return false;
+            }
+            
+            function limitDecimalPlaces(input){
+                if(input.value!=''){
+                    
+                    var RemoveCommaValue = RemoveComma(input.value);
+                    if(isNaN(RemoveCommaValue)==false){                       
+                        input.value = Math.round(RemoveCommaValue*100)/100;
+                    }else{
+                        alert("{!$Label.Enter_Amount}"); <!--Please enter a valid Amount.-->
+                        input.value='';
+                        return false;
+                    }
+                }
+            }
+            function addCommas(nStr){
+                nStr = Math.round(nStr*100)/100;
+                nStr += '';
+                x = nStr.split('.');
+                x1 = x[0];
+                x2 = x.length > 1 ? '.' + x[1] : '';
+                var rgx = /(\d+)(\d{3})/;
+                while (rgx.test(x1)) {
+                    x1 = x1.replace(rgx, '$1' + ',' + '$2');
+                }
+                return x1 + x2;
+            }
+            function addCommasother(nStr){
+                nStr = Math.round(nStr*100)/100;
+                nStr += '';
+                x = nStr.split('.');
+                x1 = x[0];
+                x2 = x.length > 1 ? '.' + x[1] : '';
+                var rgx = /(\d+)(\d{3})/;
+                while (rgx.test(x1)) {
+                    x1 = x1.replace(rgx, '$1' + "'" + '$2');
+                }
+                return x1 + x2;
+            }
+            function externalSourceTypeChanged(pickList,otherTextboxID){
+                var objOtherTextBox = document.getElementById(otherTextboxID);
+                if(pickList.options[pickList.selectedIndex].text=='Other'){                    
+                    objOtherTextBox.value ='';
+                    objOtherTextBox.style.display='';
+                }else{
+                    objOtherTextBox.value ='';
+                    objOtherTextBox.style.display='none';
+                }
+            }
+            switchMenu('LineBSection','page:frm:minusimage','page:frm:plusimage','true');
+            switchMenu('LineCSection','page:frm:minusimage','page:frm:plusimage','true');
+            switchMenu('LineDSection','page:frm:minusimage','page:frm:plusimage','true');
+            switchMenu('LineEISection','page:frm:minusimage','page:frm:plusimage','true');
+            switchMenu('LineJSection','page:frm:minusimage','page:frm:plusimage','true');
+            switchMenu('LineKPSection','page:frm:minusimage','page:frm:plusimage','true');
+            
+            function switchMenu(obj,obj1,obj2,val) 
+            {
+                //document.getElementById(hdn).value = val; 
+                var AllTr = document.getElementsByTagName("tr");
+                for(var i=0;i<AllTr.length;i++){
+                    //alert(AllTr[i].id);
+                    if(AllTr[i].id == obj){
+                        if ( AllTr[i].style.display != 'none' ) {
+                            AllTr[i].style.display = 'none';
+                        }
+                        else {
+                            AllTr[i].style.display = '';
+                        }
+                    }
+                }
+                
+                var e2 = document.getElementById(obj1);                                       
+                if ( e2.style.display != 'none' ) {
+                e2.style.display = 'none';
+                }
+                else {
+                e2.style.display = '';
+                }
+                 var e3 = document.getElementById(obj2);                                       
+                if ( e2.style.display != 'none' ) {
+                e3.style.display = 'none';
+                }
+                else {
+                e3.style.display = '';
+                }
+            }
+            function changeStartAndEndMonth(cycle){
+                if(cycle.value != '' && cycle.value != 'January - December'){
+                    if(cycle.value.indexOf(" - ") != -1){
+                        var splitMonths = cycle.value.split(" - ");
+                        var StartMonth = splitMonths[0];
+                        var EndMonth = splitMonths[1];
+                        var StartMonthTotal = document.getElementsByTagName("span");
+                        for(var i=0;i<StartMonthTotal.length;i++){
+                            if(StartMonthTotal[i].id == 'SM')
+                                StartMonthTotal[i].innerHTML = getMonth(StartMonth);
+                            if(StartMonthTotal[i].id == 'EM')
+                                StartMonthTotal[i].innerHTML = getMonth(EndMonth);
+                        }
+                    }
+                }
+            }
+            
+            function getMonth(strMonth){
+                var strMonthNumber = '';
+                if(strMonth == '{!$Label.January}') strMonthNumber = '01';
+                if(strMonth == '{!$Label.February}') strMonthNumber = '02'; 
+                if(strMonth == '{!$Label.March}') strMonthNumber = '03';
+                if(strMonth == '{!$Label.April}') strMonthNumber = '04';
+                if(strMonth == '{!$Label.May}') strMonthNumber = '05';
+                if(strMonth == '{!$Label.June}') strMonthNumber = '06';
+                if(strMonth == '{!$Label.July}') strMonthNumber = '07';
+                if(strMonth == '{!$Label.August}') strMonthNumber = '08';
+                if(strMonth == '{!$Label.September}') strMonthNumber = '9';
+                if(strMonth == '{!$Label.October}') strMonthNumber = '10';
+                if(strMonth == '{!$Label.November}') strMonthNumber = '11';
+                if(strMonth == '{!$Label.December}') strMonthNumber = '12';
+                return strMonthNumber;
+            }
+            function RefreshLineDConfirm(){
+                var conf = confirm('{!$Label.Quick_Save_Warning}'); <!--Any unsaved data will be lost upon running the Existing Global Fund Resources Query. Please click "Quick Save" first to save your data.-->
+                if(conf == true){
+                    actRefreshLineD();
+                    return false;
+                }else{
+                    return false;
+                }
+            }
+        </script>
+    <apex:outputPanel id="HistoryPopup" >
+    <apex:outputPanel id="popupBackgroundH" styleClass="popupBackgroundHistory" rendered="{! if(blnHistory  == true,true,false)}" />
+        <apex:outputPanel id="custPopupH" styleClass="custPopupHistory" rendered="{! if(blnHistory  == true,true,false)}">
+        
+       <!---     <table>
+            <tr>
+                <td>
+                    <apex:dynamicComponent componentValue="{!showHistoryPopup}" id="dynCompoHistory" />
+                </td>
+            </tr>
+            <tr>
+                <td align="center" style="">
+                    <apex:commandButton value="OK" action="{!HidePopupHistory}" style="width:50px" reRender="frm" status="Processing"> 
+                    </apex:commandButton>
+                </td>
+            </tr>
+            </table> --->
+              
+        </apex:outputPanel>
+    </apex:outputPanel>
+    <script>
+        var nodes = document.getElementsByTagName('input');
+        for(var i = 0; i < nodes.length; i++)
+        {
+            if(nodes[i].type == "text" && nodes[i].id != 'phSearchInput'){
+                nodes[i].disabled = {!blnReadOnly};
+            }
+        }
+        var nodesSelect = document.getElementsByTagName('select');
+        for(var i = 0; i < nodesSelect.length; i++)
+        {
+            nodesSelect[i].disabled = {!blnReadOnly};
+        }
+     </script>
+    
+ </apex:form> 
+</apex:page>

@@ -1,0 +1,831 @@
+<apex:page standardController="Grant_Indicator__c" id="page" extensions="overrideext" sidebar="false"  >
+<apex:stylesheet value="{!URLFOR($Resource.GoalsJs, 'assets/css/bootstrap.css')}"/>
+<apex:stylesheet value="{!URLFOR($Resource.GoalsJs, 'assets/css/bootstrap-responsive.css')}"/>
+   <style>
+        .targetTable{
+            width : 50px !important;
+        }
+       .custPopup{
+            background-color: white;
+            border-width: 2px;
+            border-style: solid;
+            z-index: 9999;
+            left: 50%;
+            padding:10px;
+            position: absolute;
+            /* These are the 3 css properties you will need to change so the popup 
+            displays in the center of the screen. First set the width. Then set 
+            margin-left to negative half of what the width is. You can add 
+            the height property for a fixed size pop up if you want.*/
+            width: 700px;
+            margin-left: -350px;
+            top:100px;
+            overflow:auto;
+            height:450px;
+        }
+        
+         .Processing
+        {
+            z-index: 9997;
+            left: 50%;
+            top: 50%;
+            text-align: center;
+            position: fixed;
+        } 
+        .ProcessingBackground
+        {
+            background-color: black;
+            opacity: 0.50;
+            filter: alpha(opacity = 50);
+            width: 100%;
+            height: 100%;
+            position: fixed;
+            z-index: 9997;
+            top:0;
+            left:0;
+        }  
+        .popupBackgroundHistory{
+            background-color:black;
+            opacity: 0.20;
+            filter: alpha(opacity = 50);
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            z-index: 9998;
+            top: 0;
+            left: 0;
+           
+        }
+        .custPopupHistory{
+            background-color: white;
+            border-width: 0px;
+            border-radius:10px;
+            border-style: solid;
+            z-index: 9999;           
+            left: 20%;
+            padding:10px;
+            position: absolute;
+            top:20%;
+            right: 20%;
+        }
+        .Image{
+        cursor:pointer;
+        height:13px;
+        width:13px;
+        vertical-align:middle;
+        }
+        .labelCol {
+            font-size : 14px !important; 
+            font-weight : normal !important;
+        }
+        .pbSubheader {
+            padding-top: 0px !important;
+            padding-right: 0px !important;
+        }
+        .input {
+            width:50 px !important;
+            }
+        .requiredIp {
+            position:relative;
+        }
+        .requiredBlocks {
+            background-color:#c00;
+            position:absolute;
+            left:-4px;
+            width: 25px;
+            top:1px;
+            bottom:1px
+        }
+  </style> 
+   <script>
+          
+         
+      
+       function setdecimal(targets){
+
+           var targetvalue = document.getElementById(targets).value;
+           var decimal = document.getElementById("{!$Component.page.frm.pb1.pbs1.decimal}").value;
+           if(targetvalue == '' || isNaN(targetvalue) == true) 
+               targetvalue = 0;
+           document.getElementById(targets).value = parseFloat(targetvalue).toFixed(decimal);
+      }
+          
+       function settargets(decimal) {             
+            
+        var places = document.getElementById(decimal).value;                        
+        var decimal1 = document.getElementById('page:frm:pb1:pbs4:target:target1');            
+        var decimal2 = document.getElementById('page:frm:pb1:pbs5:target:target2');            
+        var decimal3 = document.getElementById('page:frm:pb1:pbs6:target:target3');            
+        var type = document.getElementById('page:frm:pb1:pbs1:indtype').value;
+        var datatype;
+        var stdorcust = document.getElementById('page:frm:pb1:pbs1:stdorcust').value;
+        var datatype = document.getElementById('page:frm:pb1:pbs1:datatypeophid').value;                                                                     
+
+                              
+        if(datatype == 'Number and Percent') { 
+            //base num 
+            var basenumId = document.getElementById('page:frm:pb1:pbs3:num');
+            basenum = basenumId.value;
+            if(basenum == '' || isNaN(basenum) == true) 
+                basenum = 0;
+            document.getElementById('page:frm:pb1:pbs3:num').value =  parseFloat(basenum).toFixed(places);
+            //base den 
+            var baseden = document.getElementById('page:frm:pb1:pbs3:den').value;
+            if(baseden == '' || isNaN(baseden) == true) 
+                baseden = 0;
+            document.getElementById('page:frm:pb1:pbs3:den').value =  parseFloat(baseden).toFixed(places);
+            
+            var baseOp = document.getElementById('page:frm:pb1:pbs3:baselineOp:basev').innerHTML;
+            if(baseOp == '' || isNaN(baseOp) == true) 
+                baseOp = 0;
+            document.getElementById('page:frm:pb1:pbs3:baselineOp:basev').innerHTML =  parseFloat(baseOp).toFixed(places);
+            
+                if(type == 'Coverage/Output') {                   
+                	var resultRecords = document.getElementById('page:frm:pb1:TargetTable2:ipHid').value;                   
+                    for(var i = 0; i<resultRecords; i++) {
+                        
+                        var targetnumid = 'page:frm:pb1:TargetTable2:rptrGIRNume:'+i+':txtTNume';
+                        var tarrgetnum = document.getElementById(targetnumid).value;
+                        if(tarrgetnum == '' || isNaN(tarrgetnum) == true) 
+                            tarrgetnum = 0;
+                        document.getElementById(targetnumid).value =  parseFloat(tarrgetnum).toFixed(places);
+                         
+                        var targetDenid = 'page:frm:pb1:TargetTable2:rptrGIRDnomi:'+i+':txtTDnomi';
+                        var tarrgetden = document.getElementById(targetDenid).value;
+                        if(tarrgetden == '' || isNaN(tarrgetden) == true) 
+                            tarrgetden = 0;
+                        document.getElementById(targetDenid).value =  parseFloat(tarrgetden).toFixed(places);
+                        var targetVal = document.getElementById('page:frm:pb1:TargetTable2:rptrGIRNume:'+i+':opTvalue').innerHTML;
+                        if(targetVal == '' || targetVal == 0.0000) 
+                            //alert('inside if');
+                            targetVal = 0;
+                        document.getElementById('page:frm:pb1:TargetTable2:rptrGIRNume:'+i+':opTvalue').innerHTML = parseFloat(targetVal).toFixed(places);                        
+                    } 
+                    return false;
+                }
+         }
+        if(datatype != 'Number and Percent') {
+            // set Baseline value
+            var decimal0 = document.getElementById('page:frm:pb1:pbs3:baseline:basev');
+            var t0 = decimal0.value;
+            if(t0 == '' || isNaN(t0) == true) 
+                t0 = 0;
+            decimal0.value =  parseFloat(t0).toFixed(places);
+            if(type == 'Coverage/Output') {
+            	var resultRecords = document.getElementById('page:frm:pb1:TargetTable2:ipHid').value;                
+                for(var i = 0; i<resultRecords; i++) {
+                    var targetTNumid = 'page:frm:pb1:TargetTable2:repeatnumber:'+i+':numbervalue';
+                    var tarrgetnum = document.getElementById(targetTNumid).value; 
+                    if(tarrgetnum == '' || isNaN(tarrgetnum) == true) 
+                        tarrgetnum = 0;
+                        document.getElementById(targetTNumid).value =  parseFloat(tarrgetnum).toFixed(places);
+                }   
+                return false;
+            }                                                             
+        }
+            
+        
+        if(type != 'Coverage/Output') {
+        if(document.getElementById('page:frm:pb1:pbs7:target:target4')) {
+            var decimal4 = document.getElementById('page:frm:pb1:pbs7:target:target4');    
+            var t4 = decimal4.value;
+            if(t4 == '' || isNaN(t4) == true) 
+                t4 = 0;
+            decimal4.value = parseFloat(t4).toFixed(places);
+            
+        }
+                     
+        var t1 = decimal1.value;
+        var t2 = decimal2.value;
+        var t3 = decimal3.value;                                   
+        if(t1 == '' || isNaN(t1) == true) 
+            t1 = 0;
+        if(t2 == '' || isNaN(t2) == true) 
+            t2 = 0;
+        if(t3 == '' || isNaN(t3) == true) 
+            t3 = 0;
+        decimal1.value =  parseFloat(t1).toFixed(places);
+        decimal2.value =  parseFloat(t2).toFixed(places);
+        decimal3.value =  parseFloat(t3).toFixed(places);       
+                    
+        return false;     
+       }
+       return false;             
+    }
+      
+       function calculate(textnum,textden){
+            var decimal = document.getElementById("{!$Component.page.frm.pb1.pbs1.decimal}").value;
+             var nume = document.getElementById(textnum).value;
+             
+             var denomi = document.getElementById(textden).value;
+            
+                 if(denomi == '' || denomi == 0){
+                     document.getElementById("{!$Component.page.frm.pb1.pbs3.baselineOp.basev}").innerHTML = '';
+                     document.getElementById("{!$Component.page.frm.pb1.pbs3.baselineOp.basevTxt}").value = '';
+                 }
+                 else{                
+                      var value= (nume/denomi)*100;
+                      document.getElementById("{!$Component.page.frm.pb1.pbs3.baselineOp.basev}").innerHTML = value.toFixed(decimal);
+                      document.getElementById("{!$Component.page.frm.pb1.pbs3.baselineOp.basevTxt}").value = value.toFixed(decimal);
+                 }
+                 setdecimal(textnum);
+                 setdecimal(textden);
+                 setdecimal("{!$Component.page.frm.pb1.pbs3.baselineOp.basev}");
+         }
+          function openLookupwindow(){
+        
+          openLookupwindowctrl();
+        }
+        function catindname(catinds, popupId){
+             document.getElementById(popupId).style.display = 'none';
+             var cat = document.getElementById(catinds).value;            
+             document.getElementById("{!$Component.page.frm.pb1.pbs1.catindsec.catindtext}").value = cat ;
+        
+       }
+       
+       function changedatatype(){
+         // showsdatype();
+          reportingfrequency();
+       }
+       function focusonme(element) {
+            element = '#' + element;
+            window.location.hash = element;
+            return false;
+        }
+        
+        function modindname(modinds, popupId,modid){
+             document.getElementById(popupId).style.display = 'none';
+             var mod = document.getElementById(modinds).value;  
+             var id =  document.getElementById(modid).value;  
+             document.getElementById("{!$Component.page.frm.pb1.grantInfo.modsec.modtext}").value = mod;
+              document.getElementById("{!$Component.page.frm.pb1.grantInfo.modH}").value = id ;
+       }
+       
+   </script>
+      <apex:form id="frm" >
+        <apex:outputPanel id="errorMsg" >
+        <apex:pageMessages />
+        </apex:outputPanel>
+      <apex:actionFunction action="{!openlookupwindow}" name="openLookupwindowctrl" reRender="lookupoptpnl" status="Processing" oncomplete="focusonme('{!$Component.custPopupH}');"/>
+     
+      <div id="divProcessing" style="display:none;">
+            <div class="ProcessingBackground"></div>
+            <div class="Processing">
+                <apex:image alt="Processing" url="{!$Resource.LoadingCircle}" />
+            </div>
+        </div>  
+        <apex:actionStatus id="Processing" onstart="document.getElementById('divProcessing').style.display = '';" onstop="document.getElementById('divProcessing').style.display = 'none';">                            
+        </apex:actionStatus> 
+     
+            <apex:pageBlock id="pb1">               
+                   <apex:actionFunction name="showsdatype" action="{!showdatatype}"  />
+                  <apex:actionFunction name="reportingfrequency" action="{!showReportingFreqAndDataType}" rerender="pbs1,TargetTable,pbs3,pbs4,pbs5,pbs6,pbs7" status="Processing" />
+                 
+             <apex:pageBlockButtons >
+                  <apex:CommandButton value="{!$Label.Save}" action="{!save}" />
+                  <apex:CommandButton value="{!$Label.Cancel}" action="{!cancel}"/>
+              </apex:pageBlockButtons>
+              <!-- Grant Information -->
+              <apex:pageBlockSection showHeader="true" title="{!$Label.grantinfo}" columns="2" id="grantInfo">
+                 <apex:pageBlockSectionItem >
+                 <apex:outputText value="{!$Label.PF_section}" />
+                 <apex:outputField id="pf" value="{!Grant_Indicator__c.Performance_Framework__c}" />
+                 </apex:pageBlockSectionItem>
+                 <apex:inputfield value="{!Grant_Indicator__c.Concept_Note__c}" id="cn" rendered="{!If(Grant_Indicator__c.Concept_Note__c != Null,true,false)}"/>
+                 <apex:outputfield value="{!Grant_Indicator__c.Grant_Implementation_Period__c}" rendered="{!If(Grant_Indicator__c.Concept_Note__c == Null,true,false)}"/>
+                
+                  <apex:pageBlockSectionItem id="modsec" rendered="{!if(Grant_Indicator__c.Indicator_Type__c == $Label.coverage_CN_rec_name,true,false)}">
+                       <apex:outputText value="{!$Label.Module}"></apex:outputText>
+                       <apex:panelGrid columns="3">
+                            <apex:outputPanel >
+                            <div class="requiredInput">
+                            <div class="requiredBlock" style = "height:27px;"></div>            
+                             <apex:inputText id="modtext" value="{!module}">
+                                   <apex:actionSupport event="onchange" action="{!clearModuleRelVal}" reRender="pbs1,errorMsg"/>
+                             </apex:inputtext>
+                              </div> </apex:outputPanel>
+                              <apex:commandLink action="{!openlookupwindowmodule}" status="Processing" rerender="pbs1,lookupoptpnlmod,errorMsg">
+                                   <apex:image styleClass="Image" url="{!$Resource.Lookup}" title="Module Lookup(New Window)" style="height: 18px;width: 18px;" />
+                               </apex:commandLink>
+                       </apex:panelGrid>
+                 </apex:pageBlockSectionItem>
+                 <apex:inputHidden id="modH" value="{!Grant_Indicator__c.Parent_Module__c}" rendered="{!if(Grant_Indicator__c.Indicator_Type__c == $Label.coverage_CN_rec_name,true,false)}" />           
+              </apex:pageBlockSection>
+               <div style = "display:none;" id = "hidDiv">
+                  <apex:inputField value="{!Grant_Indicator__c.Grant_Implementation_Period__c}" style="display:none;"/>
+                  <apex:inputfield value="{!Grant_Indicator__c.Component__c}"/>        
+              </div>
+              <!-- Indicator detail section -->
+              <apex:variable value="{!if(Grant_Indicator__c.Indicator_Type__c == 'impact' || Grant_Indicator__c.Indicator_Type__c == $Label.Impact_type, $Label.Impact_Indicator_Detail, if(Grant_Indicator__c.Indicator_Type__c == $Label.Outcome_type, $Label.Outcome_Indicator_Detail, $Label.Coverage_Output_Indicator_Detail))}" var="typeOfIndicator" />
+              <apex:pageBlockSection showHeader="true" title="{!typeOfIndicator}" columns="2" id="pbs1" rendered="{!display4}">
+                  <apex:inputfield value="{!Grant_Indicator__c.Indicator_Full_Name__c}" rendered="{!if(Grant_Indicator__c.Standard_or_Custom__c == $Label.Custom_type,true,false)}"/>
+                  <apex:inputfield id="stdorcust" value="{!Grant_Indicator__c.Standard_or_Custom__c}" >
+                        <apex:actionsupport event="onchange" rerender="pbs1" status="Processing" />
+                  </apex:inputfield>
+                  <apex:inputfield value="{!Grant_Indicator__c.Indicator_Type__c}" style="cursor:not-allowed;" id="indtype" >
+                  <script>document.getElementById('{!$Component.indtype}').disabled = true; </script>
+                  </apex:inputfield>
+                  <!--<apex:inputField value="{!Grant_Indicator__c.Indicator__c}" >
+                    <apex:actionsupport event="onchange" action="{!showReportingFreqAndDataType}"  rerender="pbs1,pbs4"/>
+                  </apex:inputField>-->
+                   <!-- Custom Lookup filed fro Ctaalog Indicator -->
+                        <apex:pageBlockSectionItem id="catindsec" rendered="{!if(Grant_Indicator__c.Standard_or_Custom__c == $Label.Standard_type,true,false)}">
+                            <apex:outputText value="{!$Label.Catalog_Indicator}" />
+                            <apex:panelgrid columns="3">
+                                <apex:inputText id="catindtext" value="{!catind}" >
+                                      <apex:actionsupport event="onchange" action="{!showReportingFreqAndDataType}"  rerender="pbs1,pbs4,pbs3" status="Processing" />
+                                </apex:inputText>                        
+                               <apex:commandLink action="{!openlookupwindow}" rerender="lookupoptpnl,pbs1,errorMsg" status="Processing">
+                                   <apex:image styleClass="Image" url="{!$Resource.Lookup}" title="Catalog Indicator Lookup(New Window)" style="height: 18px;width: 18px;" />
+<!--apex:image styleClass="Image" url="{!$Resource.History}" title="{!$Label.View_History}" style="height: 25px;width: 20px;" /
+<apex:image value="/s.gif" styleClass="lookupIcon"  onmouseout="this.className = 'lookupIcon';this.className = 'lookupIcon';" onmouseover="this.className = 'lookupIconOn';this.className = 'lookupIconOn';" title="Catalog Indicator Lookup(New Window)" onclick="openLookupwindow();"/>-->
+                               </apex:commandLink>
+                             </apex:panelgrid>
+                        </apex:pageBlockSectionItem>
+                        <apex:pageBlockSectionItem rendered="{!if(Grant_Indicator__c.Indicator__c != '' && Grant_Indicator__c.Standard_or_Custom__c == $Label.Standard_type, true, false)}">
+                            <apex:outputtext value="Catalog Indicator Name" />
+                            <apex:outputtext id="catIndName" value="{!catIndicatorName}" />
+                      </apex:pageBlockSectionItem>
+                      <!--Data Type -->
+                      <!-- For Impact/ Outcome indicators -->
+                      <apex:pageBlockSectionItem id="datatypeIO" rendered="{!if(Grant_Indicator__c.Standard_or_Custom__c == $Label.Standard_type && Grant_Indicator__c.Indicator__c != '' && Grant_Indicator__c.Indicator_Type__c != $Label.coverage_CN_rec_name,true,false) }">
+                         <apex:outputtext value="Data Type" />
+                         <apex:outputtext id="datatypeop" value="{!datatype}" /> 
+                         
+                      </apex:pageBlockSectionItem>
+                      
+                      <!-- For Coverage and output Indicators -->                      
+                          <!-- For Data Type -->
+                     <apex:pageBlockSectionItem id="dtCO" rendered="{!if(Grant_Indicator__c.Indicator__c != '' && Grant_Indicator__c.Standard_or_Custom__c == $Label.Standard_type &&  (dataTypeSelectOptions.size == 1) && Grant_Indicator__c.Indicator_Type__c == $Label.coverage_CN_rec_name ,true,false)}">
+                         <apex:outputtext value="Data Type" />
+                          <apex:outputtext id="datatypeop" value="{!Grant_Indicator__c.Data_Type__c}" />
+                         <!-- <apex:inputtext id="datatypeop" value="{!Grant_Indicator__c.Data_Type__c}" onfocus="this.blur();"/> -->
+                            
+                     </apex:pageBlockSectionItem>
+                     <apex:inputhidden id="datatypeophid" value="{!Grant_Indicator__c.Data_Type__c}"/>
+                     <!--<apex:inputField value="{!Grant_Indicator__c.Data_Type__c}" rendered="{!if(Grant_Indicator__c.Standard_or_Custom__c == 'Custom',true,false)}">
+                           <apex:actionSupport event="onchange" action="{!changeCumilation}" reRender="TargetTable,pbs1" status="Processing" />
+                     </apex:inputfield--> 
+                                          
+                     <apex:pageBlockSectionItem id="datatypeCO" rendered="{!if(Grant_Indicator__c.Indicator__c != '' && Grant_Indicator__c.Standard_or_Custom__c != 'Custom' && Grant_Indicator__c.Standard_or_Custom__c == 'Standard' && !(dataTypeSelectOptions.size == 1) && Grant_Indicator__c.Indicator_Type__c == $Label.coverage_CN_rec_name,true,false)}">
+                         <apex:outputtext value="Data Type" />                       
+                         <apex:selectList id="datatypeop" value="{!Grant_Indicator__c.Data_Type__c}" size="1" rendered="{!if(Grant_Indicator__c.Indicator__c!=null && Grant_Indicator__c.Indicator__c!='',true, false)}">
+                             <apex:selectOption itemValue="" itemLabel="--None--"/>
+                             <apex:selectOptions value="{!dataTypeSelectOptions}"> </apex:selectOptions>
+                             <apex:actionSupport event="onchange" action="{!changeCumilation}" reRender="TargetTable,pbs1,pbs3" status="Processing" />
+                         </apex:selectList>  
+                     </apex:pageBlockSectionItem>
+                      
+                      
+                      <!-- For Custom indicators -->
+                      <apex:inputfield id="datatypeid2" value="{!Grant_Indicator__c.Data_Type__c}" rendered="{!if(Grant_Indicator__c.Standard_or_Custom__c == $Label.Custom_type && Grant_Indicator__c.Standard_or_Custom__c != $Label.Standard_type,true,false)}">
+                            <apex:actionsupport event="onchange" action="{!changeCumilation}" reRender="pbs1,TargetTable,pbs3,pbs4,pbs5,pbs6,pb7" status="Processing" />
+                      </apex:inputfield>
+                      
+                      <!--Reporting Frequency-->
+                      <!-- For standard indicators -->                        
+                      <apex:pageBlockSectionItem rendered="{!if(Grant_Indicator__c.Indicator__c != '' && Grant_Indicator__c.Standard_or_Custom__c != $Label.Custom_type && Grant_Indicator__c.Standard_or_Custom__c == $Label.Standard_type && reportingFreqSelectOpt.size == 1 && Grant_Indicator__c.Indicator_Type__c == $Label.coverage_CN_rec_name,true,false)}">
+                          <apex:outputtext value="{!$Label.Reporting_Frequency}" />
+                          <apex:outputtext id="reportingop" value="{!Grant_Indicator__c.Reporting_Frequency__c}" />
+                      </apex:pageBlockSectionItem>
+                      <apex:pageBlockSectionItem rendered="{!if(Grant_Indicator__c.Indicator__c != '' && Grant_Indicator__c.Standard_or_Custom__c != $Label.Custom_type && Grant_Indicator__c.Standard_or_Custom__c == $Label.Standard_type && !(reportingFreqSelectOpt.size == 1) && Grant_Indicator__c.Indicator_Type__c == $Label.coverage_CN_rec_name,true,false)}">
+                          <apex:outputtext value="{!$Label.Reporting_Frequency}" />                       
+                          <apex:selectList id="reportingid" value="{!Grant_Indicator__c.Reporting_Frequency__c}" size="1" rendered="{!if(Grant_Indicator__c.Indicator__c!=null && Grant_Indicator__c.Indicator__c!='',true, false)}">
+                              <apex:selectOption itemValue="" itemLabel="--None--"/>
+                              <apex:selectOptions value="{!reportingFreqSelectOpt}"> </apex:selectOptions>
+                              <apex:actionSupport event="onchange" action="{!ChangeFreq}" reRender="TargetTable" status="Processing" />
+                          </apex:selectList> 
+                      </apex:pageBlockSectionItem>
+                        
+                      <!--- For Custom Indicators --->                        
+                      <apex:inputField value="{!Grant_Indicator__c.Reporting_Frequency__c}" rendered="{!if(Grant_Indicator__c.Standard_or_Custom__c == $Label.Custom_type && Grant_Indicator__c.Standard_or_Custom__c != $Label.Standard_type && Grant_Indicator__c.Indicator_Type__c == $Label.coverage_CN_rec_name,true,false)}" >
+                          <apex:actionSupport event="onchange" action="{!ChangeFreq}" reRender="TargetTable,pbs3" status="Processing" />
+                      </apex:inputField>
+                     <!--Target Accumulation --> 
+                     <!-- For standard indicators -->
+                      <apex:pageBlockSectionItem rendered="{!if(Grant_Indicator__c.Standard_or_Custom__c != $Label.Custom_type && Grant_Indicator__c.Standard_or_Custom__c == $Label.Standard_type && Grant_Indicator__c.Indicator__c != '' && Grant_Indicator__c.Data_Type__c != '' && cumilationSelectOptList.size == 1 && Grant_Indicator__c.Indicator_Type__c == $Label.coverage_CN_rec_name,true,false)}" >                
+                          <apex:outputtext value="Cumilation for AFD" />
+                          <apex:outputtext value="{!Grant_Indicator__c.Target_Accumulation__c}" />
+                      </apex:pageBlockSectionItem>
+                      <apex:pageBlockSectionItem rendered="{!if(Grant_Indicator__c.Standard_or_Custom__c != $Label.Custom_type && Grant_Indicator__c.Standard_or_Custom__c == $Label.Standard_type && Grant_Indicator__c.Indicator__c != '' && Grant_Indicator__c.Data_Type__c != '' && !(cumilationSelectOptList.size == 1) && Grant_Indicator__c.Indicator_Type__c == $Label.coverage_CN_rec_name,true,false)}" >
+                          <apex:outputtext value="Cumilation for AFD" />                       
+                          <apex:selectList id="targetCum" value="{!Grant_Indicator__c.Target_Accumulation__c}" size="1">
+                              <apex:selectOption itemValue="" itemLabel="--None--"/>
+                              <apex:selectOptions value="{!cumilationSelectOptList}"> </apex:selectOptions>
+                              <apex:actionSupport event="onchange" action="{!changeCumilationText}" reRender="pbs1" status="Processing" />
+                          </apex:selectList> 
+                      </apex:pageBlockSectionItem>
+                      <!-- For Custom Indicators -->
+                      <apex:pageBlockSectionItem rendered="{!if(Grant_Indicator__c.Standard_or_Custom__c == $Label.Custom_type && Grant_Indicator__c.Standard_or_Custom__c != $Label.Standard_type && Grant_Indicator__c.Indicator_Type__c == $Label.coverage_CN_rec_name,true,false)}">
+                      <apex:outputText value="Cumilation for AFD"/>
+                      <apex:inputField style="width:150px;" value="{!Grant_Indicator__c.Target_Accumulation__c}"  />
+                      </apex:pageBlockSectionItem>
+                      <!-- Reason -->
+                      <apex:pageBlockSectionItem rendered="{!if(Grant_Indicator__c.Target_Accumulation__c != '' && Grant_Indicator__c.Indicator_Type__c == $Label.coverage_CN_rec_name && Grant_Indicator__c.Standard_or_Custom__c == $Label.Standard_type && Grant_Indicator__c.Indicator__c != '' ,true,false)}">
+                          <apex:outputtext value="Reason" />
+                          <apex:outputtext id="reasonId" value="{!Grant_Indicator__c.Reason__c}" />
+                      </apex:pageBlockSectionItem>
+                   
+                      <apex:inputfield value="{!Grant_Indicator__c.Target_Area__c}" rendered="{!if(Grant_Indicator__c.Indicator_Type__c == $Label.coverage_CN_rec_name,true,false)}">
+                          <apex:actionsupport event="onchange" reRender="pbs1" status="Processing" />
+                      </apex:inputfield>       
+                      <apex:selectList label="Subset Of" style="width:70%" id="SubIndicatorOnEdit" value="{!strSubIndicatorExist}" size="1" rendered="{!if(Grant_Indicator__c.Indicator_Type__c == $Label.coverage_CN_rec_name,true,false)}">
+                          <apex:selectOptions value="{!SubsetofOptions}"></apex:selectOptions>
+                      </apex:selectList>
+                      <apex:inputfield value="{!Grant_Indicator__c.Sub_National_Area__c}" rendered="{!if(Grant_Indicator__c.Indicator_Type__c == $Label.coverage_CN_rec_name,if(Grant_Indicator__c.Target_Area__c == $Label.Sub_National,true,false),false)}"/>    
+                      <apex:inputField id="decimal" onchange="settargets('{!$Component.decimal}');" value="{!Grant_Indicator__c.Decimal_Places__c}">
+                             <!--apex:actionSupport event="onchange" reRender="pbs3,pbs4,pbs5,pbs6" status="Processing" /-->
+                      </apex:inputfield>
+                </apex:pageBlockSection>
+                  <!--Baseline section -->
+                  <apex:pageblocksection showHeader="true" title="{!$Label.Baseline}" columns="2" id="pbs3" >
+                        <apex:inputfield id="num" value="{!Grant_Indicator__c.Baseline_numerator__c}" rendered="{!if(Grant_Indicator__c.Data_Type__c==$Label.NaP_DT,true,false)}" onchange="calculate('{!$Component.num}','{!$Component.den}');" >
+                            <script>
+                                setdecimal('{!$Component.num}');
+                            </script>
+                        </apex:inputfield>
+                        <apex:inputfield id="den" value="{!Grant_Indicator__c.Baseline_Denominator__c}" rendered="{!if(Grant_Indicator__c.Data_Type__c==$Label.NaP_DT,true,false)}" onchange="calculate('{!$Component.num}','{!$Component.den}');">
+                            <script>
+                                setdecimal('{!$Component.den}');
+                            </script>
+                        </apex:inputfield>
+                        <apex:pageBlocksectionItem id="baselineOp" rendered="{!if(Grant_Indicator__c.Data_Type__c == $Label.NaP_DT,true,false)}">
+                          <apex:outputText value="{!$Label.Baseline_Value}" />
+                          <apex:panelgrid columns="2">
+                              <apex:outputLabel id="basev" value="{!Grant_Indicator__c.Baseline_Value1__c}" />                             
+                              <apex:outputlabel style=" display: inline !important; " value="{!if(Grant_Indicator__c.Data_Type__c == $Label.Number,'',if(Grant_Indicator__c.Data_Type__c == $Label.Percent_DT ||Grant_Indicator__c.Data_Type__c == $Label.NaP_DT,$Label.Percent_symb,if(Grant_Indicator__c.Data_Type__c == $Label.Ratio,$Label.Ratio_label,'')))}"/>                              
+                              <apex:inputHidden id="basevTxt" value="{!Grant_Indicator__c.Baseline_Value1__c}"/>
+                          </apex:panelgrid>
+                      </apex:pageBlocksectionItem>
+                      
+                        <apex:pageBlocksectionItem id="baseline" rendered="{!if(Grant_Indicator__c.Data_Type__c != $Label.NaP_DT,true,false)}">
+                        <apex:outputText value="Baseline Value" />
+                        <apex:panelgrid columns="2">
+                        <apex:inputfield id="basev" value="{!Grant_Indicator__c.Baseline_Value1__c}" onchange="setdecimal('{!$Component.basev}')" /> 
+                        <apex:outputlabel style=" display: inline !important; " value="{!if(Grant_Indicator__c.Data_Type__c == $Label.Number,'',if(Grant_Indicator__c.Data_Type__c == $Label.Percent_DT ||Grant_Indicator__c.Data_Type__c == $Label.NaP_DT,$Label.Percent_symb,if(Grant_Indicator__c.Data_Type__c == $Label.Ratio,$Label.Ratio_label,'')))}"/>
+                        </apex:panelgrid>
+                        </apex:pageBlocksectionItem>
+                        <apex:inputfield value="{!Grant_Indicator__c.Baseline_Year__c}"/>
+                        <apex:inputfield value="{!Grant_Indicator__c.Baseline_Sources__c}">
+                            <apex:actionsupport event="onchange" reRender="pbs3" status="Processing" />
+                        </apex:inputfield>
+                        <apex:inputField value="{!Grant_Indicator__c.Please_Specify_BaseLine_Sources__c}" rendered="{!if(Grant_Indicator__c.Baseline_Sources__c == $Label.Other_specify || Grant_Indicator__c.Baseline_Sources__c == $Label.Other_survey_specify || Grant_Indicator__c.Baseline_Sources__c == $Label.Other_survey_specify2 || Grant_Indicator__c.Baseline_Sources__c == $Label.Reports_Surveys_Questionnaires_etc_specify || Grant_Indicator__c.Baseline_Sources__c == $Label.Reports_specify || Grant_Indicator__c.Baseline_Sources__c == $Label.Specific_surveys_and_research_specify,true, false)}" />
+                  </apex:pageblocksection>
+                  <!--Target for 1st year-->
+                  <apex:pageBlocksection showHeader="true" title="{!year1}" Columns="2" id="pbs4" rendered="{!display && !display3 && display4}">
+                        <apex:pageBlocksectionItem id="target">
+                        <apex:outputText value="{!$Label.Target_Value}" />
+                         <apex:panelgrid columns="2">
+                        <apex:inputfield id="target1" value="{!Grant_Indicator__c.Target_Value_Y12__c}" onchange="setdecimal('{!$Component.target1}')"/>
+                        <apex:outputlabel style=" display: inline !important; " value="{!if(Grant_Indicator__c.Data_Type__c == $Label.Number ,'',if(Grant_Indicator__c.Data_Type__c == $Label.Percent_DT ||Grant_Indicator__c.Data_Type__c == $Label.NaP_DT,$Label.Percent_symb,if(Grant_Indicator__c.Data_Type__c == $Label.Ratio,$Label.Ratio_label,'')))}"/>
+                        <!--apex:outputlabel id="sign" value="{!sign}"/-->
+                        </apex:panelgrid>
+                        </apex:pageBlocksectionItem>
+                        <apex:inputfield value="{!Grant_Indicator__c.Y1_Report_Due__c}"/>
+                  </apex:pageBlocksection>
+                  <!--Target for 2nd  year-->
+                  <apex:pageBlocksection showHeader="true" title="{!year2}" Columns="2" id="pbs5" rendered="{!display && !display3 && display4}">
+                        <apex:pageBlocksectionItem id="target">
+                        <apex:outputText value="{!$Label.Target_Value}" />
+                         <apex:panelgrid columns="2">
+                        <apex:inputfield id="target2" value="{!Grant_Indicator__c.Target_Value_Y22__c}" onchange="setdecimal('{!$Component.target2}')"/>
+                        <apex:outputlabel style=" display: inline !important; " value="{!if(Grant_Indicator__c.Data_Type__c == $Label.Number,'',if(Grant_Indicator__c.Data_Type__c == $Label.Percent_DT ||Grant_Indicator__c.Data_Type__c == $Label.NaP_DT,$Label.Percent_symb,if(Grant_Indicator__c.Data_Type__c == $Label.Ratio,$Label.Ratio_label,'')))}"/>
+                        <!--apex:outputlabel id="sign" value="{!sign}"/-->
+                        </apex:panelgrid>
+                        </apex:pageBlocksectionItem>
+                        <apex:inputfield value="{!Grant_Indicator__c.Y2_Report_Due__c}"/>
+                  </apex:pageBlocksection>
+                  <!--Target for 3rd  year-->
+                  <apex:pageBlocksection showHeader="true" title="{!year3}" Columns="2" id="pbs6" rendered="{!display && !display3 && display4}">
+                        <apex:pageBlocksectionItem id="target" >
+                        <apex:outputText value="{!$Label.Target_Value}" />
+                         <apex:panelgrid columns="2">
+                        <apex:inputfield id="target3" value="{!Grant_Indicator__c.Target_Value_Y32__c}" onchange="setdecimal('{!$Component.target3}')"/>
+                        <apex:outputlabel style=" display: inline !important; " value="{!if(Grant_Indicator__c.Data_Type__c == $Label.Number,'',if(Grant_Indicator__c.Data_Type__c == $Label.Percent_DT||Grant_Indicator__c.Data_Type__c == $Label.NaP_DT,$Label.Percent_symb,if(Grant_Indicator__c.Data_Type__c == $Label.Ratio,$Label.Ratio_label,'')))}"/>
+                        <!--apex:outputlabel id="sign" value="{!sign}"/-->
+                        </apex:panelgrid>
+                        </apex:pageBlocksectionItem>
+                        <apex:inputfield value="{!Grant_Indicator__c.Y3_Report_Due__c}"/>
+                  </apex:pageBlocksection>
+                  <!--Target for 4th year-->
+                  <apex:pageBlocksection showHeader="true" title="{!year4}" Columns="2" id="pbs7" rendered="{!display && display1 && !display3 && display4}">
+                        <apex:pageBlocksectionItem id="target">
+                        <apex:outputText value="{!$Label.Target_Value}" />
+                         <apex:panelgrid columns="2">
+                        <apex:inputfield id="target4" value="{!Grant_Indicator__c.Target_Value_Y42__c}" onchange="setdecimal('{!$Component.target4}')"/>
+                        <apex:outputlabel style=" display: inline !important; " value="{!if(Grant_Indicator__c.Data_Type__c == $Label.Number,'',if(Grant_Indicator__c.Data_Type__c == $Label.Percent_DT||Grant_Indicator__c.Data_Type__c == $Label.NaP_DT,$Label.Percent_symb,if(Grant_Indicator__c.Data_Type__c == $Label.Ratio,$Label.Ratio_label,'')))}"/>
+                        <!--apex:outputlabel id="sign" value="{!sign}"/-->
+                        </apex:panelgrid>
+                        </apex:pageBlocksectionItem>
+                        <apex:inputfield value="{!Grant_Indicator__c.Y4_Report_Due__c}"/>
+                  </apex:pageBlocksection>
+                  <!-- targets section if Indicator type Coverage/Output-->
+                   <apex:pageBlockSection columns="2" title="{!Year1}" rendered="{!display3 && display4}" id="pbs8">
+                      <apex:inputField value="{!Grant_Indicator__c.Target_Numerator_Y1__c}" rendered="{!if(Grant_Indicator__c.Data_Type__c==$Label.NaP_DT,true,false)}"/><br/>
+                      <apex:inputField value="{!Grant_Indicator__c.Target_Denominator_Y1__c}" rendered="{!if(Grant_Indicator__c.Data_Type__c==$Label.NaP_DT,true,false)}"/>
+                      <apex:pageblockSectionItem id="target">
+                      <apex:outputText value="{!$Label.Allocated_Y1}"></apex:outputText>
+                      <apex:panelGrid columns="2">
+                           <apex:inputField value="{!Grant_Indicator__c.Allocated_Y1__c}"/>
+                           <apex:outputlabel id="sign" value="{!sign}"/>
+                      </apex:panelGrid>
+                      </apex:pageblockSectionItem>
+                      <apex:inputField value="{!Grant_Indicator__c.Above_Indicative_Numerator1__c}" rendered="{!if(Grant_Indicator__c.Data_Type__c==$Label.NaP_DT,true,false)}"/><br/>
+                      <apex:inputField value="{!Grant_Indicator__c.Above_Indicative_Denominator1__c}" rendered="{!if(Grant_Indicator__c.Data_Type__c==$Label.NaP_DT,true,false)}"/>
+                            <apex:pageblockSectionItem id="target1">
+                                  <apex:outputText value="{!$Label.Above_Allocated_Y1}"></apex:outputText>
+                            <apex:panelGrid columns="2">
+                                  <apex:inputField value="{!Grant_Indicator__c.Above_Allocated_Y1__c}"/>
+                                  <apex:outputlabel id="sign1" value="{!sign}"/>
+                            </apex:panelGrid>
+                            </apex:pageblockSectionItem>
+                      
+                 </apex:pageBlockSection>
+                  <apex:pageBlockSection columns="2" title="{!Year2}" rendered="{!display3 && display4}" id="pbs9" >
+                      <apex:inputField value="{!Grant_Indicator__c.Target_Numerator_Y2__c}" rendered="{!if(Grant_Indicator__c.Data_Type__c==$Label.NaP_DT,true,false)}"/><br/>
+                      <apex:inputField value="{!Grant_Indicator__c.Target_Denominator_Y2__c}" rendered="{!if(Grant_Indicator__c.Data_Type__c==$Label.NaP_DT,true,false)}"/>
+                      <apex:pageblockSectionItem id="target">
+                      <apex:outputText value="{!$Label.Allocated_Y2}"></apex:outputText>
+                      <apex:panelGrid columns="2">
+                           <apex:inputField value="{!Grant_Indicator__c.Allocated_Y2__c}"/>
+                           <apex:outputlabel id="sign" value="{!sign}"/>
+                      </apex:panelGrid>
+                      </apex:pageblockSectionItem>
+                      <apex:inputField value="{!Grant_Indicator__c.Above_Indicative_Numerator2__c}" rendered="{!if(Grant_Indicator__c.Data_Type__c==$Label.NaP_DT,true,false)}"/><br/>
+                      <apex:inputField value="{!Grant_Indicator__c.Above_Indicative_Denominator2__c}" rendered="{!if(Grant_Indicator__c.Data_Type__c==$Label.NaP_DT,true,false)}"/>
+                      <apex:pageblockSectionItem id="target1">
+                                  <apex:outputText value="{!$Label.Above_Allocated_Y2}"></apex:outputText>
+                            <apex:panelGrid columns="2">
+                                  <apex:inputField value="{!Grant_Indicator__c.Above_Allocated_Y2__c}"/>
+                                  <apex:outputlabel id="sign1" value="{!sign}"/>
+                            </apex:panelGrid>
+                            </apex:pageblockSectionItem>
+                 </apex:pageBlockSection>
+                  <apex:pageBlockSection columns="2" title="{!Year3}" rendered="{!display3 && display4}" id="pbs10">
+                      <apex:inputField value="{!Grant_Indicator__c.Target_Numerator_Y3__c}" rendered="{!if(Grant_Indicator__c.Data_Type__c==$Label.NaP_DT,true,false)}"/><br/>
+                      <apex:inputField value="{!Grant_Indicator__c.Target_Denominator_Y3__c}" rendered="{!if(Grant_Indicator__c.Data_Type__c==$Label.NaP_DT,true,false)}"/>
+                      <apex:pageblockSectionItem id="target">
+                      <apex:outputText value="{!$Label.Allocated_Y3}"></apex:outputText>
+                      <apex:panelGrid columns="2">
+                           <apex:inputField value="{!Grant_Indicator__c.Allocated_Y3__c}"/>
+                           <apex:outputlabel id="sign" value="{!sign}"/>
+                      </apex:panelGrid>
+                      </apex:pageblockSectionItem>
+                      <apex:inputField value="{!Grant_Indicator__c.Above_Indicative_Numerator3__c}" rendered="{!if(Grant_Indicator__c.Data_Type__c==$Label.NaP_DT,true,false)}"/><br/>
+                      <apex:inputField value="{!Grant_Indicator__c.Above_Indicative_Denominator3__c}" rendered="{!if(Grant_Indicator__c.Data_Type__c==$Label.NaP_DT,true,false)}"/>
+                      <apex:pageblockSectionItem id="target1">
+                                  <apex:outputText value="{!$Label.Above_Allocated_Y3}"></apex:outputText>
+                            <apex:panelGrid columns="2">
+                                  <apex:inputField value="{!Grant_Indicator__c.Above_Allocated_Y3__c}"/>
+                                  <apex:outputlabel id="sign1" value="{!sign}"/>
+                            </apex:panelGrid>
+                      </apex:pageblockSectionItem>
+                 </apex:pageBlockSection>
+                 <apex:pageBlockSection columns="2" title="{!Year4}" rendered="{!display3 && display4}" id="pbs11">
+                      <apex:inputField value="{!Grant_Indicator__c.Target_Numerator_Y4__c}" rendered="{!if(Grant_Indicator__c.Data_Type__c==$Label.NaP_DT,true,false)}"/><br/>
+                      <apex:inputField value="{!Grant_Indicator__c.Target_Denominator_Y4__c}" rendered="{!if(Grant_Indicator__c.Data_Type__c==$Label.NaP_DT,true,false)}"/>
+                      <apex:pageblockSectionItem id="target">
+                                  <apex:outputText value="{!$Label.Allocated_Y4}"></apex:outputText>
+                            <apex:panelGrid columns="2">
+                                  <apex:inputField value="{!Grant_Indicator__c.Above_Allocated_Y4__c}"/>
+                                  <apex:outputlabel id="sign1" value="{!sign}"/>
+                            </apex:panelGrid>
+                      </apex:pageblockSectionItem>
+                      <apex:inputField value="{!Grant_Indicator__c.Above_Indicative_Numerator4__c}" rendered="{!if(Grant_Indicator__c.Data_Type__c==$Label.NaP_DT,true,false)}"/><br/>
+                      <apex:inputField value="{!Grant_Indicator__c.Above_Indicative_Denominator4__c}" rendered="{!if(Grant_Indicator__c.Data_Type__c==$Label.NaP_DT,true,false)}"/>
+                      <apex:pageblockSectionItem id="target1">
+                                  <apex:outputText value="{!$Label.Above_Allocated_Y4}"></apex:outputText>
+                            <apex:panelGrid columns="2">
+                                  <apex:inputField value="{!Grant_Indicator__c.Above_Allocated_Y4__c}"/>
+                                  <apex:outputlabel id="sign1" value="{!sign}"/>
+                            </apex:panelGrid>
+                      </apex:pageblockSectionItem>
+                      </apex:pageBlockSection>
+                  <!-- Link to Goals/Objectives section -->
+                  <apex:outputLabel value="{!message}"></apex:outputLabel>  
+                  <apex:pageblockSection columns="1" showheader="true" title="{!If(Grant_Indicator__c.Indicator_Type__c == $Label.Outcome_type,$Label.Link_to_Objectives,$Label.Link_to_Goals)}" rendered="{!if(Grant_Indicator__c.Indicator_Type__c == $Label.coverage_CN_rec_name,false,true)}">
+                  <apex:pageBlockTable value="{!lstwgoalobj}" var="pr" >
+                        <apex:column headerValue="">
+                              <apex:inputCheckbox value="{!pr.selected}"/>
+                        </apex:column>
+                        <apex:column headerValue="{!$Label.Goal_type}" value="{!pr.wgoalobj.Goal__c}" rendered="{!If(Grant_Indicator__c.Indicator_Type__c == $Label.Outcome_type,false,true)}"/>
+                        <apex:column headerValue="{!$Label.Objective_type}" value="{!pr.wgoalobj.Goal__c}" rendered="{!If(Grant_Indicator__c.Indicator_Type__c == $Label.Outcome_type,true,false)}"/>
+                  </apex:pageBlockTable>
+                  </apex:pageblockSection>
+                  <apex:pageBlocksection showheader="true" title="Comments" rendered="{!display4}">                       
+                        <apex:inputfield value="{!Grant_Indicator__c.PR_Comments__c}" rendered="{!!showReadOnlyComments}"/>
+                        <apex:outputfield value="{!Grant_Indicator__c.PR_Comments__c}" rendered="{!showReadOnlyComments}"/>
+                        <apex:inputfield value="{!Grant_Indicator__c.Global_Fund_Comments_to_PR__c}" rendered="{!editBasedOnStatus}"/>
+                        
+                  </apex:pageBlocksection>
+                  <apex:pageBlockSection title="{!$Label.Indicator_detail}" rendered="{!!display4}">
+                        <apex:inputField value="{!Grant_Indicator__c.Indicator_Full_Name__c}"/>
+                        <apex:inputfield value="{!Grant_Indicator__c.Indicator_Type__c}"/>
+                        <apex:inputField value="{!Grant_Indicator__c.Grant_Implementation_Period__c}"/>
+                        <apex:inputField value="{!Grant_Indicator__c.Baseline_Source__c}"/>
+                        <apex:inputField value="{!Grant_Indicator__c.Parent_Module__c}"/>
+                        <apex:inputField value="{!Grant_Indicator__c.Grant_Intervention__c}"/>
+                        <apex:inputField value="{!Grant_Indicator__c.Target_Assumptions__c}"/>
+                        <apex:inputfield value="{!Grant_Indicator__c.Performance_Framework__c }"/>       
+                  </apex:pageBlockSection>
+                                    
+                  
+                  <!----------------Target table ----------------------------->
+                  <apex:outputPanel id="TargetTable">
+                  <apex:pageBlockSection id="TargetTable2" title="Targets" rendered="{!if(Grant_Indicator__c.Indicator_Type__c == 'Coverage/Output', true, false)}">
+                   <apex:outputPanel rendered="{!if(Grant_Indicator__c.Data_Type__c != '' && Grant_Indicator__c.Reporting_Frequency__c != '', true, false)}"> 
+                   <apex:outputPanel rendered="{!if(Grant_Indicator__c.Data_Type__c == $Label.NaP_DT,true,false)}">
+                      <table width="100%" class="table table-bordered tableEdit">
+                        <thead>
+                            <tr>
+                                <apex:repeat value="{!lstPeriod}" var="P"> 
+                                    <th colspan="2">
+                                        <h5 class="h5Class">{!P.Start_Date_Short__c}</h5>
+                                    </th>
+                                </apex:repeat>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <apex:variable value="{!0}" var="FirstResult"/>
+                                <apex:repeat id="rptrGIRNume" value="{!lstResults}" var="GIR"> 
+                                    <td style="{!if(FirstResult==0,'','border-left:1px solid #AEAEA9;')}">
+                                        <apex:variable value="{!1}" var="FirstResult"/>
+                                        <apex:inputField id="txtTNume" value="{!GIR.Target_Numerator__c}" styleClass="targetTable" 
+                                        onchange="calcNumeValue('{!Grant_Indicator__c.Data_Type__c}','{!$Component.txtTNume}');"> 
+                                        <script>setdecimal('{!$Component.txtTNume}');</script>
+                                        </apex:inputField>
+                                    </td>  
+                                    <td rowspan="2" class="calValueCell">
+                                        <table>
+                                           <tr>
+                                               <td style="border:0px;">
+                                                   <apex:outputlabel id="opTvalue" value="{!GIR.Target__c}"> 
+                                                   <script>                                       
+                                                        var targetVal = document.getElementById('{!$Component.opTvalue}').innerHTML;
+                                                        var decimalplace1 = document.getElementById("{!$Component.page:frm:pb1:pbs1:decimal}").value;
+                                                        if(targetVal == '') {
+                                                            targetVal = 0;
+                                                           
+                                                            document.getElementById('{!$Component.opTvalue}').innerHTML = '';
+                                                         }
+                                                         else 
+                                                            document.getElementById('{!$Component.opTvalue}').innerHTML = parseFloat(targetVal).toFixed(decimalplace1);
+                                                   </script>
+                                                   </apex:outputlabel>
+                                                   <apex:inputHidden id="txtTvalue" value="{!GIR.Target__c}"/> 
+                                               </td>
+                                               <td style="border:0px;padding:0px;vertical-align:middle;">
+                                               <apex:outputlabel id="labelTy2" style=" display: inline !important; " value="{!if(Grant_Indicator__c.Data_Type__c == $Label.Number,'',if(Grant_Indicator__c.Data_Type__c == $Label.Percent_DT ||Grant_Indicator__c.Data_Type__c == $Label.NaP_DT,$Label.Percent_symb,if(Grant_Indicator__c.Data_Type__c == $Label.Ratio,$Label.Ratio_label,'')))}"/>
+                                                    
+                                               </td>
+                                           </tr>
+                                       </table>
+                                    </td>                                              
+                                </apex:repeat>
+                            </tr>
+                            <tr>
+                                <apex:variable value="{!0}" var="FirstResult"/>
+                                <apex:repeat id="rptrGIRDnomi" value="{!lstResults}" var="GIR"> 
+                                    <td style="{!if(FirstResult==0,'','border-left:1px solid #AEAEA9;')}">
+                                        <apex:variable value="{!1}" var="FirstResult"/>
+                                        <apex:inputField id="txtTDnomi" value="{!GIR.Target_Denominator__c}" styleClass="targetTable" 
+                                        onchange="calcDnomiValue( '{!Grant_Indicator__c.Data_Type__c}','{!$Component.txtTDnomi}');"> 
+                                        <script>setdecimal('{!$Component.txtTDnomi}');</script>
+                                        </apex:inputField>
+                                    </td>                                            
+                                </apex:repeat>
+                            </tr>
+                        </tbody>
+                    </table>
+                </apex:outputpanel>
+                <apex:outputPanel rendered="{!if(Grant_Indicator__c.Data_Type__c != $Label.NaP_DT,true,false)}">
+                    <table width="100%" class="table table-bordered tableEdit">
+                        <thead>
+                            <tr>
+                                <apex:repeat value="{!lstPeriod}" var="P"> 
+                                    <th> 
+                                        <h5 class="h5Class">{!P.Start_Date_Short__c}</h5>
+                                    </th>
+                                </apex:repeat>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <apex:repeat id="repeatnumber" value="{!lstResults}" var="GIR"> 
+                                    <td>
+                                        <apex:inputField id="numbervalue" value="{!GIR.Target__c}" styleClass="targetTable" onchange="setdecimal('{!$Component.numbervalue}')"> 
+                                        <script>
+                                            setdecimal('{!$Component.numbervalue}');                                            
+                                        </script>
+                                        </apex:inputField>
+                                        <apex:outputlabel style=" display: inline !important; " value="{!if(Grant_Indicator__c.Data_Type__c == $Label.Number,'',if(Grant_Indicator__c.Data_Type__c == $Label.Percent_DT ||Grant_Indicator__c.Data_Type__c == $Label.NaP_DT,$Label.Percent_symb,if(Grant_Indicator__c.Data_Type__c == $Label.Ratio,$Label.Ratio_label,'')))}"/>
+                                        
+                                    </td>  
+                                </apex:repeat>
+                            </tr>
+                        </tbody>
+                    </table>
+                </apex:outputpanel>
+                </apex:outputPanel>
+                <apex:inputHidden id="ipHid" value="{!resultListSize}" />
+                </apex:pageBlockSection>
+                </apex:outputPanel>
+                <!-- Custom Lookup popup -->
+                        <apex:outputPanel id="lookupoptpnl">
+                        <apex:outputPanel id="custPopupH" styleClass="popupBackgroundHistory"  rendered="{!displaypopup}"/>
+                        <apex:outputPanel styleClass="custPopupHistory" rendered="{!displaypopup}">
+                             <apex:commandButton value="{!$Label.Close}" action="{!closepopup}" rerender="lookupoptpnlmod,lookupoptpnl,pbs1,errorMsg" status="Processing"/>
+                                  <apex:outputLabel value="{!catmessage}" rendered="{!visiblemesg }"></apex:outputLabel>
+                                  <apex:pageBlockTable value="{!lstcat}" var="cat">
+                                        <apex:column headerValue="{!$Label.Indicator_Name}">
+                                              <apex:commandLink id="catind" value="{!cat.name}" onclick="catindname('{!$Component.catindh}','{!$Component.lookupoptpnl}');" oncomplete="changedatatype();" style="text-decoration:underline;" status="Processing" rerender="pbs1,pbs3"/>
+                                              <apex:inputhidden id="catindh" value="{!cat.name}"/>
+                                        </apex:column>
+                                        <apex:column headerValue="{!$Label.Indicator_Full_Name}" value="{!cat.Full_Name_En__c}"/>
+                                        <apex:column headerValue="{!$Label.Indicator_Type}" value="{!cat.Indicator_Type__c}"/>
+                                        <apex:column headerValue="{!$Label.Component}" value="{!cat.Component__c}"/>
+                                  </apex:pageBlockTable> 
+                       </apex:outputPanel>                       
+                    </apex:outputPanel>
+                   <!-- Custom Lookup popup for Module -->
+                    <apex:outputPanel id="lookupoptpnlmod" >
+                          <apex:outputPanel id="custPopupm" styleClass="popupBackgroundHistory" rendered="{!displaypopupmod}"/>
+                               <apex:outputPanel styleClass="custPopupHistory" rendered="{!displaypopupmod}">
+                                     <apex:commandButton value="{!$Label.Close}" action="{!closepopup}" rerender="lookupoptpnlmod,lookupoptpnl,pbs1,errorMsg"/>
+                                     <apex:outputLabel ></apex:outputLabel>
+                                     <apex:pageBlockTable value="{!lstmod }" var="mod">
+                                           <apex:column headerValue="{!$Label.Module_Name}">
+                                                <apex:commandLink id="modind" value="{!mod.name}" onclick="modindname('{!$Component.modindh}','{!$Component.lookupoptpnlmod}','{!$Component.modidh}');" style="text-decoration:underline;" status="Processing" rerender="pbs1"/>
+                                                <apex:inputhidden id="modindh" value="{!mod.name}"/>
+                                                <apex:inputhidden id="modidh" value="{!mod.id}"/>
+                                           </apex:column>
+                                  </apex:pageBlockTable> 
+                       </apex:outputPanel>                       
+                    </apex:outputPanel>
+           </apex:pageBlock>
+           
+      </apex:form>
+      <script>
+        function calcNumeValue(DataType,txtTNume){
+            var targetValue = document.getElementById(txtTNume).value;
+            var decimal = document.getElementById("{!$Component.page:frm:pb1:pbs1:decimal}").value;
+            if(document.getElementById(txtTNume).value == '' || isNaN(document.getElementById(txtTNume).value) == true) 
+                targetValue = 0;
+            document.getElementById(txtTNume).value = parseFloat(targetValue).toFixed(decimal);
+            calcValue(txtTNume.replace("txtTNume","txtTvalue"),DataType,txtTNume,txtTNume.replace("txtTNume","txtTDnomi").replace("rptrGIRNume","rptrGIRDnomi"));
+        }
+        function calcDnomiValue(DataType,txtTDnomi){
+            var targetValue = document.getElementById(txtTDnomi).value;
+            var decimal = document.getElementById("{!$Component.page:frm:pb1:pbs1:decimal}").value;
+            if(document.getElementById(txtTDnomi).value == '' || isNaN(document.getElementById(txtTDnomi).value) == true) 
+                targetValue = 0;
+            document.getElementById(txtTDnomi).value = parseFloat(targetValue).toFixed(decimal);
+        calcValue(txtTDnomi.replace("txtTDnomi","txtTvalue").replace("rptrGIRDnomi","rptrGIRNume"),DataType,txtTDnomi.replace("txtTDnomi","txtTNume").replace("rptrGIRDnomi","rptrGIRNume"),txtTDnomi);
+        }
+        function calcValue(txtTvalue,DataType,txtANume,txtADnomi){
+            var places = document.getElementById('page:frm:pb1:pbs1:decimal').value;
+            var Nume= GeOnlyNumber(document.getElementById(txtANume).value);
+            var Dnomi= GeOnlyNumber(document.getElementById(txtADnomi).value);
+            var objValue = document.getElementById(txtTvalue);
+            var objopValue = document.getElementById(txtTvalue.replace("txt","op"));
+            if(DataType=="Ratio"){
+                if(Dnomi==0){
+                     objValue.value="";
+                     objopValue.innerHTML = "";
+                }else{
+                    var Value=Nume/(Dnomi/100000);
+                    objValue.value=Value.toFixed(places);
+                    objopValue.innerHTML=Value.toFixed(places);
+                }
+            }else if(DataType=="Percent"||DataType=="Number and Percent"){
+                if(Dnomi==0){
+                     objValue.value="";
+                     objopValue.innerHTML="";
+                }else{
+                    var Value=((Nume/Dnomi)*100);
+                    objValue.value=Value.toFixed(places);
+                    objopValue.innerHTML=Value.toFixed(places);
+                }
+            }
+        }
+        function GeOnlyNumber(st){
+        if(st !=null){    
+            var ReComma = new RegExp("\\,","g");
+            var ReQuate = new RegExp("\\'","g");
+            st = st.replace(ReComma,"");
+            st = st.replace(ReQuate,"");
+            st = st.replace(",.",".");
+            st = st.replace("'.",".");
+            if(isNaN(st)==false){
+                return Number(st);
+            }else{
+                return '';
+            }
+        }else{
+            return '';
+        }
+    }
+  
+      </script>
+</apex:page>

@@ -1,0 +1,4 @@
+<apex:page standardController="Implementer__c" extensions="NewImplementer_controller">
+<!--<apex:page standardController="Implementer__c" >-->
+    <apex:pageMessages escape="false"/> 
+</apex:page>

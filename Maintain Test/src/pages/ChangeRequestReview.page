@@ -1,0 +1,336 @@
+<!--*******************************************************************************
+* VisualForce {Page}: {ChangeRequestReview}
+* DateCreated  : 01/31/2014
+----------------------------------------------------------------------------------
+* Purpose:
+* - Change Request Review page opens through a button on Change Request 
+    and will be used for manage change request reviews.
+  - This page opens from a button on a change request record.
+----------------------------------------------------------------------------------
+* History:
+* - VERSION  DEVELOPER NAME    DATE            DETAIL FEATURES
+    1.0                       01/31/2014     INITIAL DEVELOPMENT
+********************************************************************************-->
+
+<apex:page id="pageCRR" sidebar="false" standardController="Change_Request__c" extensions="ctrlChangeRequestReview">
+     <style>
+        .ProcessingBackground
+        {
+            background-color: black;
+            opacity: 0.50;
+            filter: alpha(opacity = 50);
+            width: 100%;
+            height: 100%;
+            position: fixed;
+            z-index: 9999;
+            top:0;
+            left:0;
+        }
+        .Processing
+        {
+            z-index: 9999;
+            left: 50%;
+            top: 50%;
+            text-align: center;
+            position: fixed;
+        }
+        .custPopup{
+            background-color: white;
+            border-width: 0px;
+            border-radius:10px;
+            border-style: solid;
+            /*z-index: 9999;*/
+            z-index: 51;
+            left: 30%;
+            padding:10px;
+            position: absolute;
+            top:10%;
+            width:40%;
+        }
+        .popupBackground{
+            background-color:black;
+            opacity: 0.20;
+            filter: alpha(opacity = 20);
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            /*z-index: 9998;*/
+            z-index: 50;
+            top: 0;
+            left: 0;
+           
+        }
+        .custPopupNew{
+            background-color: white;
+            border-width: 0px;
+            border-radius:10px;
+            border-style: solid;
+            /*z-index: 9999;*/
+            z-index: 51;
+            left: 10%;
+            padding:10px;
+            position: absolute;
+            top:50%;
+            width:80%;
+        }
+        .popupBackgroundNew{
+            background-color:black;
+            opacity: 0.20;
+            filter: alpha(opacity = 20);
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            /*z-index: 9998;*/
+            z-index: 50;
+            top: 0;
+            left: 0;  
+        }
+        .TextAreaStyle{
+            resize: none;
+            height: 100px;
+            width: 750px;
+        }
+        .lookupIcon {
+            background-image: url(/img/func_icons/util/lookup20.gif);
+            background-position: 0 0;
+            width: 20px;
+            height: 20px;
+            background-position: top left;
+        }
+        
+        .lookupIconOn {
+            background-image: url(/img/func_icons/util/lookup20.gif);
+            background-position: 0 0;
+            width: 20px;
+            height: 20px;
+            background-position: top right;
+        }
+        
+        .column1{
+            width:93px;
+            padding-top:20px;
+            padding-right:10px;
+            padding-left:20px;
+            padding-bottom:15px;
+        }
+        
+        .column2{
+            padding-top:20px;
+            padding-bottom:15px;
+        }
+        
+    </style>
+    <script>
+    function openProfileUserLookupPopup(ProfileName,Cname,CId){
+        //objName = objName.replace('Group,','');
+        //var url="/apex/LookupPage?lktp=" + objName + "&idfield=" + id + "&ParentId=" +ParentAccountId+ "&idHidden=" + ipHidden +"&lksrch=" + "&Country=" +CountryId;        
+        
+        var newProfileName = ProfileName.replace("&","%26");
+        var url="/apex/ProfileUserLookupPage?ProfileName=" + newProfileName + "&Cname=" + Cname + "&CId=" + CId;
+        //var urlnew = url.replace("&","%26");
+        newWin=window.open(url , 'Popup','height=500,width=600,left=100,top=100,resizable=no,scrollbars=yes,toolbar=no,status=no');
+        if (window.focus){
+            newWin.focus();
+        }           
+        return false;
+    }
+    function closeProfileUserLookupPopup(){
+        if (null!=newWin){
+            newWin.close();
+            //var ipHiddenConId = document.getElementById('pageTeam:frm:ipHiddenCon').value;                         
+            //callAddContactRow(ipHiddenConId);
+        }
+    }
+    function clearID(TxtField,HdnField){
+        var hdn = document.getElementById(HdnField);
+        if(TxtField.value == ''){
+            hdn.value = '';
+        }
+        return false;
+    }
+    function validationUserName(){
+        var blnIsBlank = false;
+        for(var i=0;i<6;i++){
+            var Uservalue = document.getElementById('pageCRR:frm:pageB:repeatProfileUserList:'+i+':txtUser').value;
+            if(Uservalue != ''){
+                blnIsBlank = true;
+            }
+        }
+        if(blnIsBlank == false){
+            alert('Please select atleast one user to save');
+            return false;
+        }else{
+            return true;
+        }
+    }
+    
+    </script>
+    <apex:form id="frm">
+        <apex:pageBlock id="pb">
+            <apex:pageBlockButtons location="bottom">
+                <apex:commandButton id="SaveAndSend" value="Save & Send" action="{!SaveAndSend}" reRender="frm" status="Processing"/>
+                <apex:commandButton id="Save" value="Save" action="{!SaveCRR}" reRender="frm" status="Processing"/>
+                <apex:commandButton id="Cancel" value="Cancel" action="{!CancelCRR}" reRender="frm" status="Processing"/>
+            </apex:pageBlockButtons>
+            <apex:outputLabel style="font-size:120%;font-weight:bold" value="Change Request Review"></apex:outputLabel>
+            <br/><br/>
+            <apex:outputLabel value="LFA Coordination Comments:"></apex:outputLabel>
+            <br/>
+            <I><apex:outputLabel value="Please note that these comments will be sent to all reviewers."></apex:outputLabel></I>
+            <br/>
+            <apex:inputTextarea id="ipCoordinationComments" value="{!strLFACoordinationComments}" styleClass="TextAreaStyle"/>
+            <br/>
+            <br/>
+            <apex:outputLabel value="Select users to send change request for review"></apex:outputLabel>
+            <!--<apex:pageBlockSection id="pbs" columns="1">-->
+                 <table style="width:100%">
+                     <tr>
+                         <td class="column1">
+                             <apex:commandButton id="btnCountryTeam" value="Country Team" action="{!ShowPopup}" reRender="UserPopup" status="Processing" style="width:95px;">
+                                 <apex:param id="Name1" value="Country Team" name="Name"/>
+                             </apex:commandButton>
+                         </td>
+                         <td class="column2" style="width:200px;">
+                             <apex:outputText id="outCountryTeam" value="{!strCountryTeamUserNames}" ></apex:outputText>
+                         </td>
+                         <td class="column3" style="width:120px;">
+                             <apex:commandButton id="btnSendRemCT" value="Send Reminder" action="{!SendReminder}" reRender="pb" status="Processing" style="width:95px;" rendered="{!IF(strCountryTeamUserNames == '',false,true)}">
+                                 <apex:param id="PName1" value="Country Team" name="PName"/> 
+                             </apex:commandButton>
+                         </td>
+                         <td class="column4">
+                             <apex:outputPanel >
+                                 <apex:outputLabel value="Date of Last Reminder: " rendered="{!IF(strCountryTeamUserNames == '',false,true)}"></apex:outputLabel>
+                                 <apex:outputLabel value="{!dateofLastRemCT}" rendered="{!IF(strCountryTeamUserNames == '',false,true)}"></apex:outputLabel>
+                             </apex:outputPanel>
+                         </td>
+                     </tr>
+                     <tr>
+                         <td  class="column1">
+                             <apex:commandButton id="btnPSM" value="PSM" action="{!ShowPopup}" reRender="UserPopup" status="Processing" style="width:95px;">
+                                 <apex:param id="Name2" value="PSM" name="Name"/>
+                             </apex:commandButton>
+                         </td>
+                         <td class="column2">
+                             <apex:outputText id="outPSM" value="{!strPSMUserNames}"></apex:outputText>
+                         </td>
+                         <td class="column3">
+                             <apex:commandButton id="btnSendRemPSM" value="Send Reminder" action="{!SendReminder}" reRender="pb" status="Processing" style="width:95px;" rendered="{!IF(strPSMUserNames == '',false,true)}">
+                                  <apex:param id="PName2" value="PSM" name="PName"/>
+                             </apex:commandButton>
+                         </td>
+                         <td class="column4">
+                             <apex:outputLabel value="Date of Last Reminder: " rendered="{!IF(strPSMUserNames == '',false,true)}"></apex:outputLabel>
+                             <apex:outputLabel value="{!dateofLastRemPSM}" rendered="{!IF(strPSMUserNames == '',false,true)}"></apex:outputLabel>
+                         </td>
+                     </tr>
+                     <tr>
+                         <td  class="column1">
+                             <apex:commandButton id="btnFinance" value="Finance" action="{!ShowPopup}" reRender="UserPopup" status="Processing" style="width:95px;">
+                                 <apex:param id="Name3" value="Finance" name="Name"/>
+                             </apex:commandButton>
+                         </td>
+                         <td class="column2">
+                             <apex:outputText id="outFinance" value="{!strFinanceUserNames}"></apex:outputText>
+                         </td>
+                         <td class="column3">
+                             <apex:commandButton id="btnSendRemFnc" value="Send Reminder" action="{!SendReminder}" reRender="pb" status="Processing" style="width:95px;" rendered="{!IF(strFinanceUserNames == '',false,true)}">
+                                  <apex:param id="PName3" value="Finance" name="PName"/>
+                             </apex:commandButton>
+                         </td>
+                         <td class="column4">
+                             <apex:outputLabel value="Date of Last Reminder: " rendered="{!IF(strFinanceUserNames == '',false,true)}"></apex:outputLabel>
+                             <apex:outputLabel value="{!dateofLastRemFNC}" rendered="{!IF(strFinanceUserNames == '',false,true)}"></apex:outputLabel>
+                         </td>
+                     </tr>
+                     <tr>
+                         <td  class="column1">
+                             <apex:commandButton id="btnMandE" value="M&E" action="{!ShowPopup}" reRender="UserPopup" status="Processing" style="width:95px;">
+                                 <apex:param id="Name4" value="M&E" name="Name"/>
+                             </apex:commandButton>
+                         </td>
+                         <td class="column2">
+                             <apex:outputText id="outMandE" value="{!strMandEUserNames}"></apex:outputText>
+                         </td>
+                         <td class="column3">
+                             <apex:commandButton id="btnSendRemMandE" value="Send Reminder" action="{!SendReminder}" reRender="pb" status="Processing" style="width:95px;" rendered="{!IF(strMandEUserNames == '',false,true)}">
+                                 <apex:param id="PName4" value="M&E" name="PName"/> 
+                             </apex:commandButton>
+                         </td>
+                         <td class="column4">
+                             <apex:outputLabel value="Date of Last Reminder: " rendered="{!IF(strMandEUserNames == '',false,true)}"></apex:outputLabel>
+                             <apex:outputLabel value="{!dateofLastRemME}" rendered="{!IF(strMandEUserNames == '',false,true)}"></apex:outputLabel>
+                         </td>
+                     </tr>
+                     <tr>
+                         <td  class="column1">
+                             <apex:commandButton id="btnPurchasing" value="Purchasing" action="{!ShowPopup}" reRender="UserPopup" status="Processing" style="width:95px;">
+                                 <apex:param id="Name5" value="Purchasing" name="Name"/>
+                             </apex:commandButton>
+                         </td>
+                         <td class="column2">
+                             <apex:outputText id="outPurchasing" value="{!strPurchasingUserNames}"></apex:outputText>
+                         </td>
+                         <td class="column3">
+                             <apex:commandButton id="btnSendRemOPurchase" value="Send Reminder" action="{!SendReminder}" reRender="pb" status="Processing" style="width:95px;" rendered="{!IF(strPurchasingUserNames == '',false,true)}">
+                                <apex:param id="PName5" value="Purchasing" name="PName"/> 
+                             </apex:commandButton>
+                         </td>
+                         <td class="column4">
+                             <apex:outputLabel value="Date of Last Reminder: " rendered="{!IF(strPurchasingUserNames == '',false,true)}"></apex:outputLabel>
+                             <apex:outputLabel value="{!dateofLastRemPUR}" rendered="{!IF(strPurchasingUserNames == '',false,true)}"></apex:outputLabel>
+                         </td>
+                     </tr>
+                 </table>   
+            <!--</apex:pageBlockSection>-->
+        </apex:pageBlock>
+       
+        <div id="divProcessing" style="display:none;">
+            <div class="ProcessingBackground"></div>
+            <div class="Processing">
+                <apex:image alt="Processing" url="{!$Resource.LoadingCircle}" />
+            </div>
+        </div>  
+        <apex:actionStatus id="Processing" onstart="document.getElementById('divProcessing').style.display = '';" onstop="document.getElementById('divProcessing').style.display = 'none';">                            
+        </apex:actionStatus>
+        
+<!-- Profile User Popup -->
+        <apex:outputPanel id="UserPopup" >
+        <apex:outputPanel id="popupBackground" styleClass="popupBackground" rendered="{!blnHasChild}"/>
+        <apex:outputPanel id="custPopup" styleClass="custPopup" rendered="{!blnHasChild}">   
+            
+        
+            <!--<apex:inputHidden id="ipHiddenCountryIdFromPopup" value="{!strCountryIdFromPopup}"/>-->
+            <apex:pageBlock id="pageB">
+                <apex:pageBlockButtons location="bottom">
+                    <apex:commandButton id="popupSaveandReturn" value="Save & Return" onclick="validationUserName();" action="{!SaveUsers}" reRender="frm" status="Processing"/>
+                    <apex:commandButton id="popupCancel" value="Cancel" action="{!HidePopup}" reRender="frm" status="Processing"/>
+                </apex:pageBlockButtons>
+                <apex:pageMessages ></apex:pageMessages>
+                <apex:outputLabel style="font-size:120%;font-weight:bold" value="Add "></apex:outputLabel>
+                <apex:outputLabel style="font-size:120%;font-weight:bold" value="{!strPopupName} "></apex:outputLabel>
+                <apex:outputLabel style="font-size:120%;font-weight:bold" value="Users"></apex:outputLabel>
+                <br/>
+                
+                <table style="padding-top:20px" cellspacing="5px" cellpadding="10px">
+                    <apex:variable var="Count" value="{!1}"/>
+                    <apex:repeat id="repeatProfileUserList" value="{!lstCRRUsers}" var="users">
+                        <tr>
+                            <td>
+                                <apex:outputLabel value="User {!Count}"></apex:outputLabel>
+                            </td>
+                            <td>
+                                <apex:inputHidden id="hdnUser" value="{!users.User__c}"/>
+                                <apex:inputText id="txtUser" style="float:left;width:130px;" value="{!users.User__r.Name}" onchange="clearID(this,'{!$Component.hdnUser}');"/>
+                                <img id="imgUser" onmouseover="this.className='lookupIconOn';" onmouseout="this.className='lookupIcon';" onclick="return openProfileUserLookupPopup('{!strPopupName}','{!$Component.txtUser}','{!$Component.hdnUser}');"  class="lookupIcon" src="/s.gif" />
+                            </td>
+                        </tr>
+                        <apex:variable var="Count" value="{!Count + 1}"/>
+                    </apex:repeat>
+                </table>
+            </apex:pageBlock>
+        </apex:outputPanel>
+        </apex:outputPanel>
+         
+    </apex:form>
+</apex:page>

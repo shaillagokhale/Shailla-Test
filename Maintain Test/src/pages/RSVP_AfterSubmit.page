@@ -1,0 +1,18 @@
+<apex:page sidebar="false" showheader="False">
+  
+  <!-- Begin Default Content REMOVE THIS -->
+  <br/><br/>
+  <div  style="margin:40px"><img src="{!$Resource.TGF_logo}"/></div>
+  <br/>
+
+    <apex:define name="body"> 
+        <br/>
+        <br/>
+        <center><div style="font-size:20px;color:Black"><b><apex:outputText value="Thank you for your submission!"/></b></div></center>
+        <br/>
+        <br/>
+    </apex:define> 
+  
+ 
+
+</apex:page>

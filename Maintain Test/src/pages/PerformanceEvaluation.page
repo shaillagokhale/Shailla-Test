@@ -1,0 +1,1245 @@
+<!--*******************************************************************************
+* VisualForce {Page}: {PerformanceEvaluation}
+* DateCreated  : 15/11/2013
+----------------------------------------------------------------------------------
+* Purpose:
+* - 
+  -
+  - 
+----------------------------------------------------------------------------------
+* History:
+* - VERSION  DEVELOPER NAME    DATE            DETAIL FEATURES
+    1.0                       15/11/2013     INITIAL DEVELOPMENT
+********************************************************************************-->
+<apex:page id="page" standardController="Performance_Evaluation__c" sidebar="false" extensions="ctrlPerformanceEvaluation">
+<apex:includeScript value="{!URLFOR($Resource.ScrollJS,'Scrolljs/jquery.min.js')}" />
+<apex:includeScript value="{!URLFOR($Resource.ScrollJS,'Scrolljs/jquery.nicescroll.min.js')}" />
+    <style>
+        .searchBox{
+            height: 300px;
+            overflow: scroll !important;
+            display: inline-block;
+            width:100%;
+        }
+        .odd:hover, .even:hover{
+            background-color: #E3F3FF !important;
+        }
+        body .bRelatedList .pbBody table.list, body .apexp .pbBody table.list {
+            border: 0px solid #000000;
+            padding:0px;
+        }
+        .headerRowUpperCE{
+            border:1px solid #E0E3E5 !important;
+            font-weight:bold;
+            background-color:#7f7f7f !important;
+            color:white !important;
+        }
+        .headerRowUpper{
+            border:1px solid #E0E3E5 !important;
+            font-weight:bold;
+            background-color:#7f7f7f !important;
+            color:white !important;
+        }
+        
+        .headerRowLower{
+            border:1px solid #E0E3E5 !important;
+            font-weight:bold;
+            background-color:#0066BB !important;
+            color:white !important;
+            white-space: normal !important;
+        }
+        .headerRowResource{
+            border:1px solid #E0E3E5 !important;
+            font-weight:bold;
+            background-color:orange !important;
+        }
+        .totalRow{
+            border-top:1px;
+            font-weight:bold !important;
+        }
+        .totalRowMinMaxAvg{
+            border-top:1px;
+            text-align:right;
+            padding-right:10px;
+        }
+        .noBorder ,table.noBorder tr td,table.noBorder td{
+            border: 0px !important;
+            padding: 0px;
+        }
+        .headerColor{
+            background-color:#4f81bd !important;
+            color:white !important;
+            font-weight:bold;
+        }
+        .headerColorSearchGrid{
+            background-color:#4f81bd !important;
+            border:1px solid #E0E3E5 !important;
+            background-color:#558ed5 !important;
+            color:white !important;
+            font-weight:bold;
+            white-space: pre-wrap !important;
+        }
+        .resourcetTable{
+            vertical-align:top;
+        }
+        .blankCell{
+            width:5px;
+        }
+        .picklist{
+            width:200px !important;
+        }
+        .yearPicklist{
+            width:70px;
+        }
+        .AddLink{
+            padding-left:18px;
+        }
+        .Image{
+            cursor:pointer;
+            padding-left:8px;
+            height:13px;
+            width:13px;
+            vertical-align:middle;
+        }
+        .ImageResource{
+            cursor:pointer;
+            padding-bottom: 5px;
+            padding-left: 4px;
+            height:13px;
+            width:13px;
+        }
+        .ImageSearch{
+            cursor:pointer;
+            float:left;
+            height:13px;
+            width:13px;
+            vertical-align:middle;
+        }
+        .CollapseExpandAllText{
+            font-size: 12px;
+            font-weight: normal;
+            vertical-align:top;
+        }
+        .CollapseExpandAllImage{
+            cursor:pointer;
+            height:20px;
+            width:20px;
+        }
+        .HeaderFreez{  
+            position:relative ;   
+            top:expression(this.offsetParent.scrollTop);  
+            z-index: 10;  
+        }
+        .box_rotate {          
+            -moz-transform: rotate(90deg);  /* FF3.5+ */
+            -o-transform: rotate(90deg);  /* Opera 10.5 */
+            -webkit-transform: rotate(90deg);  /* Saf3.1+, Chrome */
+            filter:  progid:DXImageTransform.Microsoft.BasicImage(rotation=1.083);  /* IE6,IE7 */
+            -ms-filter: "progid:DXImageTransform.Microsoft.BasicImage(rotation=1.083)"; /* IE8 */
+        } 
+        .box_CT {
+            margin-left: -63px;
+            margin-right: -64px;
+            background-color: #7f7f7f;
+            color:white !important;
+            margin-top: 63px;
+            padding: 5px;
+            white-space: nowrap;
+            width: 140px;
+        }
+        .box_TGF{
+            margin-left: -63px;
+            margin-right: -64px;
+            background-color: #7f7f7f;
+            color:white !important;
+            margin-top: 63px;
+            padding: 5px;
+            white-space: nowrap;
+            width: 140px;
+        }
+        .DescPopup { 
+            /*width:230px; 
+            height:160px; */
+            padding:10px;
+            background: white; 
+            border: 4px solid #c2e1f5; 
+            z-index: 97;   
+            position: absolute; 
+            left:10%;
+            margin-left: -160px;
+            margin-top: -73px;
+        } 
+        .DescPopup:after, .DescPopup:before { 
+            top: 100%; border: solid transparent; content: " "; 
+            height: 0; width: 0; position: absolute; pointer-events: none;
+        } 
+        .DescPopup:after { border-color: rgba(136, 183, 213, 0); border-top-color: white; 
+            border-width: 30px; left: 50%; margin-left: -30px; } 
+        .DescPopup:before { border-color: rgba(194, 225, 245, 0); 
+            border-top-color: #c2e1f5; border-width: 36px; left: 50%; margin-left: -36px; 
+        }
+         .DescServicePopupClone { 
+            padding:10px;
+            background: #FFF4DB; 
+            border: 4px solid #c2e1f5; 
+            z-index: 97;   
+            position: absolute; 
+            left:10%;
+            margin-left: 20px;
+            margin-top: -73px;
+        } 
+        .DescServicePopupClone:after, .DescServicePopupClone:before { 
+            top: 100%; border: solid transparent; content: " "; 
+            height: 0; width: 0; position: absolute; pointer-events: none;
+        } 
+        .DescServicePopupClone:after { border-color: rgba(136, 183, 213, 0); border-top-color: #FFF4DB; 
+            border-width: 30px; left: 50%; margin-left: -30px; } 
+        .DescServicePopupClone:before { border-color: rgba(194, 225, 245, 0); 
+            border-top-color: #c2e1f5; border-width: 36px; left: 50%; margin-left: -36px; 
+        }
+        
+        .DescServicePopupHasResource { 
+            padding:10px;
+            background: #FFF4DB; 
+            border: 4px solid #c2e1f5; 
+            z-index: 97;   
+            position: absolute; 
+            left:10%;
+            margin-left: 60px;
+            margin-top: -73px;
+        } 
+        .DescServicePopupHasResource:after, .DescServicePopupHasResource:before { 
+            top: 100%; border: solid transparent; content: " "; 
+            height: 0; width: 0; position: absolute; pointer-events: none;
+        } 
+        .DescServicePopupHasResource:after { border-color: rgba(136, 183, 213, 0); border-top-color: #FFF4DB; 
+            border-width: 30px; left: 50%; margin-left: -30px; } 
+        .DescServicePopupHasResource:before { border-color: rgba(194, 225, 245, 0); 
+            border-top-color: #c2e1f5; border-width: 36px; left: 50%; margin-left: -36px; 
+        }
+        .DescServicePopupLOE { 
+            padding:10px;
+            background: #FFF4DB; 
+            border: 4px solid #c2e1f5; 
+            z-index: 97;   
+            position: absolute; 
+            left:10%;
+            margin-left: 27px;
+            margin-top: -73px;
+        } 
+        .DescServicePopupLOE:after, .DescServicePopupLOE:before { 
+            top: 100%; border: solid transparent; content: " "; 
+            height: 0; width: 0; position: absolute; pointer-events: none;
+        } 
+        .DescServicePopupLOE:after { border-color: rgba(136, 183, 213, 0); border-top-color: #FFF4DB; 
+            border-width: 30px; left: 50%; margin-left: -30px; } 
+        .DescServicePopupLOE:before { border-color: rgba(194, 225, 245, 0); 
+            border-top-color: #c2e1f5; border-width: 36px; left: 50%; margin-left: -36px; 
+        }
+    </style>    
+    <div id="pagetitle">
+        <h2 class="module" style="display:{!if(isblank(strRecordTypeId),'','none')};">LFA Performance Evaluation Tool</h2><br />
+        <apex:sectionHeader subtitle="{!Performance_Evaluation__c.LFA_Work_Plan__r.Name}" rendered="{!if(isblank(strRecordTypeId),true,false)}"/>
+        <apex:sectionHeader subtitle="New Performance Evaluation" title="Performance Evaluation Edit" rendered="{!if(isblank(strRecordTypeId),false,true)}"/>
+        <br>
+        <apex:outputText style="position:relative; top:-20px; margin-left:40px;" value="Period Covered: {!Performance_Evaluation__c.Period_Start__c} – {!Performance_Evaluation__c.Period_End__c}" rendered="{!if(isblank(strRecordTypeId),true,false)}"/>
+        </br><br/>        
+    </div>
+    <script>
+        function checkAllService(CheckboxStatus,Index,size){
+            if(size > 0){                
+                for(var i=0;i<size;i++){
+                    var checkBoxId = 'page:frm:pageB:repeatUpper:'+Index+':repeat:'+i+':checkService';
+                    document.getElementById(checkBoxId).checked = CheckboxStatus.checked;
+                    var SubmissionDateId = checkBoxId.replace("checkService","SubmissionDate");
+                    var PUDRnumberId = checkBoxId.replace("checkService","PUDRnumber");
+                    
+                    /*var HiddenId = checkBoxId.replace("checkService","ServiceSubType");
+                    if(document.getElementById(HiddenId).value == "PUDR" || document.getElementById(HiddenId).value == "PU (without DR)"){
+                        document.getElementById(PUDRnumberId).disabled = !CheckboxStatus.checked;
+                    }else{
+                        document.getElementById(PUDRnumberId).disabled = true;
+                    }*/
+                    document.getElementById(SubmissionDateId).disabled = !CheckboxStatus.checked;
+                    document.getElementById(PUDRnumberId).disabled = !CheckboxStatus.checked;
+                }
+            }
+        }
+        function checkAll(CheckboxStatus){
+            var Items = document.getElementsByTagName("input");            
+            for(var i=0;i<Items.length;i++){
+                if(Items[i].type == 'checkbox'){
+                    Items[i].checked = CheckboxStatus.checked;
+                    if(Items[i].id.indexOf("checkService") != -1){
+                        var SubmissionDateId = Items[i].id.replace("checkService","SubmissionDate");
+                        var PUDRnumberId = Items[i].id.replace("checkService","PUDRnumber");
+                        
+                        /*var HiddenId = Items[i].id.replace("checkService","ServiceSubType");
+                        if(document.getElementById(HiddenId).value == "PUDR" || document.getElementById(HiddenId).value == "PU (without DR)"){
+                            document.getElementById(PUDRnumberId).disabled = !Items[i].checked;
+                        }else{
+                            document.getElementById(PUDRnumberId).disabled = true;
+                        }*/
+                        document.getElementById(SubmissionDateId).disabled = !Items[i].checked;
+                        document.getElementById(PUDRnumberId).disabled = !Items[i].checked;
+                    }
+                }
+            }            
+        }
+        function chkValidationProductSubType(){
+           
+           /*
+           if('{!blnCheckRecordType}' != 'true'){
+               for(var i=0;i<Items.length;i++){
+                   if(Items[i].type == 'checkbox'){
+                        if(Items[i].checked == true){
+                            if(Items[i].id.indexOf("checkService") != -1){
+                                var SubmissionDateId = Items[i].id.replace("checkService","SubmissionDate");
+                                if(document.getElementById(SubmissionDateId).value == ''){
+                                    alert("Submission Date should not be blank.");
+                                    return false;
+                                }
+                            }
+                        }
+                    }
+               }
+           }
+           */ 
+           if('{!Performance_Evaluation__c.All_mandatory_completed__c}' == 'Yes'){
+               var confirmMessage = confirm("Please note that all mandatory technical teams have already completed their evaluations. Adding or removing services at this point will not send further alerts. If necessary, it is your responsibility to inform them of the potential need to revise.");
+               if(confirmMessage == true){
+                   checkValidationForSave();
+               }else{
+                   return false;
+               }
+           }else{
+               checkValidationForSave();
+           }
+           
+        }
+        function checkValidationForSave(){
+               var Items = document.getElementsByTagName("input");
+               if('{!blnCheckRecordType}' == 'true'){
+                        
+                        var valueCheck = ''; 
+                        var blnValue = false;
+                        var checkedServiceExist = false;   
+                        for(var i=0;i<Items.length;i++){
+                            if(Items[i].type == 'checkbox'){
+                                if(Items[i].checked == true){
+                                    if(Items[i].id.indexOf("checkService") != -1){
+                                        var HiddenId = Items[i].id.replace("checkService","ServiceSubType");
+                                        if(valueCheck == '') valueCheck = document.getElementById(HiddenId).value;
+                                        if(valueCheck != document.getElementById(HiddenId).value){
+                                            alert("Please Select Same Service Sub Type");
+                                            blnValue = true;
+                                            return false;
+                                        }
+                                        var SubmissionDateId = Items[i].id.replace("checkService","SubmissionDate");
+                                        if(document.getElementById(SubmissionDateId).value == ''){
+                                            alert("Submission Date should not be blank.");
+                                            return false;
+                                        }
+                                        var PUDRnumberId = Items[i].id.replace("checkService","PUDRnumber");
+                                        var HiddenId = Items[i].id.replace("checkService","ServiceSubType");
+                                        
+                                        /*
+                                        if(document.getElementById(HiddenId).value == "PUDR" || document.getElementById(HiddenId).value == "PU (without DR)"){
+                                            if(document.getElementById(PUDRnumberId).value == ''){
+                                                alert("PUDR Number should not be blank.");
+                                                return false;
+                                            }
+                                        }
+                                        */
+                                    }
+                                    checkedServiceExist = true;
+                                }
+                            }
+                        } 
+                        if(checkedServiceExist == false){
+                           alert("You must select at least one service.");
+                           return false;
+                        }
+                        if(blnValue == false){
+                            callActionBackToWorkPlan();
+                            return false;
+                        }else{
+                            return false;
+                        }
+                     }else{
+                        callActionBackToWorkPlan();
+                        return false;
+                    }
+           }       
+    </script>
+    <apex:outputpanel id="chatterHomePanel">
+        <chatter:feedWithFollowers id="chatterFeed" entityId="{!if(blnHasChild==true,lstwrapServicesType[intIndexST].lstwrapServices[intIndex].objService.Id,Performance_Evaluation__c.ID)}"/>
+    </apex:outputpanel>
+    <apex:form id="frm">
+        <apex:inputhidden value="{!intTemp}" id="hdnintTemp"/>
+        <apex:actionfunction name="actCollepseAllServiceType" action="{!CollepseAllServiceType}" reRender="frm" status="Processing"/>
+        <apex:actionfunction name="actExapndAllServiceType" action="{!ExapndAllServiceType}" reRender="frm" status="Processing"/>    
+        <apex:inputHidden value="{!intIndex}" id="hdnIndex"/>
+        <apex:inputHidden value="{!intIndexST}" id="hdnIndexST"/>
+        <apex:inputHidden value="{!blnShowCTPlanned}" id="hdnblnShowCTPlanned"/>
+        <apex:inputHidden value="{!blnShowTGF}" id="hdnblnShowTGF"/>
+        <apex:inputHidden value="{!intOffsetHeight}" id="hdnintOffsetTop"/>
+        <apex:inputHidden value="{!intHeight}" id="hdnsetTop"/>
+       
+        <apex:actionFunction name="callActionBackToWorkPlan" action="{!BackToWorkPlan}" reRender="frm"/>
+        <apex:actionFunction name="callWorkPlanChanged" action="{!WorkPlanChanged}" status="Processing" reRender="frm"/>
+        <apex:pageBlock title="Performance Evaluation Edit" rendered="{!if(isblank(strRecordTypeId),false,true)}">
+            <apex:pageMessages ></apex:pageMessages>
+            <apex:pageBlockButtons >
+                <apex:commandButton value="Save" action="{!SavePE}" rendered="{!if(strRecordTypeName=='Period',if(blnAllowSave == false,false,true),true)}"/>
+                <apex:commandButton value="Cancel" action="{!Cancel}"/>
+            </apex:pageBlockButtons>
+            <apex:pageBlockSection >
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="LFA Work Plan"></apex:outputLabel>
+                    <apex:inputField value="{!objPENew.LFA_Work_Plan__c}" onchange="{!if(strRecordTypeName=='Period','callWorkPlanChanged();','')}" />
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem rendered="{!if(strRecordTypeName == 'Period',true,false)}" >
+                    <apex:outputLabel value="Start Date"></apex:outputLabel>
+                    <apex:outputpanel >
+                        <apex:outputText value="{0,date,dd.MM.yyyy}" rendered="{!if(strRecordTypeName == 'Period',true,false)}" >
+                            <apex:param value="{!objPENew.Start_Date__c}" />
+                        </apex:outputText>
+                    </apex:outputpanel>
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    <apex:outputText ></apex:outputText>
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem rendered="{!if(strRecordTypeName == 'Period',true,false)}">
+                    <apex:outputLabel value="End Date"></apex:outputLabel>
+                    <apex:outputpanel >
+                        <apex:selectList rendered="{!blnShowDatePicklist}" size="1" style="width:100px;" value="{!AnuualPeriodEndDate}" >
+                            <apex:selectoptions value="{!lstEndDateOptions}" ></apex:selectoptions>
+                        </apex:selectList>
+                        
+                        <apex:outputText value="{0,date,dd.MM.yyyy}" rendered="{!!blnShowDatePicklist}" >
+                            <apex:param value="{!objPENew.End_Date__c}" />
+                        </apex:outputText>
+                    </apex:outputpanel>
+                </apex:pageBlockSectionItem>
+            </apex:pageBlockSection>
+        </apex:pageBlock>
+        <apex:pageBlock id="pageB" rendered="{!if(isblank(strRecordTypeId),true,false)}">           
+            <apex:pageBlockButtons style="text-align:left !important;" location="top">
+                <apex:commandButton value="Save and Return to Overview" onclick="return chkValidationProductSubType();" reRender="frm" style="margin-left:100px;"/>
+                <apex:commandButton value="Cancel" action="{!CancelToWorkPlan}" reRender="frm"/>
+            </apex:pageBlockButtons>
+            <br/>
+            
+            <center>
+                    <div style="width:70%;"><p>If a service does not appear in the list below, please first update the corresponding work plan and refresh this page.  If the work plan is not editable, then include any missing service(s) and grant number(s) in the box provided below.</p></div>
+
+            <table width="70%" cellspacing="0" cellpadding="0" border="0">
+                <tr>
+                    <td width="70%" style="border:0px !important;">
+                        <apex:inputField style="height: 40px;resize:none;width:100%" value="{!objPENewUpdate.Add_Services_Comment__c}"/>
+                    </td>
+                </tr>
+            </table>
+            <table width="70%" cellspacing="0" cellpadding="0" border="0"><tr><td valign="top">
+            <table width="100%" id="ServiceTable" cellspacing="0" cellpadding="0" border="0" class="list">
+                <thead class="rich-table-thead">
+                    
+                    <tr class="headerRow">
+                        <th style="background-color:#F8F8F8;border-bottom:0px;" colspan="7">
+                            <apex:image styleClass="CollapseExpandAllImage" url="{!$Resource.ExpandAll1}" title="Expand All" onclick="actExapndAllServiceType();" rendered="{!blnCollapseAll}"/>
+                            <apex:outputText styleClass="CollapseExpandAllText" value="Expand all" rendered="{!blnCollapseAll}"></apex:outputText>
+                            <apex:image styleClass="CollapseExpandAllImage" url="{!$Resource.CollapseAll1}" title="Collapse All" onclick="actCollepseAllServiceType();" rendered="{!blnExpandAll}"/>
+                            <apex:outputText styleClass="CollapseExpandAllText" value="Collapse all" rendered="{!blnExpandAll}"></apex:outputText>
+                        </th>
+                    </tr>  
+                    <tr class="headerRow">
+                        <th width="4%" class="headerRowLower">
+                            <apex:inputCheckbox id="checkAll" onclick="checkAll(this);"/>
+                        </th>
+                        <th width="22%" class="headerRowLower" style="border-left:0px !important;">Service</th>
+                        <th width="16%" class="headerRowLower" style="border-left:0px !important;border-right:0px !important;" colspan="2">Grant</th>
+                        <th width="10%" class="headerRowLower" style="border-right:0px !important;">Submission Date</th>
+                        <th width="10%" class="headerRowLower" style="border-right:0px !important;">Details</th>
+                        <th width="7%" class="headerRowLower"><apex:outputtext value="Previously Selected for PET?"/></th>
+                    </tr>  
+                </thead>
+                <apex:variable var="CountST" value="{!0}" />                
+                <apex:repeat id="repeatUpper" value="{!lstwrapServicesType}" var="wrapST">
+                    <tr class="totalRow">
+                        <th class="totalRow">
+                            <apex:inputCheckbox id="checkAllType" onclick="checkAllService(this,'{!CountST}',{!wrapST.lstwrapServices.size});"/>
+                            <apex:inputHidden id="CollapseStatus" value="{!wrapST.blnExpandSection}" />
+                            <apex:outputpanel id="collapseimage" style="display:{!if(wrapST.blnExpandSection == true,'none','')};" rendered="{!if(wrapST.lstwrapServices.size > 0,true,false)}">
+                                <apex:image styleClass="Image" url="{!$Resource.Collepse}" onclick="switchMenu('inlinetablesec{!CountST}','{!$Component.Expandimage}','{!$Component.collapseimage}','{!$Component.CollapseStatus}','true')" title="Expand"/>
+                            </apex:outputpanel>
+                            <apex:outputpanel id="Expandimage" style="display:{!if(wrapST.blnExpandSection == true,'','none')};" rendered="{!if(wrapST.lstwrapServices.size > 0,true,false)}">
+                                  <apex:image styleClass="Image" url="{!$Resource.Expand}" onclick="switchMenu('inlinetablesec{!CountST}','{!$Component.collapseimage}','{!$Component.Expandimage}','{!$Component.CollapseStatus}','false')" title="Collapse"/>
+                            </apex:outputpanel>
+                        </th>
+                        <th class="totalRow " colspan="6">
+                            <apex:outputText value="{!wrapST.ServiceType}"/>
+                        </th>
+                    </tr>
+                    <tbody id="inlinetablesec{!CountST}" style="display:{!if(wrapST.blnExpandSection == true,'','none')};">
+                        <apex:variable var="Count" value="{!0}" />
+                        <apex:repeat id="repeat" value="{!wrapST.lstwrapServices}" var="Service">   
+                            <tr>
+                                <td class="dataCell" style="white-space: nowrap;border-top:1px solid #838282;border-left:1px solid #E0E3E5;">
+                                    <apex:inputCheckbox id="checkService" value="{!Service.blnHasServicePETJxn}" onclick="DisableIndividual(this);"/>
+                                    <apex:inputhidden id="ServiceSubType" value="{!Service.objService.Service_Sub_Type__c}"/>
+                                    <apex:inputHidden id="CollapseStatusResource" value="{!Service.blnExpandResourceSection}" />
+                                    <apex:outputpanel id="collapseimageResource" style="display:{!if(Service.blnExpandResourceSection == true,'none','')};" rendered="{!if(Service.lstwrapResource.size > 0,true,false)}">
+                                        <apex:image styleClass="ImageResource" url="{!$Resource.Collepse}" onclick="switchMenuResource('Total{!Count}','inlinetablesecResource{!CountST}{!Count}','ResourceHeader{!CountST}{!Count}','{!$Component.ExpandimageResource}','{!$Component.collapseimageResource}','{!$Component.CollapseStatusResource}','true')" title="Expand"/>
+                                    </apex:outputpanel>
+                                    <apex:outputpanel id="ExpandimageResource" style="display:{!if(Service.blnExpandResourceSection == true,'','none')};" rendered="{!if(Service.lstwrapResource != null,true,false)}">
+                                          <apex:image styleClass="ImageResource" url="{!$Resource.Expand}" onclick="switchMenuResource('Total{!Count}','inlinetablesecResource{!CountST}{!Count}','ResourceHeader{!CountST}{!Count}','{!$Component.collapseimageResource}','{!$Component.ExpandimageResource}','{!$Component.CollapseStatusResource}','false')" title="Collapse"/>
+                                    </apex:outputpanel>
+                                </td>
+                                <td class="dataCell" style="border-top:1px solid #838282;font-weight:bold;">
+                                    <apex:outputField value="{!Service.objService.Name}" rendered="{!if(Service.objService.id != null,true,false)}" style="float:left;"/>
+                                </td>
+                                <td class="dataCell" style="border-top:1px solid #838282;font-weight:bold;" colspan="2">
+                                    <apex:outputLink target="_Blank" value="/{!Service.objService.Grant__c}" rendered="{!if(Service.objService.id != null && Service.objService.Grant__c != null,true,false)}">
+                                        <apex:outputField value="{!Service.objService.Grant__c}"/>                                
+                                    </apex:outputLink>
+                                    <apex:outputtext value="Multiple Grants" rendered="{!if(Service.objService.id != null && Service.objService.Grant__c == null,true,false)}"/>
+                                    <apex:selectList value="{!Service.objService.Grant__c}" style="width:100px;"  rendered="{!if(Service.objService.id == null,true,false)}" size="1">
+                                        <apex:selectOptions value="{!GrantOptions}"></apex:selectOptions>
+                                    </apex:selectList>
+                                </td>
+                                <td class="dataCell" style="border-top:1px solid #838282;font-weight:bold;">
+                                    <apex:inputField id="SubmissionDate" value="{!Service.objService.Submission_Date__c}"/>
+                                </td>
+                                <td class="dataCell" style="border-top:1px solid #838282;font-weight:bold;">
+                                    <apex:inputField id="PUDRnumber" value="{!Service.objService.PU_DR_Number__c}"/>
+                                </td>
+                                <td class="dataCell" style="border-top:1px solid #838282;font-weight:bold;">
+                                    <apex:outputField value="{!Service.objService.Previously_Selected_for_PET__c}"/>
+                                </td>
+                            </tr>
+                            <tr id="ResourceHeader{!CountST}{!Count}" style="display:{!if(Service.blnExpandResourceSection == true,'','none')};">
+                                <th style="border:none"></th>
+                                <th class="headerRowResource">Role</th>
+                                <th class="headerRowResource">Person</th>
+                                <th class="headerRowResource">Budgeted LOE</th>
+                                <th class="headerRowResource">Actual LOE</th>
+                            </tr>
+                            <apex:repeat value="{!Service.lstwrapResource}" var="ServiceResource">
+                                <tr id="inlinetablesecResource{!CountST}{!Count}" style="display:{!if(Service.blnExpandResourceSection == true,'','none')};">
+                                    <td class="dataCell" style="border:none;">
+                                    </td>
+                                    <td class="dataCell" style="border-bottom:1px solid #E0E3E5;">
+                                        <apex:outputText value="{!ServiceResource.RoleName}" />
+                                    </td>
+                                    <td class="dataCell" style="border-bottom:1px solid #E0E3E5;">
+                                        <apex:outputText value="{!ServiceResource.ContactName}" />
+                                    </td>
+                                    <td class="dataCell" style="border-bottom:1px solid #E0E3E5;">
+                                        <apex:outputField value="{!ServiceResource.objResource.LOE__c}"/>
+                                    </td> 
+                                    <td class="dataCell" style="border-bottom:1px solid #E0E3E5;">
+                                        <apex:outputField value="{!ServiceResource.objResource.Actual_LOE__c}"/>
+                                    </td>
+                                </tr>
+                            </apex:repeat>
+                            <tr id="Total{!Count}" style="display:{!if(Service.blnExpandResourceSection == true,'','none')};">
+                                <th ></th>
+                                <th class="totalRow"></th>
+                                <th class="totalRow" >
+                                    Total
+                                </th>
+                                <th class="totalRow">
+                                    <apex:outputField value="{!Service.objService.LOE__c}"/>
+                                </th>
+                                <th class="totalRow">
+                                    <apex:outputField value="{!Service.objService.Actual_LOE__c}"/>
+                                </th>
+                            </tr>
+                            <apex:variable var="Count" value="{!Count+1}" />
+                        </apex:repeat>
+                    </tbody>
+                    <apex:variable var="CountST" value="{!CountST+1}" />     
+                </apex:repeat>
+                
+            </table>
+            </td>
+            </tr>
+            </table>
+            </center>
+        </apex:pageBlock>
+        <apex:outputPanel id="tstpopup" >
+            <apex:outputPanel id="popupBackground" styleClass="popupBackground" rendered="{!blnHasChild}"/>
+            <apex:outputPanel id="custPopup" styleClass="custPopup"  rendered="{!blnHasChild}">
+                <table cellspacing="0" cellpadding="0" border="0" width="100%">
+                    <tr>
+                        <td width="50%" class="resourcetTable">
+                            <apex:pageBlock id="pBlock" title="Add/Edit Resources" helpTitle="Benchmarking" helpurl="/apex/ServiceBenchmarking?id={!lstwrapServicesType[intIndexST].lstwrapServices[intIndex].objService.Id}">
+                                <apex:pageBlockButtons location="bottom">
+                                    <apex:commandButton value="Save" onclick="return ValidateLOE();"/>
+                                </apex:pageBlockButtons>
+                                <div>
+                                <apex:pageBlockSection >
+                                    <apex:pageBlockSectionItem >
+                                        <apex:outputLabel value="Service Type:"></apex:outputLabel>
+                                        <apex:outputPanel >
+                                            <table>
+                                                <tr>
+                                                    <td>
+                                                        <apex:inputField value="{!lstwrapServicesType[intIndexST].lstwrapServices[intIndex].objService.Service_Type__c}" style="display:none;"/>
+                                                        <apex:inputField value="{!lstwrapServicesType[intIndexST].lstwrapServices[intIndex].objService.Service_Sub_Type__c}" onchange="displayOtherSubCatagory(this,'{!$Component.txtOtherSubCatagory}');"/>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td>
+                                                        <apex:inputText id="txtOtherSubCatagory" value="{!lstwrapServicesType[intIndexST].lstwrapServices[intIndex].objService.Other_Sub_Category__c}" style="display:{!if(lstwrapServicesType[intIndexST].lstwrapServices[intIndex].objService.Service_Sub_Type__c == 'Other LFA Services' || lstwrapServicesType[intIndexST].lstwrapServices[intIndex].objService.Service_Sub_Type__c == 'Other procurement related services','','none')}"/>
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                        </apex:outputPanel>
+                                    </apex:pageBlockSectionItem>
+                                    <apex:pageBlockSectionItem >
+                                        <apex:outputLabel value="Grant :"></apex:outputLabel>
+                                        <apex:selectList size="1" value="{!lstwrapServicesType[intIndexST].lstwrapServices[intIndex].objService.Grant__c}">
+                                            <apex:selectOptions value="{!GrantOptions}"></apex:selectOptions>
+                                        </apex:selectList>
+                                    </apex:pageBlockSectionItem>
+                                    <apex:pageBlockSectionItem >
+                                        <apex:outputLabel value="Country :"></apex:outputLabel>
+                                        <apex:outputText value="{!lstwrapServicesType[intIndexST].lstwrapServices[intIndex].objService.LFA_Work_Plan__r.Country__r.Name}"/>
+                                    </apex:pageBlockSectionItem>
+                                    <apex:pageBlockSectionItem >
+                                        <apex:outputLabel value="Grant Status :"></apex:outputLabel>
+                                        <apex:outputText value="{!lstwrapServicesType[intIndexST].lstwrapServices[intIndex].objService.Grant__r.Grant_Status__c}"/>
+                                    </apex:pageBlockSectionItem>                                                                                                
+                                </apex:pageBlockSection>
+                                <p></p>
+                                <table align="center" style="padding-bottom:10px">                               
+                                    <tr style="display:{!if(lstwrapServicesType[intIndexST].lstwrapServices[intIndex].objService.Grant__c != NULL,true,false)}">
+                                        <td align="right">
+                                            <apex:outputLabel value="Programmatic Period Covered : " style="font-weight:bold;font-color:grey;"></apex:outputLabel>
+                                        </td>
+                                        <td>
+                                            <table>
+                                                <tr>
+                                                    <td>
+                                                        <apex:inputfield value="{!lstwrapServicesType[intIndexST].lstwrapServices[intIndex].objService.Period_Start__c}"/>
+                                                    </td>
+                                                    <td>
+                                                        <apex:inputfield value="{!lstwrapServicesType[intIndexST].lstwrapServices[intIndex].objService.Period_Start_Year__c}" />
+                                                    </td>
+                                                    <td>                                      
+                                                        <apex:outputLabel value=" to "></apex:outputLabel>
+                                                    </td>
+                                                    <td>
+                                                        <apex:inputfield value="{!lstwrapServicesType[intIndexST].lstwrapServices[intIndex].objService.Period_End__c}"/>
+                                                    </td>
+                                                    <td>
+                                                        <apex:inputfield value="{!lstwrapServicesType[intIndexST].lstwrapServices[intIndex].objService.Period_End_Year__c}"/>
+                                                    </td>
+                                                </tr>   
+                                            </table>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>                  
+                                            <apex:outputLabel value="Forecasted Service Delivery Period : " style="font-weight:bold"></apex:outputLabel>
+                                        </td>
+                                        <td>
+                                            <table>
+                                                <tr>
+                                                    <td>
+                                                        <apex:inputfield value="{!lstwrapServicesType[intIndexST].lstwrapServices[intIndex].objService.Forecasted_Start_Date__c}"/>
+                                                    </td>
+                                                    <td>
+                                                        <apex:outputLabel value=" to "></apex:outputLabel>
+                                                    </td>
+                                                    <td>
+                                                        <apex:inputfield value="{!lstwrapServicesType[intIndexST].lstwrapServices[intIndex].objService.Forecasted_End_Date__c}"/>  
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                    </tr>
+                                </table>
+                                <p></p>                             
+                                <apex:outputPanel rendered="{!if(lstwrapServicesType[intIndexST].lstwrapServices[intIndex].objService.Grant__c != NULL,true,false)}">
+                                    <table cellpadding="5px" cellspacing="0" align="center">
+                                        <tr >
+                                           <td><b>Risks</b></td>
+                                           <td style="border: 1px solid grey;background-color:{!if(lstwrapServicesType[intIndexST].lstwrapServices[intIndex].objService.Grant__r.Financial_and_Fiduciary_Risks__c == 'High','red',if(lstwrapServicesType[intIndexST].lstwrapServices[intIndex].objService.Grant__r.Financial_and_Fiduciary_Risks__c == 'Medium','yellow',if(lstwrapServicesType[intIndexST].lstwrapServices[intIndex].objService.Grant__r.Financial_and_Fiduciary_Risks__c == 'Low','lightgreen','')))}"><apex:outputtext value="Financial & Fiduciary"/></td>
+                                           <td style="border: 1px solid grey;background-color:{!if(lstwrapServicesType[intIndexST].lstwrapServices[intIndex].objService.Grant__r.Programmatic_and_Performance_Risks__c == 'High','red',if(lstwrapServicesType[intIndexST].lstwrapServices[intIndex].objService.Grant__r.Programmatic_and_Performance_Risks__c == 'Medium','yellow',if(lstwrapServicesType[intIndexST].lstwrapServices[intIndex].objService.Grant__r.Programmatic_and_Performance_Risks__c == 'Low','lightgreen','')))}"><apex:outputtext value="Programmatic & Performance"/></td>
+                                           <td style="border: 1px solid grey;background-color:{!if(lstwrapServicesType[intIndexST].lstwrapServices[intIndex].objService.Grant__r.Health_Services_and_Products_Risks__c == 'High','red',if(lstwrapServicesType[intIndexST].lstwrapServices[intIndex].objService.Grant__r.Health_Services_and_Products_Risks__c == 'Medium','yellow',if(lstwrapServicesType[intIndexST].lstwrapServices[intIndex].objService.Grant__r.Health_Services_and_Products_Risks__c == 'Low','lightgreen','')))}"><apex:outputtext value="Health Services & Products"/></td>
+                                        </tr>
+                                    </table>    
+                                </apex:outputPanel>
+                                </div>
+                                <br/>
+                                <apex:outputPanel id="Panel">
+                                    <apex:variable id="variable" var="CountResource" value="{!0}"/>
+                                    <apex:pageBlockTable width="100%" id="pbtable" headerClass="headerColor" value="{!lstwrapServicesType[intIndexST].lstwrapServices[intIndex].lstwrapResource}" var="Resource">
+                                        <apex:column width="8%" >
+                                            <apex:image style="cursor:pointer;float:left;" value="{!$Resource.DeleteImage}" height="20" width="25" title="Delete" onclick="DeleteResource('{!CountResource}');" />
+                                            <apex:image id="InfoImageBlue" style="cursor:pointer;float:right;display:{!if(Resource.blnTBDContactLOEZeroInfo == true,'','none')}" value="{!$Resource.InformationFlagBlue}" height="20" width="20" onmouseout="toggleDescPopup('{!$Component.DescPopup}')" onmouseover="toggleDescPopup('{!$Component.DescPopup}')"/> <!-- title="This TBD resource has LOE assigned."/>-->
+                                            <apex:outputpanel styleClass="DescPopup" id="DescPopup" style="display:none;">
+                                               Please update: a TBD contact must have an LOE of 0.                                                                               
+                                            </apex:outputpanel> 
+                                        </apex:column>
+                                        <apex:column width="10%" headerValue="Role">
+                                            <apex:SelectList id="Rolelist" style="width:140px;" value="{!Resource.objResource.LFA_Role__c}" onchange="FillContact('{!CountResource}');" size="1" >
+                                                <apex:selectOptions value="{!RoleOptions}"></apex:selectOptions>                                            
+                                            </apex:SelectList>
+                                        </apex:column>
+                                        <apex:column width="15%" headerValue="Person">
+                                            <apex:SelectList id="ContactList" style="width:140px;" value="{!Resource.ContactID}" onchange="FillRate('{!CountResource}');" size="1">
+                                                <apex:selectOptions value="{!Resource.ContactOptions}"></apex:selectOptions>
+                                            </apex:SelectList>
+                                        </apex:column>
+                                        <apex:column width="15%" headerValue="Rate">
+                                        <apex:outputField id="optRate" value="{!Resource.objResource.Rate__c}" rendered="{!if(Resource.ContactName == 'TBD' && Resource.RoleName == 'Other Professional',false,true)}"/>
+                                        <apex:inputField id="inpRate" style="width:50px;" value="{!Resource.objResource.Rate__c}" rendered="{!if(Resource.ContactName == 'TBD' && Resource.RoleName == 'Other Professional',true,false)}" onchange="Calculation();"/>
+                                            <apex:facet name="footer">
+                                                <apex:outputText value="Total"/>
+                                            </apex:facet>
+                                        </apex:column>
+                                        <apex:column width="9%" headerValue="LOE">
+                                            <apex:inputField style="width:50px;" id="txtLOE" value="{!Resource.objResource.LOE__c}" onchange="validateLOEForTBD(this,'{!$Component.InfoImageBlue}','{!$Component.ContactList}');"/>
+                                            <apex:facet name="footer">
+                                                <apex:outputLabel id="txtTotalLOE" value=""/>
+                                            </apex:facet>
+                                        </apex:column>                                        
+                                        <apex:column width="15%" headerValue="Cost">
+                                            <apex:outputText id="inpCost" value="{!Resource.objResource.Cost__c}"/>
+                                            <apex:facet name="footer">                                               
+                                                <apex:outputLabel id="txtTotalCost" value="" />
+                                            </apex:facet>
+                                            <apex:variable var="CountResource" value="{!CountResource+1}"/>
+                                        </apex:column>
+                                    </apex:pageBlockTable>
+                                    <script>
+                                        function displayOtherSubCatagory(SubType,OtherSubCatagory){
+                                            if(SubType.value == 'Other LFA Services' || SubType.value == 'Other procurement related services'){
+                                                document.getElementById(OtherSubCatagory).style.display = '';
+                                            }else{
+                                                document.getElementById(OtherSubCatagory).style.display = 'none';
+                                            }
+                                        }
+                                        function ConvertNum(textvalue)
+                                        {        
+                                            textvalue= textvalue.replace("$", "");
+                                            textvalue= textvalue.replace(/,/g, "");
+                                            textvalue= textvalue.replace("'", "");
+                                            var num1 = 0;
+                                            if(textvalue.indexOf("USD") != -1){
+                                                var indexusd = textvalue.indexOf("USD");
+                                                var textvalue1 = textvalue.substring(indexusd+4,textvalue.length);
+                                                for(i=0;textvalue1.length;i++)
+                                                {    
+                                                    if(isNaN(textvalue1[i]))
+                                                    {    
+                                                        break;
+                                                    }
+                                                    else
+                                                    {   
+                                                        num1+=textvalue1[i];
+                                                    }
+                                                }
+                                            }else{
+                                                num1=textvalue;
+                                            }
+                                            var num= parseFloat(num1);
+                                            num=num.toFixed(2);
+                                            if(isNaN(num)){
+                                                return 0;
+                                            }else{
+                                                return num;
+                                            }                
+                                        }
+                                        
+                                        function validateLOEForTBD(LOEid,ImageId,contactId){
+                                            if(document.getElementById(ImageId) != null && document.getElementById(contactId) != null && document.getElementById(contactId).value == 'TBD'){
+                                                if(LOEid.value == 0){
+                                                    document.getElementById(ImageId).style.display = 'none';
+                                                }else{
+                                                    document.getElementById(ImageId).style.display = 'block';
+                                                }
+                                            }
+                                            Calculation();
+                                        }
+                                        
+                                        function Calculation(){
+                                            
+                                            var size='{!lstwrapServicesType[intIndexST].lstwrapServices[intIndex].lstwrapResource.size}';
+                                            var TotalLOE = 0;
+                                            var TotalCost =0;
+                                            for(var i=0;i<size;i++)
+                                            {
+                                                var LOE = 0;
+                                                LOE = ConvertNum(document.getElementById("page:frm:pBlock:pbtable:"+i+":txtLOE").value);
+                                                TotalLOE += parseFloat(LOE);  
+                                                var Rate =0;
+                                                if(document.getElementById("page:frm:pBlock:pbtable:"+i+":inpRate") != null)
+                                                {
+                                                     Rate = ConvertNum(document.getElementById("page:frm:pBlock:pbtable:"+i+":inpRate").value);
+                                                } 
+                                                else if(document.getElementById("page:frm:pBlock:pbtable:"+i+":optRate") != null)
+                                                {    
+                                                     Rate = ConvertNum(document.getElementById("page:frm:pBlock:pbtable:"+i+":optRate").innerHTML);
+                                                }
+                                                var Cost = LOE * Rate;  
+                                                TotalCost +=Cost;
+                                                var decCost = Cost.toFixed(0);
+                                                document.getElementById("page:frm:pBlock:pbtable:"+i+":inpCost").innerHTML = addCommas(decCost); ;              
+                                            }
+                                            
+                                            TotalLOE = TotalLOE.toString();
+                                            if(TotalLOE.indexOf(".") == -1) TotalLOE = TotalLOE+".00";
+                                            if(TotalLOE == 0) TotalLOE = '';
+                                            var decTotalLOE  = parseFloat(TotalLOE).toFixed(2);
+                                            var decTotalCost = parseFloat(TotalCost).toFixed(0);
+                                            document.getElementById("page:frm:pBlock:pbtable:txtTotalLOE").innerHTML = addCommasLOE(decTotalLOE);
+                                            document.getElementById("page:frm:pBlock:pbtable:txtTotalCost").innerHTML = addCommas(decTotalCost );            
+                                        }
+                                        function addCommas(nStr)
+                                        {
+                                            nStr += '';
+                                            x = nStr.split('.');
+                                            x1 = x[0];
+                                            x2 = x.length > 1 ? '.' + x[1] : '';
+                                            var rgx = /(\d+)(\d{3})/;
+                                            while (rgx.test(x1)) {
+                                                x1 = x1.replace(rgx, '$1' + ',' + '$2');
+                                            }
+                                            return 'USD ' + x1 + x2;
+                                        }
+                                        function addCommasLOE(nStr)
+                                        {
+                                            nStr += '';
+                                            x = nStr.split('.');
+                                            x1 = x[0];
+                                            x2 = x.length > 1 ? '.' + x[1] : '';
+                                            var rgx = /(\d+)(\d{3})/;
+                                            while (rgx.test(x1)) {
+                                                x1 = x1.replace(rgx, '$1' + ',' + '$2');
+                                            }
+                                            return + x1 + x2;
+                                        }
+                                        Calculation();   
+                                        function ValidateLOE(){
+                                            var size='{!lstwrapServicesType[intIndexST].lstwrapServices[intIndex].lstwrapResource.size}';
+                                            var WpStatus = '{!Performance_Evaluation__c}';
+                                            var checkvalodate = true;
+                                            var ContactArray = new Array();
+                                            var intArrayIndex = 0;
+                                            for(var i=0;i<size;i++){
+                                               if(document.getElementById('page:frm:pBlock:pbtable:'+i+':txtLOE').value == 0 && WpStatus == 'CT Planning'){
+                                                   alert('The LOE for a resource cannot be blank.');
+                                                   checkvalodate = false;
+                                                   return false;
+                                               }
+                                               if(document.getElementById('page:frm:pBlock:pbtable:'+i+':ContactList').value != 'TBD'){
+                                                   ContactArray[intArrayIndex] = document.getElementById('page:frm:pBlock:pbtable:'+i+':ContactList').value +';'+document.getElementById('page:frm:pBlock:pbtable:'+i+':Rolelist').value;
+                                                   intArrayIndex++;
+                                               }
+                                            }
+                                            
+                                            for(var j=0;j<ContactArray.length;j++){
+                                                for(var k=0;k<ContactArray.length;k++){
+                                                    if(j != k && ContactArray[j] == ContactArray[k]){
+                                                       alert('Each contact can only be assigned once to a service.');
+                                                       checkvalodate = false;
+                                                       return false;
+                                                    }
+                                                }
+                                            }
+                                            if(checkvalodate == true){
+                                               actSaveResources();
+                                               return false;
+                                            }
+                                        }  
+                                        function toggleDescPopup(PopUp){
+                                            var el = document.getElementById(PopUp);                              
+                                            if (el.style.display != 'none') {
+                                                el.style.display = 'none';
+                                            }
+                                            else {
+                                                el.style.display = '';
+                                            }
+                                        }                                
+                                        </script>
+                                </apex:outputPanel>
+                            </apex:pageBlock>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="resourcetTable">
+                            <div id="boxscroll" class="chatterFeedPanel">
+                                <apex:iframe id="ifResourceChatter" height="225px" scrolling="true" rendered="{!if(blnHasChild==true,true,false)}" src="/apex/ServiceChatter?ServiceId={!if(blnHasChild==true,lstwrapServicesType[intIndexST].lstwrapServices[intIndex].objService.Id,'')}" />
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+            </apex:outputPanel>
+        </apex:outputPanel>
+        
+        
+        <style>
+        .ProcessingBackground
+        {
+            background-color: black;
+            opacity: 0.50;
+            filter: alpha(opacity = 50);
+            width: 100%;
+            height: 100%;
+            position: fixed;
+            z-index: 9999;
+            top:0;
+            left:0;
+        }
+        .Processing
+        {
+            z-index: 9999;
+            left: 50%;
+            top: 50%;
+            text-align: center;
+            position: fixed;
+        }        
+        </style>
+        <div id="divProcessing" style="display:none;">
+            <div class="ProcessingBackground"></div>
+            <div class="Processing">
+                <apex:image alt="Processing" url="{!$Resource.LoadingCircle}" />
+            </div>
+        </div>  
+        <apex:actionStatus id="Processing" onstart="document.getElementById('divProcessing').style.display = '';" onstop="document.getElementById('divProcessing').style.display = 'none';">                            
+        </apex:actionStatus> 
+        
+    <script type="text/javascript">  
+        alternate();
+        function CheckAll(CheckAllId){
+            var TotalRows = '{!lstServiceForSearch.size}';
+            for(var i=0;i<TotalRows;i++){
+                if(CheckAllId.checked == true){
+                    document.getElementById('page:frm:pbSearch:repSearch:'+i+':inpCheck').checked = true;
+                }else{
+                    document.getElementById('page:frm:pbSearch:repSearch:'+i+':inpCheck').checked = false;
+                }   
+            }
+        }
+        function uncheckAll(CheckAllId){
+            var TotalRows = '{!lstServiceForSearch.size}';
+            Count = 0;
+            for(var i=0;i<TotalRows;i++){
+                if(document.getElementById('page:frm:pbSearch:repSearch:'+i+':inpCheck').checked == true){
+                    Count ++;
+                }
+            }
+            if(Count == TotalRows){
+                document.getElementById(CheckAllId).checked = true;
+            }else{
+                document.getElementById(CheckAllId).checked = false;
+            }
+        }
+        
+         function setPopupheight(){
+            var strmsg = '{!strMessage}';
+            if(strmsg != ''){
+                alert(strmsg);
+                return false;
+            }
+            var offsetheight = document.getElementById('page:frm:hdnintOffsetTop').value;
+            offsetheight -= 350;
+           
+            document.getElementById('page:frm:custPopup').style.top = offsetheight + 'px';
+        }   
+        function setPopupheightSave(){
+            var offsetheight = document.getElementById('page:frm:hdnsetTop').value;
+            offsetheight -= 150;
+            document.getElementById('page:frm:custPopup').style.top = offsetheight+'px';
+        }   
+        function alternate(){ 
+            if(document.getElementsByTagName){  
+                var table = document.getElementById("ServiceTable");   
+                var rows = table.getElementsByTagName("tr"); 
+                for(i = 0; i < rows.length; i++){    
+                    if(i == rows.length-1){
+                        //rows[i].className = "footer"; 
+                    }else{
+                        if(i % 2 == 0){ 
+                                rows[i].className = rows[i].className + " even "; 
+                           
+                        }else{ 
+                            rows[i].className = rows[i].className + " odd "; 
+                        }  
+                    }     
+                } 
+            } 
+        }
+        function abc(){
+            
+        }
+        $(document).ready(abc);       
+      
+        DisableDateAndNumber();
+        function DisableDateAndNumber(){
+            var Items = document.getElementsByTagName("input");            
+            for(var i=0;i<Items.length;i++){
+                if(Items[i].type == 'checkbox'){
+                    if(Items[i].id.indexOf("checkService") != -1){
+                        var SubmissionDateId = Items[i].id.replace("checkService","SubmissionDate");
+                        var PUDRnumberId = Items[i].id.replace("checkService","PUDRnumber");
+                        
+                        document.getElementById(SubmissionDateId).disabled = !Items[i].checked;
+                        document.getElementById(PUDRnumberId).disabled = !Items[i].checked;
+                    }
+                }
+            }
+        }          
+        function DisableIndividual(CheckElement){
+            if(CheckElement.id.indexOf("checkService") != -1){
+                
+                var SubmissionDateId = CheckElement.id.replace("checkService","SubmissionDate");
+                var PUDRnumberId = CheckElement.id.replace("checkService","PUDRnumber");
+                document.getElementById(SubmissionDateId).disabled = !CheckElement.checked;
+                document.getElementById(PUDRnumberId).disabled = !CheckElement.checked;
+            }
+        }
+    </script>
+        
+    </apex:form>
+    
+    <style type="text/css">
+         .custPopup{
+            background-color: white;
+            border-width: 0px;
+            border-radius:10px;
+            border-style: solid;
+            /*z-index: 9999;*/
+            z-index: 51;
+            left: 22%;
+            padding:10px;
+            position: absolute;
+            top:50%;
+            width:55%;
+        }
+        .popupBackground{
+            background-color:black;
+            opacity: 0.20;
+            filter: alpha(opacity = 20);
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            /*z-index: 9998;*/
+            z-index: 50;
+            top: 0;
+            left: 0;
+           
+        }
+         .chatterFeedPanel{
+            height: 225px !important;
+        }      
+    </style>
+    <script>
+        
+        function DeleteService(DeleteIndex,DeleteSTIndex){
+            
+            if(confirm('Are you sure you want to delete?'))
+            {
+                callDeleteService(DeleteIndex,DeleteSTIndex);  
+            }
+            return false;
+        }
+        function DeleteResource(DeleteResourceIndex){
+            if(confirm('Are you sure you want to delete?'))
+            {
+                callDeleteResource(DeleteResourceIndex);  
+            }
+            return false;
+        }
+        function DuplicateService(DuplicateIndex,DuplicateSTIndex,ServiceId){
+            if(confirm('Are you sure you want to Duplicate?'))
+            {
+                callDuplicateService(DuplicateIndex,DuplicateSTIndex,ServiceId);  
+            }
+            return false;
+        }
+        
+        function EditResource(editid,EditIndex,EditSTIndex){
+            var offsetTrail = editid;
+            var offsetTop = 0;
+            while (offsetTrail) {
+                offsetTop += offsetTrail.offsetTop;
+                offsetTrail = offsetTrail.offsetParent;
+            }
+            document.getElementById('page:frm:hdnintOffsetTop').value = offsetTop;
+            document.getElementById('page:frm:hdnIndex').value = EditIndex;
+            document.getElementById('page:frm:hdnIndexST').value = EditSTIndex;
+            
+            callEditService(EditIndex,EditSTIndex);
+            
+        }
+        function FillContact(ResourceIndex){
+            afFillContactsOnChangeRole(ResourceIndex);
+        }
+        function FillRate(ResourceIndexForRate){
+            afFillRateOnChangeContact(ResourceIndexForRate);
+        }
+        
+        function switchMenu(obj,obj1,obj2,hdn,val) 
+        {   
+            document.getElementById(hdn).value=val; 
+            var el = document.getElementById(obj); 
+                            
+            if(el.style.display != 'none' ) {
+                el.style.display = 'none';
+            }
+            else {
+                el.style.display = '';
+            }
+            var e2 = document.getElementById(obj1);                                       
+            if ( e2.style.display != 'none' ) {
+                e2.style.display = 'none';
+            }
+            else {
+                e2.style.display = '';
+            }
+            var e3 = document.getElementById(obj2);                                       
+            if ( e2.style.display != 'none' ) {
+                e3.style.display = 'none';
+            }
+            else {
+                e3.style.display = '';
+            }
+        }
+        function switchMenuResource(Total,obj,HeaderId,obj1,obj2,hdn,val) 
+        {   
+            document.getElementById(hdn).value=val; 
+            
+            if(document.getElementById(Total).style.display == 'none'){
+                document.getElementById(Total).style.display = ''; 
+            }else{
+                document.getElementById(Total).style.display = 'none'; 
+            }
+            
+            var el = document.getElementById(obj); 
+            if(el.style.display != 'none' ) {
+                var node = el.parentNode.childNodes;
+                for (var i = 0; i < node.length;  i++){
+                    if(node[i].id == el.id){
+                        node[i].style.display = 'none';
+                    }
+                }
+            }else{
+                var node = el.parentNode.childNodes;
+                for (var i = 0; i < node.length;  i++){
+                    if(node[i].id == el.id){
+                        node[i].style.display = '';
+                    }
+                }
+            } 
+            
+            var header = document.getElementById(HeaderId); 
+            if(header.style.display != 'none' ) {
+                var node = header.parentNode.childNodes;
+                for (var i = 0; i < node.length;  i++){
+                    if(node[i].id == header.id){
+                        node[i].style.display = 'none';
+                    }
+                }
+            }else{
+                var node = header.parentNode.childNodes;
+                for (var i = 0; i < node.length;  i++){
+                    if(node[i].id == header.id){
+                        node[i].style.display = '';
+                    }
+                }
+            } 
+            
+            var e2 = document.getElementById(obj1);                                       
+            if ( e2.style.display != 'none' ) {
+                e2.style.display = 'none';                
+            }
+            else {
+                e2.style.display = '';
+            }
+            var e3 = document.getElementById(obj2);                                       
+            if ( e2.style.display != 'none' ) {
+                e3.style.display = 'none';
+            }
+            else {
+                e3.style.display = '';
+            }
+            
+        }
+        function validate(SubTypeId,SaveServiceIndex,SaveServiceTypeIndex,editid,e){
+            if(document.getElementById(SubTypeId).value == ''){
+                alert('Service Type must not blank');
+                return false;
+            }else{
+                document.getElementById('page:frm:hdnsetTop').value = e.clientY + document.body.scrollTop + document.documentElement.scrollTop;
+                actSaveServiceAndAddResources(SaveServiceIndex,SaveServiceTypeIndex);
+                return false;
+            }
+        }
+    
+        function ColumnExpandCollepse(tdId,thId,Mainth,sideTh,hdn,Status){
+            var AllTD = document.getElementsByTagName("td");
+            var AllTH = document.getElementsByTagName("th");
+            
+            if(tdId == 'CTtd')
+                document.getElementById('page:frm:hdnblnShowCTPlanned').value = Status;
+            if(tdId == 'TGFtd')
+                document.getElementById('page:frm:hdnblnShowTGF').value = Status;
+            for(var i=0;i<AllTD.length;i++){
+                if(AllTD[i].id == tdId){
+                    if(Status == 'false'){
+                        AllTD[i].style.display = 'none';
+                    }else{
+                        AllTD[i].style.display = '';
+                    }
+                }
+            }
+            for(var i=0;i<AllTH.length;i++){
+                if(AllTH[i].id == thId){
+                    if(Status == 'false'){
+                        AllTH[i].style.display = 'none';
+                    }else{
+                        AllTH[i].style.display = '';
+                    }
+                }
+            }
+            if(Status == 'false'){
+                document.getElementById(Mainth).style.display = 'none';
+                document.getElementById(sideTh).style.display = '';
+            }else{
+                document.getElementById(sideTh).style.display = 'none';
+                document.getElementById(Mainth).style.display = '';
+            }
+        }
+        function toggleDescService(PopUp){
+            var el = document.getElementById(PopUp);                              
+            if (el.style.display != 'none') {
+                el.style.display = 'none';
+            }
+            else {
+                el.style.display = '';
+            }
+        }
+        function winLoad(){
+            alert(document.getElementById('page:frm:pageB:ServiceType').childNodes[0].label);
+            document.getElementById('page:frm:pageB:ServiceType').childNodes[0].label = 'All Service Types';
+            alert(document.getElementById('page:frm:pageB:ServiceType').childNodes[0].label);
+            
+        }
+    </script>
+    <script>
+        function setFocusOnLoad() {}
+    </script>
+    
+    <style type="text/css">
+        span.dateInput span.dateFormat{
+            display:none;
+        }
+    </style>
+    
+</apex:page>

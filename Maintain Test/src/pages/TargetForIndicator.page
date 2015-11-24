@@ -1,0 +1,183 @@
+<apex:page standardController="Grant_Indicator__c" extensions="TargetForIndicatorExt" id="page">
+<apex:stylesheet value="{!URLFOR($Resource.GoalsJs, 'assets/css/bootstrap.css')}"/>
+<apex:stylesheet value="{!URLFOR($Resource.GoalsJs, 'assets/css/bootstrap-responsive.css')}"/>
+      
+      <style>
+             .Processing
+        {
+            z-index: 9999;
+            left: 50%;
+            top: 50%;
+            text-align: center;
+            position: fixed;
+        } 
+        .ProcessingBackground
+        {
+            background-color: black;
+            opacity: 0.50;
+            filter: alpha(opacity = 50);
+            width: 100%;
+            height: 100%;
+            position: fixed;
+            z-index: 9999;
+            top:0;
+            left:0;
+        }  
+        .custPopupHistory{
+            background-color: white;
+            border-width: 0px;
+            border-radius:10px;
+            border-style: solid;
+            /*z-index: 9999;*/
+            z-index: 51;
+            left: 12%;
+            padding:10px;
+            position: absolute;
+            top:8%;
+        }
+        .popupBackgroundHistory{
+            background-color:black;
+            opacity: 0.20;
+            filter: alpha(opacity = 20);
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            /*z-index: 9998;*/
+            z-index: 50;
+            top: 0;
+            left: 0;
+           
+        }    
+                 
+      </style>
+      <script>
+      function setFocusOnLoad(){
+         var GET = {};
+           var query = window.location.search.substring(1).split("&");
+              for (var i = 0, max = query.length; i < max; i++)
+                  {
+                          if (query[i] === "") // check for trailing & with no param
+                               continue;
+
+                       var param = query[i].split("=");
+                   GET[decodeURIComponent(param[0])] = decodeURIComponent(param[1] || "");
+                    }
+                 var s = GET["param"];
+         if(s == "openpanel" )
+         {
+            document.getElementById('page:frm:oppnl1').style.display='';
+            document.getElementById('page:oppnl2').style.display= none;
+         }
+         else{
+           document.getElementById('page:oppnl2').style.display='';
+         }
+      }
+          function setdecimal(targets){
+               var value = document.getElementById(targets).value;
+               var decimal = ('{!lstind[0].Decimal_Places__c }');
+               document.getElementById(targets).value = parseFloat(value).toFixed(decimal);
+          }
+         function calculate(textnum,textden,txtval){
+             var nume = document.getElementById(textnum).value;
+             var denomi = document.getElementById(textden).value;
+             var tarval = document.getElementById(txtval).value;
+             var decimal = ('{!lstind[0].Decimal_Places__c }');
+                 if(denomi == 0){
+                    exit;
+                 }
+                 else{
+                      var value= (nume/denomi)*100;
+                      document.getElementById(txtval).value= value.toFixed(decimal);
+                 }
+         }
+      </script>
+      <apex:form id="frm">
+            
+            <apex:commandLink reRender="HistoryPopup" status="Processing" action="{!ShowHistoryPopup}"  rendered="{!if(Grant_Indicator__c.Indicator_Type__c != 'Impact' && Grant_Indicator__c.Indicator_Type__c != 'Outcome',true,false )}">
+                        Click to View History
+                       <!-- apex:image styleClass="Image" url="{!$Resource.History}" title="{!$Label.View_History}" style="height: 25px;width: 20px;float:right;" rendered="{!if(Grant_Indicator__c.Indicator_Type__c != 'Impact' && Grant_Indicator__c.Indicator_Type__c != 'Outcome',true,false )}" /-->  
+            </apex:commandLink>
+                
+          
+          
+                                     <apex:outputPanel id="HistoryPopup" >
+                                            <apex:outputPanel id="popupBackgroundH" styleClass="popupBackgroundHistory" rendered="{! if(blnHistory == true,true,false)}" />
+                                            <apex:outputPanel id="custPopupH" styleClass="custPopupHistory" rendered="{! if(blnHistory == true,true,false)}">
+                                               
+                                                    <table>
+                                                    <tr>
+                                                        <td>
+                                                            <c:GrantCoverageHistory TargetRecordId="{!Grant_Indicator__c.id}" TagetObjectAPIname="Grant_Indicator__c" RecordTitle="{!if(strLanguage == 'FRENCH',Grant_Indicator__c.French_Name__c,if(strLanguage == 'RUSSIAN',Grant_Indicator__c.Russian_Name__c,if(strLanguage == 'SPANISH',Grant_Indicator__c.Spanish_Name__c,Grant_Indicator__c.Indicator_Full_Name__c)))}"  /> 
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td align="center" style="">
+                                                            <apex:commandButton value="{!$Label.OK}"  action="{!HidePopupHistory}" style="width:50px" reRender="frm" status="Processing"> 
+                                                        </apex:commandButton>
+                                                        </td>
+                                                    </tr>
+                                                    </table>                                                                                                                                                     
+                                            </apex:outputPanel>
+                                      </apex:outputPanel>
+           <div id="divProcessing" style="display:none;">
+            <div class="ProcessingBackground"></div>
+            <div class="Processing">
+                <apex:image alt="Processing" url="{!$Resource.LoadingCircle}" />
+            </div>
+        </div>  
+        <apex:actionStatus id="Processing" onstart="document.getElementById('divProcessing').style.display = '';" onstop="document.getElementById('divProcessing').style.display = 'none';">                            
+        </apex:actionStatus>
+      </apex:form>
+      
+      <apex:outputPanel id="oppnl2" style="display:none;width:50%;" >
+      <apex:outPutPanel rendered="{!if(Grant_Indicator__c.Data_Type__c='Number and Percent',false,true)}"  >
+                         <apex:dataTable styleclass="table table-bordered" value="{!periodResWrapperLst}" var="results" border="1" style="width:50%;" columns="2" columnsWidth="40%,50%">
+                          <apex:column headerValue="Target Period">
+                             <apex:outputText value="{!results.Period}"/>
+                             </apex:column>
+                           <apex:column headerValue="Target">
+                           <apex:outputText id="target" value="{!if(decimalPlaces == '0','{0,number,####}',if(decimalPlaces == '1','{0,number,###0.0}',if(decimalPlaces == '2','{0,number,###0.00}',if(decimalPlaces == '3','{0,number,###0.000}',if(decimalPlaces == '4','{0,number,###0.0000}','{0,number,###0.0000}')))))}" >
+                             <apex:param value="{!(results.objResult.Target__c)}"/>
+                         </apex:outputText>
+                               <!--  apex:outputField id="target" value="{!results.Target__c}" />-->
+                               <apex:outputLabel value="{!sign}"></apex:outputLabel>
+                          </apex:column>
+                         </apex:dataTable> 
+
+                  </apex:outPutPanel>
+
+                   <apex:outPutPanel rendered="{!if(Grant_Indicator__c.Data_Type__c='Number and Percent',true,false)}" >
+                       <apex:dataTable styleclass="table table-bordered" value="{!periodResWrapperLst}" var="results" style="width:75%;" columnsWidth="20%,30%,60%,70%" columns="4" border="1">
+                          <apex:column headerValue="Target Period">
+                             <apex:outputText value="{!results.Period}"/>
+                          </apex:column>
+                          <apex:column headerValue="{!Grant_Indicator__c.Data_Type__c}" >
+                                <apex:outputLabel value="Numerator" ></apex:outputLabel>
+                                  <hr style="height:1px;border:1;color:#333;background-color:#333;"/>
+                                <apex:outputLabel value="Denominator"></apex:outputLabel>
+                          </apex:column>
+                          
+                          <apex:column headerValue="Values">
+                          <apex:outputText id="num" value="{!if(decimalPlaces == '0','{0,number,####}',if(decimalPlaces == '1','{0,number,###0.0}',if(decimalPlaces == '2','{0,number,###0.00}',if(decimalPlaces == '3','{0,number,###0.000}',if(decimalPlaces == '4','{0,number,###0.0000}','{0,number,###0.0000}')))))}" >
+                             <apex:param value="{!(results.objResult.Target_Numerator__c)}"/>
+                         </apex:outputText>
+                                <!-- apex:outputText id="num" value="{!results.Target_Numerator__c}" /> -->
+                               <hr style="height:1px;border:1;color:#333;background-color:#333;"/>
+                         <apex:outputText id="den" value="{!if(decimalPlaces == '0','{0,number,####}',if(decimalPlaces == '1','{0,number,###0.0}',if(decimalPlaces == '2','{0,number,###0.00}',if(decimalPlaces == '3','{0,number,###0.000}',if(decimalPlaces == '4','{0,number,###0.0000}','{0,number,###0.0000}')))))}" >
+                             <apex:param value="{!(results.objResult.Target_Denominator__c)}"/>
+                         </apex:outputText>
+                                <!--  apex:outputText id="den" value="{!results.Target_Denominator__c }" />-->
+                          </apex:column>
+                           <apex:column headerValue="Target">
+                          <apex:outputText id="value" value="{!if(decimalPlaces == '0','{0,number,####}',if(decimalPlaces == '1','{0,number,###0.0}',if(decimalPlaces == '2','{0,number,###0.00}',if(decimalPlaces == '3','{0,number,###0.000}',if(decimalPlaces == '4','{0,number,###0.0000}','{0,number,###0.0000}')))))}" >
+                             <apex:param value="{!(results.objResult.Target__c)}"/>
+                         </apex:outputText>{!sign}
+                               <!--  apex:outputfield id="value" value="{!results.Target__c}"/>--> 
+                               <!--<apex:outputLabel value="{!sign}"></apex:outputLabel>-->
+                          </apex:column>
+                      </apex:dataTable>
+                   </apex:outPutPanel> 
+                </apex:outputPanel>
+          
+      
+</apex:page>

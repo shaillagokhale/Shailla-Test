@@ -1,0 +1,64 @@
+<apex:page standardController="Account" extensions="CreatePR" showHeader="false" sidebar="false">
+<script>
+
+function reDirectToAccount() {
+    // ================================================================//
+   // Working in Chrome
+    window.opener.location.href ="{!IF(GM=='yes',strRetURLGM,strRetURL)}{!pageId}";
+   //  window.opener.location.href="/{!$CurrentPage.parameters.accId}";
+    window.top.close();
+  // ================================================================//
+  window.opener.reload();
+  //window.opener.location.href="/{!$CurrentPage.parameters.accId}";
+  //window.close();
+}
+</script>
+
+<style>
+.ProcessingBackground
+{
+    background-color: black;
+    opacity: 0.50;
+    filter: alpha(opacity = 50);
+    width: 100%;
+    height: 100%;
+    position: fixed;
+    z-index: 9999;
+    top:0;
+    left:0;
+}
+.Processing
+{
+    z-index: 9999;
+    left: 50%;
+    top: 50%;
+    text-align: center;
+    position: fixed;
+}        
+</style>
+<div id="divProcessing" style="display:none;">
+    <div class="ProcessingBackground"></div>
+    <div class="Processing">
+        <apex:image alt="Processing" url="{!$Resource.LoadingCircle}" />
+    </div>
+</div>  
+<apex:actionStatus id="Processing" onstart="document.getElementById('divProcessing').style.display = '';" onstop="document.getElementById('divProcessing').style.display = 'none';">                            
+</apex:actionStatus> 
+    <apex:form id="frm">
+        <apex:sectionHeader title="{!AddNewPR}"/>
+        <apex:pageBlock id="pb">
+            <apex:pageblockButtons >
+                <apex:commandButton reRender="frm" status="Processing" value="{!Save}" action="{!saveRecord}" oncomplete="reDirectToAccount();"/> 
+                <apex:commandButton value="{!Cancel}" oncomplete="reDirectToAccount()"/>
+            </apex:pageblockButtons> 
+            <apex:pageblockSection id="pbs" columns="2" collapsible="false">
+                <apex:inputField label="{!AccountName}" value="{!Account.Name}" id="aName"/>  
+                <apex:inputField label="{!ShortName}" value="{!Account.Short_Name__c}" id="vLName"/> 
+                <apex:inputField label="{!PRType}" value="{!Account.Type__c}" id="prType"/>                    
+                <apex:inputField label="{!PRSubType}" value="{!Account.Sub_Type__c}" id="prSubType"/>
+
+                
+            </apex:pageblockSection>
+        </apex:pageBlock>
+    </apex:form>
+</apex:page>

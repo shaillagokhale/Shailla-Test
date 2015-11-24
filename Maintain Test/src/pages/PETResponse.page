@@ -1,0 +1,718 @@
+<apex:page id="page" standardcontroller="Performance_Evaluation__c" extensions="ctrlPETResponse" >
+
+<style>
+/* table styles */
+    table {
+        table-layout:fixed;
+        border-spacing:0;
+        border-collapse:collapse;
+        margin: 10px 0;
+        }
+    thead,tr {
+        border-bottom:1px solid #E0E3E5;
+        }
+    thead {
+        font-weight:bold;
+        background-color:#0066BB !important;
+        color:white !important;
+        white-space:normal !important;
+    }
+    th,td {
+        padding:3px;
+        text-align:left;
+        }
+    .pbTitle {
+        display:none;
+        }
+    .tableSubhead {
+        background-color:#adf;
+        font-weight:bold;
+    }
+    .rating,rating0,.rating1,.rating2,.rating3,.rating4,.rating5 {
+        width:100px;
+        text-align:center;
+        }
+    .rating5 {background-color:#00b0f0;}
+    .rating4 {background-color:#008000;}
+    .rating3 {background-color:#99cc00;}
+    .rating2 {background-color:#ffcc00;}
+    .rating1 {background-color:#ff0000;}
+    .commentsField {
+        width:394px;
+        }
+    .commentsRequired {
+        background-color:#ffdddd;
+        width: 394px;
+        resize:vertical;
+    }
+    /* text styles */
+    .alert {color:#ff0000;}
+    
+    /* Pop Up Style */
+    
+     .customPopup{
+            background-color: white;
+            border-style: solid;
+            border-width: 2px;
+            left: 50%;
+            padding:10px;
+            position: absolute;
+            z-index: 9999;
+            /* These are the 3 css properties you will need to tweak so the pop 
+            up displays in the center of the screen. First set the width. Then set 
+            margin-left to negative half of what the width is. You can also add 
+            the height property for a fixed size pop up.*/
+            width: 500px;
+            margin-left: -250px;
+            top:300px;
+        }
+        
+        .custPopup{
+            background-color: white;
+            border-width: 0px;
+            border-radius:10px;
+            border-style: solid;
+            /*z-index: 9999;*/
+            z-index: 51;
+            left: 22%;
+            padding:10px;
+            position: absolute;
+            top:10%;
+            width:55%;
+        }
+        
+        .popupBackground{
+            background-color:black;
+            opacity: 0.20;
+            filter: alpha(opacity = 20);
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            /*z-index: 9998;*/
+            z-index: 50;
+            top: 0;
+            left: 0;
+           
+        }
+        
+        .ProcessingBackground
+        {
+            background-color: black;
+            opacity: 0.50;
+            filter: alpha(opacity = 50);
+            width: 100%;
+            height: 100%;
+            position: fixed;
+            z-index: 9999;
+            top:0;
+            left:0;
+        }
+        .Processing
+        {
+            z-index: 9999;
+            left: 50%;
+            top: 50%;
+            text-align: center;
+            position: fixed;
+        }        
+    
+    
+</style>
+
+        
+
+<apex:form id="frm">
+
+<apex:pageMessages ></apex:pageMessages>
+      <apex:outputPanel id="popup">
+          <apex:outputPanel styleClass="popupBackground" layout="block" rendered="{!displayPopUp}"/>
+            <apex:outputPanel styleClass="customPopup" layout="block" rendered="{!displayPopUp}">
+             <center>   {!message}  <br/><br/>
+               <apex:commandButton value="OK" action="{!closePopup}" rerender="popup"/> 
+             </center>
+            </apex:outputPanel>
+        </apex:outputPanel>
+
+
+      <apex:outputPanel id="popup1">
+          <apex:outputPanel styleClass="popupBackground" layout="block" rendered="{!displayPopUp1}"/>
+            <apex:outputPanel styleClass="customPopup" layout="block" rendered="{!displayPopUp1}">
+             <center>   {!message1}  <br/><br/>
+               <apex:commandButton value="OK" action="{!closePopup}" rerender="popup1"/> 
+             </center>
+            </apex:outputPanel>
+        </apex:outputPanel>
+
+
+
+<apex:repeat value="{!PET}" var="pet1">
+
+<h2 class="module">LFA Performance Evaluation Tool</h2><br />
+<apex:sectionHeader subtitle="{!pet1.LFA_Work_Plan__r.Name}"/>
+<apex:outputText style="position:relative; top:-20px; margin-left:40px; font-weight:bold;" rendered="{!if(Performance_Evaluation__c.Type__c=='Period',true,false)}" value="Period Covered: {!pet1.Start_Date__c} – {!pet1.End_Date__c}" />
+<apex:outputText style="position:relative; top:-20px; margin-left:40px; font-weight:bold;" rendered="{!if(Performance_Evaluation__c.Type__c=='Product',true,false)}" value="Service Submission Date: {!pet1.LFA_Service_Submission_Date__c}" />
+<br />
+</apex:repeat>
+
+</apex:form>
+
+<apex:pageBlock id="pbPRating" >
+
+<apex:pageBlockButtons style="align:left;padding:0 0 10px 10px;" location="top" >
+<apex:form id="frmBlank">
+
+<div id="divProcessing" style="display:none;">
+            <div class="ProcessingBackground"></div>
+            <div class="Processing">
+                <apex:image alt="Processing" url="{!$Resource.LoadingCircle}" />
+            </div>
+        </div>  
+        <apex:actionStatus id="Processing" onstart="document.getElementById('divProcessing').style.display = '';" onstop="document.getElementById('divProcessing').style.display = 'none';">                            
+        </apex:actionStatus> 
+
+<apex:commandButton value="Click to View Services" action="{!viewService}" reRender="tstpopup" status="Processing"/>
+</apex:form>
+</apex:pageBlockButtons>
+<div id="key">
+ <table>
+  <thead>
+   <th colspan="2" >Performance Rating Key</th>
+  </thead>
+  <tr>
+   <td class="rating5" width="25%">5</td><td width="91%">Outstanding</td>
+  </tr>
+  <tr>
+   <td class="rating4">4</td><td>Exceeds Expectations</td>
+  </tr>
+  <tr>
+   <td class="rating3">3</td><td>Meets Expectations</td>
+  </tr>
+  <tr>
+   <td class="rating2">2</td><td>Needs Improvements (comments mandatory) <span class="alert"></span></td>
+  </tr>
+  <tr>
+   <td class="rating1">1</td><td>Unacceptable (comments mandatory) <span class="alert"></span></td>
+  </tr>
+ </table>
+</div>
+
+<apex:form id="frm1">
+<apex:repeat value="{!lstResponse}" var="response" id="rpt">
+
+<table>
+    <thead>
+        <th>Rating</th>
+        <th>Comments</th>
+    </thead>
+    <tr>
+        <td class="rating"><apex:inputField id="Q" value="{!response.Rating__c}" onchange="validate(); this.parentNode.className = 'rating' + this.value"/></td>
+        <td><apex:inputField id="C" value="{!response.Comments__c}" styleClass="commentsField"/></td>
+    </tr>
+</table>
+
+</apex:repeat>
+
+
+<apex:commandButton value="Save and Finish Later" action="{!SaveResponse}"/> 
+<apex:commandButton value="Exit without Saving" action="{!Cancel}"/> 
+
+<apex:commandButton value="Send to FPM" action="{!SubmitResponse}"/> 
+
+</apex:form>
+
+<p>Please keep the questions below in mind when formulating your comments.</p>
+<table>
+    <tr class="tableSubhead"><td>Completeness, Accuracy, and Clarity</td></tr>
+    <tr><td>The information in LFA deliverables is complete. The LFA used the correct GF template, where applicable, and followed the latest GF guidelines.</td></tr>
+    <tr><td>Based on the information available, the calculations and reported information are accurate.</td></tr>
+    <tr class="tableSubhead"><td>Analysis and Consistency</td></tr>
+    <tr><td>The LFA independently verified, where applicable, and analyzed the relevant source documentation.</td></tr>
+    <tr><td>The LFA's deliverables are analytical rather than purely descriptive.</td></tr>
+    <tr><td>The LFA's analysis demonstrates sound judgement and informed understanding of the relevant programmatic and country context.</td></tr>
+    <tr class="tableSubhead"><td>Practicality of Recommendations</td></tr>
+    <tr><td>The LFA recommendations are specific, realistic and appropriate for managing the identified risks/issues.</td></tr>
+    <tr class="tableSubhead"><td>Timeliness/Responsiveness/Proactivity/Communication</td></tr>
+    <tr><td>The LFA response time is according to the agreed timeframe.</td></tr>
+    <tr><td>The LFA demonstrates an understanding of its role.</td></tr>
+    <tr><td>The LFA follows GF communication protocols.</td></tr>
+    <tr><td>The LFA provides relevant and timely information on developments that could have an impact on the grant.</td></tr>
+    <tr class="tableSubhead"><td>Other</td></tr>
+    <tr><td>Was there a need to request the LFA to perform significant revision of the deliverables due to poor quality of the original LFA products? If yes, explain why.</td></tr>
+    <tr><td>Was there a need to seek further significant clarification/information on the LFA report due to the poor quality of the LFA deliverable?</td></tr>
+</table>
+
+</apex:pageBlock>
+
+<script>
+window.onload = function () {
+    var inputs = document.getElementById('page:pbPRating:frm1:rpt:0:Q');
+    //alert(document.getElementById('page:pbPRating:frm1:rpt:0:Q').value);
+    if(inputs !=null){
+       
+        inputs.parentNode.className = 'rating' + inputs.value;
+        //page:pbPRating:frm1:rpt:0:Q
+        //page:pbPRating:frm1:rpt:0:C
+        if(document.getElementById('page:pbPRating:frm1:rpt:0:Q').value == '1' || document.getElementById('page:pbPRating:frm1:rpt:0:Q').value == '2') 
+        {
+          document.getElementById('page:pbPRating:frm1:rpt:0:C').className = 'commentsRequired'
+        } else {
+          document.getElementById('page:pbPRating:frm1:rpt:0:C').className = 'commentsField'
+        }
+    }
+
+}
+
+function validate()
+{
+    if(document.getElementById('page:pbPRating:frm1:rpt:0:Q').value == '1' || document.getElementById('page:pbPRating:frm1:rpt:0:Q').value == '2') 
+    {
+      document.getElementById('page:pbPRating:frm1:rpt:0:C').className = 'commentsRequired'
+    } else {
+      document.getElementById('page:pbPRating:frm1:rpt:0:C').className = 'commentsField'
+    }
+}
+</script>
+
+
+<apex:outputPanel id="tstpopup" >
+      <apex:outputPanel id="popupBackground" styleClass="popupBackground" rendered="{!blnHasChild}"/>
+      <apex:outputPanel id="custPopup" styleClass="custPopup"  rendered="{!blnHasChild}">
+                
+                
+   <apex:form id="frmPopup">
+    <apex:actionfunction name="actCollepseAllServiceType" action="{!CollepseAllServiceType}" reRender="frmPopup" status="Processing"/>
+        <apex:actionfunction name="actExapndAllServiceType" action="{!ExapndAllServiceType}" reRender="frmPopup" status="Processing"/>  
+        <apex:inputhidden value="{!intTemp}" id="hdnintTemp"/>
+          
+        <apex:inputHidden value="{!intIndex}" id="hdnIndex"/>
+        <apex:inputHidden value="{!intIndexST}" id="hdnIndexST"/>
+        <apex:inputHidden value="{!blnShowCTPlanned}" id="hdnblnShowCTPlanned"/>
+        <apex:inputHidden value="{!blnShowTGF}" id="hdnblnShowTGF"/>
+        <apex:inputHidden value="{!intOffsetHeight}" id="hdnintOffsetTop"/>
+        <apex:inputHidden value="{!intHeight}" id="hdnsetTop"/>
+      
+        <apex:pageBlock id="pageB">           
+            <center> <apex:outputLabel style="font-size:120%;font-weight:bold" value="Services Associated with this Performance Evaluation"></apex:outputLabel>
+           &nbsp;&nbsp;&nbsp;&nbsp;<apex:commandButton value="Close" action="{!HideService}" reRender="tstpopup" status="Processing"/>
+          
+            </center>
+             <br/><apex:outputLabel value="Additional Services/Comments: "></apex:outputLabel>
+            <apex:outputField value="{!PET[0].Add_Services_Comment__c}"/>
+            <apex:pageblockButtons style="text-align:right !important;padding-right: 45px;" location="bottom">
+              <apex:commandButton value="Close" action="{!HideService}" reRender="tstpopup" status="Processing"/>
+            </apex:pageblockButtons>
+            <table width="100%" cellspacing="0" cellpadding="0" border="0"><tr><td valign="top">
+            <table width="100%" id="ServiceTable" cellspacing="0" cellpadding="0" border="0" class="list">
+                <thead class="rich-table-thead">
+                    
+                    <tr class="headerRow">
+                        <th style="background-color:#F8F8F8;border-bottom:0px;" colspan="7">
+                            <apex:image styleClass="CollapseExpandAllImage" url="{!$Resource.ExpandAll1}" title="Expand All" onclick="actExapndAllServiceType();" rendered="{!blnCollapseAll}"/>
+                            <apex:outputText styleClass="CollapseExpandAllText" value="Expand all" rendered="{!blnCollapseAll}"></apex:outputText>
+                            <apex:image styleClass="CollapseExpandAllImage" url="{!$Resource.CollapseAll1}" title="Collapse All" onclick="actCollepseAllServiceType();" rendered="{!blnExpandAll}"/>
+                            <apex:outputText styleClass="CollapseExpandAllText" value="Collapse all" rendered="{!blnExpandAll}"></apex:outputText>
+                        </th>
+                        
+                    </tr>  
+                    <tr class="headerRow">
+                        <th width="4%" class="headerRowLower">
+                            <!--<apex:inputCheckbox id="checkAll" onclick="checkAll(this);"/>-->
+                        </th>
+                        <th width="22%" class="headerRowLower" style="border-left:0px !important;">Service</th>
+                        <th width="16%" class="headerRowLower" style="border-left:0px !important;border-right:0px !important;" colspan="2">Grant</th>
+                        <th width="10%" class="headerRowLower" style="border-right:0px !important;">Submission Date</th>
+                        <th width="10%" class="headerRowLower" style="border-right:0px !important;">Details</th>
+                        <th width="7%" class="headerRowLower"><apex:outputtext value="Previously Selected for PET?"/></th>
+                       
+                    </tr>  
+                </thead>
+                <apex:variable var="CountST" value="{!0}" />                
+                <apex:repeat id="repeatUpper" value="{!lstwrapServicesType}" var="wrapST">
+                    <tr class="totalRow">
+                        <th class="totalRow">
+                            <!--<apex:inputCheckbox id="checkAllType" onclick="checkAllService(this,'{!CountST}',{!wrapST.lstwrapServices.size});"/>-->
+                            <apex:inputHidden id="CollapseStatus" value="{!wrapST.blnExpandSection}" />
+                            <apex:outputpanel id="collapseimage" style="display:{!if(wrapST.blnExpandSection == true,'none','')};" rendered="{!if(wrapST.lstwrapServices.size > 0,true,false)}">
+                                <apex:image styleClass="Image" url="{!$Resource.Collepse}" onclick="switchMenu('inlinetablesec{!CountST}','{!$Component.Expandimage}','{!$Component.collapseimage}','{!$Component.CollapseStatus}','true')" title="Expand"/>
+                            </apex:outputpanel>
+                            <apex:outputpanel id="Expandimage" style="display:{!if(wrapST.blnExpandSection == true,'','none')};" rendered="{!if(wrapST.lstwrapServices.size > 0,true,false)}">
+                                  <apex:image styleClass="Image" url="{!$Resource.Expand}" onclick="switchMenu('inlinetablesec{!CountST}','{!$Component.collapseimage}','{!$Component.Expandimage}','{!$Component.CollapseStatus}','false')" title="Collapse"/>
+                            </apex:outputpanel>
+                            
+                        </th>
+                        <th class="totalRow " colspan="6">
+                            <apex:outputText value="{!wrapST.ServiceType}"/>
+                        </th>
+                       
+                    </tr>
+                    <tbody id="inlinetablesec{!CountST}" style="display:{!if(wrapST.blnExpandSection == true,'','none')};">
+                        <apex:variable var="Count" value="{!0}" />
+                        <apex:repeat id="repeat" value="{!wrapST.lstwrapServices}" var="Service">   
+                            <tr>
+                                <td class="dataCell" style="white-space: nowrap;border-top:1px solid #838282;border-left:1px solid #E0E3E5;">
+                                    <!--<apex:inputCheckbox id="checkService" value="{!Service.blnHasServicePETJxn}" onclick="DisableIndividual(this);"/>-->
+                                    <apex:inputhidden id="ServiceSubType" value="{!Service.objService.Service_Sub_Type__c}"/>
+                                    
+                                    <apex:inputHidden id="CollapseStatusResource" value="{!Service.blnExpandResourceSection}" />
+                                    <apex:outputpanel id="collapseimageResource" style="display:{!if(Service.blnExpandResourceSection == true,'none','')};" rendered="{!if(Service.lstwrapResource.size > 0,true,false)}">
+                                        <apex:image styleClass="ImageResource" url="{!$Resource.Collepse}" onclick="switchMenuResource('Total{!Count}','inlinetablesecResource{!CountST}{!Count}','ResourceHeader{!CountST}{!Count}','{!$Component.ExpandimageResource}','{!$Component.collapseimageResource}','{!$Component.CollapseStatusResource}','true')" title="Expand"/>
+                                    </apex:outputpanel>
+                                    <apex:outputpanel id="ExpandimageResource" style="display:{!if(Service.blnExpandResourceSection == true,'','none')};" rendered="{!if(Service.lstwrapResource != null,true,false)}">
+                                          <apex:image styleClass="ImageResource" url="{!$Resource.Expand}" onclick="switchMenuResource('Total{!Count}','inlinetablesecResource{!CountST}{!Count}','ResourceHeader{!CountST}{!Count}','{!$Component.collapseimageResource}','{!$Component.ExpandimageResource}','{!$Component.CollapseStatusResource}','false')" title="Collapse"/>
+                                    </apex:outputpanel>
+                                    
+                                    <!--<apex:inputHidden value="Status" id="hdnSecStatus"/>
+                                    <apex:inputHidden value="LastmodifiedDate" id="hdnLastmodifiedDate"/>
+                                    <apex:inputHidden value="LastmodifiedBy" id="hdnLastmodifiedBy"/>-->
+                                </td>
+                                <td class="dataCell" style="border-top:1px solid #838282;font-weight:bold;">
+                                    <apex:outputField value="{!Service.objService.Name}" rendered="{!if(Service.objService.id != null,true,false)}" style="float:left;"/>
+                                    
+                                    
+                                </td>
+                                <td class="dataCell" style="border-top:1px solid #838282;font-weight:bold;" colspan="2">
+                                    <apex:outputLink target="_Blank" value="/{!Service.objService.Grant__c}" rendered="{!if(Service.objService.id != null && Service.objService.Grant__c != null,true,false)}">
+                                        <apex:outputField value="{!Service.objService.Grant__c}"/>                                
+                                    </apex:outputLink>
+                                    <apex:outputtext value="Multiple Grants" rendered="{!if(Service.objService.id != null && Service.objService.Grant__c == null,true,false)}"/>
+                                    <apex:selectList value="{!Service.objService.Grant__c}" style="width:100px;"  rendered="{!if(Service.objService.id == null,true,false)}" size="1">
+                                        <apex:selectOptions value="{!GrantOptions}"></apex:selectOptions>
+                                    </apex:selectList>
+                                </td>
+                                <td class="dataCell" style="border-top:1px solid #838282;font-weight:bold;">
+                                    <apex:outputField id="SubmissionDate" value="{!Service.objService.Submission_Date__c}"/>
+                                </td>
+                                <td class="dataCell" style="border-top:1px solid #838282;font-weight:bold;">
+                                    <apex:outputField id="PUDRnumber" value="{!Service.objService.PU_DR_Number__c}"/>
+                                </td>
+                                <td class="dataCell" style="border-top:1px solid #838282;font-weight:bold;">
+                                    <apex:outputField value="{!Service.objService.Previously_Selected_for_PET__c}"/>
+                                </td>
+                                
+                            </tr>
+                            <tr id="ResourceHeader{!CountST}{!Count}" style="display:{!if(Service.blnExpandResourceSection == true,'','none')};">
+                                <th style="border:none"></th>
+                                <th class="headerRowResource">Role</th>
+                                <th class="headerRowResource">Person</th>
+                                <th class="headerRowResource">LOE</th>
+                                <th class="headerRowResource">Budgeted LOE</th>
+                                <th class="headerRowResource">Actual LOE</th>
+                                <!--<th class="headerRowResource">Cost</th>
+                                <th class="headerRowResource">LOE</th>
+                                <th class="headerRowResource">Cost</th>-->
+                            </tr>
+                            <apex:repeat value="{!Service.lstwrapResource}" var="ServiceResource">
+                                <tr id="inlinetablesecResource{!CountST}{!Count}" style="display:{!if(Service.blnExpandResourceSection == true,'','none')};">
+                                    <td class="dataCell" style="border:none;">
+                                    </td>
+                                    <td class="dataCell" style="border-bottom:1px solid #E0E3E5;">
+                                        <apex:outputText value="{!ServiceResource.RoleName}" />
+                                    </td>
+                                    <td class="dataCell" style="border-bottom:1px solid #E0E3E5;">
+                                        <apex:outputText value="{!ServiceResource.ContactName}" />
+                                    </td>
+                                    <td class="dataCell" style="border-bottom:1px solid #E0E3E5;">
+                                        <apex:outputField value="{!ServiceResource.objResource.LOE__c}"/>
+                                    </td>    
+                                    <td class="dataCell" style="border-bottom:1px solid #E0E3E5;">
+                                        <apex:outputField value="{!ServiceResource.objResource.LFA_Proposed_LOE__c}" />
+                                    </td>
+                                    <td class="dataCell" style="border-bottom:1px solid #E0E3E5;">
+                                        <apex:outputField value="{!ServiceResource.objResource.Actual_LOE__c}"/>
+                                    </td>
+                                    
+                                </tr>
+                            </apex:repeat>
+                            <tr id="Total{!Count}" style="display:{!if(Service.blnExpandResourceSection == true,'','none')};">
+                                <th ></th>
+                                <th class="totalRow"></th>
+                                <th class="totalRow" >
+                                    Total
+                                </th>
+                                <th class="totalRow">
+                                    <apex:outputField value="{!Service.objService.LOE__c}"/>
+                                </th>
+                                <th class="totalRow">
+                                    <apex:outputField value="{!Service.objService.LFA_Proposed_LOE__c}"/>
+                                </th>
+                                <th class="totalRow">
+                                    <apex:outputField value="{!Service.objService.Actual_LOE__c}"/>
+                                </th>
+                            </tr>
+                            <!--<tr><td id="drawline" colspan="12" style="border-bottom:1px solid #838282;padding:0px;"></td></tr>-->
+                           
+                            <apex:variable var="Count" value="{!Count+1}" />
+                        </apex:repeat>
+                    </tbody>
+                    <apex:variable var="CountST" value="{!CountST+1}" />     
+                </apex:repeat>
+                
+            </table>
+            </td>
+            
+            </tr>
+            </table>
+            
+        </apex:pageBlock>
+      
+    </apex:form>
+                
+            </apex:outputPanel>
+        </apex:outputPanel>
+        
+        <apex:includeScript value="{!URLFOR($Resource.ScrollJS,'Scrolljs/jquery.min.js')}" />
+<apex:includeScript value="{!URLFOR($Resource.ScrollJS,'Scrolljs/jquery.nicescroll.min.js')}" />
+    <style>
+     
+        body .bRelatedList .pbBody table.list, body .apexp .pbBody table.list {
+            border: 0px solid #000000;
+            padding:0px;
+        }
+        .headerRowUpperCE{
+            border:1px solid #E0E3E5 !important;
+            font-weight:bold;
+            background-color:#7f7f7f !important;
+            color:white !important;
+        }
+        .headerRowUpper{
+            border:1px solid #E0E3E5 !important;
+            font-weight:bold;
+            background-color:#7f7f7f !important;
+            color:white !important;
+        }
+        
+        .headerRowLower{
+            border:1px solid #E0E3E5 !important;
+            font-weight:bold;
+            background-color:#0066BB !important;
+            color:white !important;
+            white-space: normal !important;
+        }
+        .headerRowResource{
+            border:1px solid #E0E3E5 !important;
+            font-weight:bold;
+            background-color:orange !important;
+        }
+        .totalRow{
+            border-top:1px;
+            font-weight:bold !important;
+        }
+        .totalRowMinMaxAvg{
+            border-top:1px;
+            text-align:right;
+            padding-right:10px;
+        }
+        .noBorder ,table.noBorder tr td,table.noBorder td{
+            border: 0px !important;
+            padding: 0px;
+        }
+        .headerColor{
+            background-color:#4f81bd !important;
+            color:white !important;
+            font-weight:bold;
+        }
+        .headerColorSearchGrid{
+            background-color:#4f81bd !important;
+            border:1px solid #E0E3E5 !important;
+            background-color:#558ed5 !important;
+            color:white !important;
+            font-weight:bold;
+            white-space: pre-wrap !important;
+        }
+        .resourcetTable{
+            vertical-align:top;
+        }
+        .blankCell{
+            width:5px;
+        }
+        .picklist{
+            width:200px !important;
+        }
+        .yearPicklist{
+            width:70px;
+        }
+        .AddLink{
+            padding-left:18px;
+        }
+        .Image{
+            cursor:pointer;
+            padding-left:8px;
+            height:13px;
+            width:13px;
+            vertical-align:middle;
+        }
+        .ImageResource{
+            cursor:pointer;
+            padding-bottom: 5px;
+            padding-left: 8px;
+            height:13px;
+            width:13px;
+        }
+        .ImageSearch{
+            cursor:pointer;
+            float:left;
+            height:13px;
+            width:13px;
+            vertical-align:middle;
+        }
+        .CollapseExpandAllText{
+            font-size: 12px;
+            font-weight: normal;
+            vertical-align:top;
+        }
+        .CollapseExpandAllImage{
+            cursor:pointer;
+            height:20px;
+            width:20px;
+        }
+        .HeaderFreez{  
+            position:relative ;   
+            top:expression(this.offsetParent.scrollTop);  
+            z-index: 10;  
+        }
+    
+    </style>
+    
+     <script>
+       
+        
+   
+        function switchMenu(obj,obj1,obj2,hdn,val) 
+        {   
+            document.getElementById(hdn).value=val; 
+            var el = document.getElementById(obj); 
+                            
+            if(el.style.display != 'none' ) {
+                el.style.display = 'none';
+            }
+            else {
+                el.style.display = '';
+            }
+            var e2 = document.getElementById(obj1);                                       
+            if ( e2.style.display != 'none' ) {
+                e2.style.display = 'none';
+            }
+            else {
+                e2.style.display = '';
+            }
+            var e3 = document.getElementById(obj2);                                       
+            if ( e2.style.display != 'none' ) {
+                e3.style.display = 'none';
+            }
+            else {
+                e3.style.display = '';
+            }
+        }
+        function switchMenuResource(Total,obj,HeaderId,obj1,obj2,hdn,val) 
+        {   
+            document.getElementById(hdn).value=val; 
+            
+            if(document.getElementById(Total).style.display == 'none'){
+                document.getElementById(Total).style.display = ''; 
+            }else{
+                document.getElementById(Total).style.display = 'none'; 
+            }
+            
+            var el = document.getElementById(obj); 
+            if(el.style.display != 'none' ) {
+                var node = el.parentNode.childNodes;
+                for (var i = 0; i < node.length;  i++){
+                    if(node[i].id == el.id){
+                        node[i].style.display = 'none';
+                    }
+                }
+            }else{
+                var node = el.parentNode.childNodes;
+                for (var i = 0; i < node.length;  i++){
+                    if(node[i].id == el.id){
+                        node[i].style.display = '';
+                    }
+                }
+            } 
+            
+            var header = document.getElementById(HeaderId); 
+            if(header.style.display != 'none' ) {
+                var node = header.parentNode.childNodes;
+                for (var i = 0; i < node.length;  i++){
+                    if(node[i].id == header.id){
+                        node[i].style.display = 'none';
+                    }
+                }
+            }else{
+                var node = header.parentNode.childNodes;
+                for (var i = 0; i < node.length;  i++){
+                    if(node[i].id == header.id){
+                        node[i].style.display = '';
+                    }
+                }
+            } 
+            
+            var e2 = document.getElementById(obj1);                                       
+            if ( e2.style.display != 'none' ) {
+                e2.style.display = 'none';                
+            }
+            else {
+                e2.style.display = '';
+            }
+            var e3 = document.getElementById(obj2);                                       
+            if ( e2.style.display != 'none' ) {
+                e3.style.display = 'none';
+            }
+            else {
+                e3.style.display = '';
+            }
+            
+        }
+     
+    
+        function ColumnExpandCollepse(tdId,thId,Mainth,sideTh,hdn,Status){
+            var AllTD = document.getElementsByTagName("td");
+            var AllTH = document.getElementsByTagName("th");
+           // alert(AllTH );
+            if(tdId == 'CTtd')
+                document.getElementById('page:frm:hdnblnShowCTPlanned').value = Status;
+            if(tdId == 'TGFtd')
+                document.getElementById('page:frm:hdnblnShowTGF').value = Status;
+            for(var i=0;i<AllTD.length;i++){
+                if(AllTD[i].id == tdId){
+                    if(Status == 'false'){
+                        AllTD[i].style.display = 'none';
+                    }else{
+                        AllTD[i].style.display = '';
+                    }
+                }
+            }
+            for(var i=0;i<AllTH.length;i++){
+                if(AllTH[i].id == thId){
+                    if(Status == 'false'){
+                        AllTH[i].style.display = 'none';
+                    }else{
+                        AllTH[i].style.display = '';
+                    }
+                }
+            }
+            if(Status == 'false'){
+                document.getElementById(Mainth).style.display = 'none';
+                document.getElementById(sideTh).style.display = '';
+            }else{
+                document.getElementById(sideTh).style.display = 'none';
+                document.getElementById(Mainth).style.display = '';
+            }
+        }
+     
+          </script>
+    <script>
+        function setFocusOnLoad() {}
+    </script>
+    
+    <style type="text/css">
+        span.dateInput span.dateFormat{
+            display:none;
+        }
+        
+       
+    </style>
+     
+
+
+</apex:page>

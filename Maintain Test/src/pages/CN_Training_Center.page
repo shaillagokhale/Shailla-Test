@@ -1,0 +1,489 @@
+<apex:page controller="CN_Training_Center" sidebar="false">
+
+    <apex:stylesheet value="{!URLFOR($Resource.GoalsJs, 'assets/css/bootstrap.css')}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.GoalsJs, 'assets/css/bootstrap-responsive.css')}"/>
+    
+    <style>
+    .h3 {
+        font-size:24px;
+        line-height: 40px;
+    }
+    h3 {
+        font-size:24px;
+        line-height: 20px;
+    }
+    h2 {
+        font-size:18px;
+        line-height: 30px;
+    }
+    </style>
+   <script>
+
+   </script>
+   
+   <br/>
+   <!-- <h3><apex:outputText style="font-style:italic;" value="{!If(strLanguage=='FRENCH', 'Centre de formation',if(strLanguage=='RUSSIAN', 'Учебный центр', if(strLanguage=='SPANISH', 'Centro de formación','Training Center')))}"/></h3>-->
+   <h3><apex:outputText value="{!$Label.Training_Center_Header}"/></h3>
+   <br/><br/>
+<!-- <p>On this page you can access guidance documents and videos.  Please select the area for which you would like guidance in the dropdown menu below:</p>-->
+<!-- <apex:outputText value="{!If(strLanguage=='FRENCH', 'Cette page vous donne accès aux documents et vidéos d’orientation. Veuillez choisir le domaine pour lequel vous souhaiteriez des orientations dans le menu déroulant ci-dessous :',if(strLanguage=='RUSSIAN', 'С этой страницы вы можете получить доступ к справочно-методическим и видео материалам. Выберите в раскрывающемся меню ниже вопрос, руководство по которому вы желаете получить. ', if(strLanguage=='SPANISH', 'En esta página podrá acceder a una serie de documentos y vídeos orientativos. Seleccione el área para la que desee obtener orientación en el menú desplegable que aparece más abajo:','On this page you can access guidance documents and videos.  Please select the area for which you would like guidance in the dropdown menu below:')))}"/>-->
+<apex:outputText value="{!$Label.TC_Narrative}"/><br/><br/>
+
+   <apex:form id="frm">
+  <div>
+  {!$Label.Guidance_Area} &nbsp;
+   
+
+<apex:selectlist value="{!strGuidanceArea}" size="1" >
+<apex:selectoption itemvalue="" itemLabel="None"/>
+<apex:selectoption itemvalue="Concept Note" itemLabel="{!$Label.TC_Concept_Note}" /> 
+<apex:selectoption itemvalue="Grant-making" itemLabel="{!$Label.TC_Grant_making}" /> 
+<apex:selectoption itemvalue="LFA Services" itemLabel="{!$Label.TC_LFA_Services}" rendered="{!If(Contains($Profile.Name,$Label.PR_Read_Only), false, if(Contains($Profile.Name,$Label.PR_Admin), false,if(Contains($Profile.Name,$Label.PR_Read_Write_Edit), false,if(Contains($Profile.Name,$Label.Applicant_CM_Admin), false,if(Contains($Profile.Name,$Label.Applicant_CM_Read_Write), false,if(Contains($Profile.Name,$Label.Applicant_CM_Read_Only),false,if(Contains($Profile.Name,$Label.CCM),false,true)))))))}"/>
+<apex:selectoption itemvalue="PET" itemLabel="{!$Label.TC_PET}" rendered="{!If(Contains($Profile.Name,$Label.PR_Read_Only), false, if(Contains($Profile.Name,$Label.PR_Admin), false,if(Contains($Profile.Name,$Label.PR_Read_Write_Edit), false,if(Contains($Profile.Name,$Label.Applicant_CM_Admin), false,if(Contains($Profile.Name,$Label.Applicant_CM_Read_Write), false,if(Contains($Profile.Name,$Label.Applicant_CM_Read_Only),false,if(Contains($Profile.Name,$Label.CCM),false,true)))))))}"/>  
+<apex:selectoption itemvalue="CRM" itemLabel="{!$Label.TC_CRM}" rendered="{!If(Contains($Profile.Name,$Label.PR_Read_Only), false, if(Contains($Profile.Name,$Label.PR_Admin), false,if(Contains($Profile.Name,$Label.PR_Read_Write_Edit), false,if(Contains($Profile.Name,$Label.Applicant_CM_Admin), false,if(Contains($Profile.Name,$Label.Applicant_CM_Read_Write), false,if(Contains($Profile.Name,$Label.Applicant_CM_Read_Only),false,if(Contains($Profile.Name,$Label.CCM),false,if(Contains($Profile.Name,$Label.Applicant_CM_Read_Only),false,if(Contains($Profile.Name,$Label.LFA),false,true)))))))))}"/>   
+<apex:selectoption itemvalue="Qualitative Factors" itemLabel="{!$Label.TC_Qualitative_Factors}" rendered="{!If(Contains($Profile.Name,$Label.PR_Read_Only), false, if(Contains($Profile.Name,$Label.PR_Admin), false,if(Contains($Profile.Name,$Label.PR_Read_Write_Edit), false,if(Contains($Profile.Name,$Label.Applicant_CM_Admin), false,if(Contains($Profile.Name,$Label.Applicant_CM_Read_Write), false,if(Contains($Profile.Name,$Label.Applicant_CM_Read_Only),false,if(Contains($Profile.Name,$Label.CCM),false,if(Contains($Profile.Name,$Label.Applicant_CM_Read_Only),false,if(Contains($Profile.Name,$Label.LFA),false,true)))))))))}"/>  
+   <apex:actionSupport event="onchange"  reRender="selectedBlock"/>                                
+                                            </apex:selectlist>
+   </div>
+   
+   <br/>
+
+ <div>
+<apex:outputPanel id="selectedBlock" >
+
+<apex:outputPanel id="ConceptNote" rendered="{!if(strGuidanceArea=='Concept Note', true, false)}">
+ <h2>{!$Label.Concept_Note_Guidance}</h2><br/><br/>
+<table>
+<tr>
+<td>
+<apex:outputText style="text-decoration:underline;" value="{!$Label.Documentation}"/>
+<br/>
+<br/>
+<ul>
+<li><p><b>{!$Label.Concept_Note_Content_Guidance_Document}</b> 
+<br/><i>{!$Label.CN_Content}</i><br/> 
+<apex:commandLink action="http://www.theglobalfund.org/documents/fundingmodel/FundingModel_GrantManagementPlatformGuidanceConceptNote_Guidance_en/" target="_blank" value="{!$Label.download}"/> [ PDF - 435 KB <apex:commandLink action="http://www.theglobalfund.org/documents/fundingmodel/FundingModel_GrantManagementPlatformGuidanceConceptNote_Guidance_es/" target="_blank" value=" Español/ "/><apex:commandLink action="http://www.theglobalfund.org/documents/fundingmodel/FundingModel_GrantManagementPlatformGuidanceConceptNote_Guidance_fr/" target="_blank" value="Français/ "/><apex:commandLink action="http://www.theglobalfund.org/documents/fundingmodel/FundingModel_GrantManagementPlatformGuidanceConceptNote_Guidance_ru/" target="_blank" value="Русский "/>] <i>({!$Label.Updated} {!$Label.CN_Content_Guidance_Upd})</i></p>
+
+</li>
+
+
+<li>
+<p><b>{!$Label.Concept_Note_Technical_Guidance_Document}</b> 
+<br/><i>{!$Label.CN_Technical}</i><br/>
+<apex:commandLink action="http://www.theglobalfund.org/documents/fundingmodel/FundingModel_GrantManagementPlatformGuidance_ConceptNote_en/" target="_blank" value="{!$Label.download}"/> [ PDF - 5 MB <apex:commandLink action="http://www.theglobalfund.org/documents/fundingmodel/FundingModel_GrantManagementPlatformGuidance_ConceptNote_es/" target="_blank" value=" Español/ "/><apex:commandLink action="http://www.theglobalfund.org/documents/fundingmodel/FundingModel_GrantManagementPlatformGuidance_ConceptNote_fr/" target="_blank" value="Français/ "/><apex:commandLink action="http://www.theglobalfund.org/documents/fundingmodel/FundingModel_GrantManagementPlatformGuidance_ConceptNote_ru/" target="_blank" value="Русский "/>] <i>({!$Label.Updated} {!$Label.CN_Technical_Guidance_Upd})</i></p>
+
+</li>
+</ul>
+
+</td>
+
+</tr>
+
+<tr>
+<td>
+<br/>
+<apex:outputPanel rendered="{!If(Contains($Profile.Name,$Label.PR_Read_Only), false, if(Contains($Profile.Name,$Label.PR_Admin), false,if(Contains($Profile.Name,$Label.PR_Read_Write_Edit), false,if(Contains($Profile.Name,$Label.Applicant_CM_Admin), false,if(Contains($Profile.Name,$Label.Applicant_CM_Read_Write), false,if(Contains($Profile.Name,$Label.Applicant_CM_Read_Only),false,if(Contains($Profile.Name,$Label.CCM),false,if(Contains($Profile.Name,$Label.Applicant_CM_Read_Only),false,if(Contains($Profile.Name,$Label.LFA),false,true)))))))))}">
+
+<apex:outputText style="text-decoration:underline;" value="Internal Global Fund Documentation"/><br/>
+<i>None Currently Available</i><br/>
+</apex:outputPanel>
+<br/>
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+<apex:outputText style="text-decoration:underline;" value="{!$Label.Videos_Screencasts}"/>
+<br/><br/> 
+<ul>
+<li><p>
+<apex:outputText style="text-decoration:underline; font-weight:bold;" value="{!$Label.Overview_Video}"/>
+<br/> 
+<i><apex:outputPanel rendered="{!If(strLanguage=='FRENCH', true, false)}">
+<i>Une présentation commentée de 13 minutes qui explique la structure et le contenu de la plateforme. Disponible <apex:outputLink value="http://www.theglobalfund.org/en/fundingmodel/support/videos/" target="_blank"> ici </apex:outputLink> en anglais et en français.</i>
+</apex:outputPanel>
+<apex:outputPanel rendered="{!If(strLanguage=='SPANISH', true, false)}">
+<i>Un vídeo de 13 minutos en el que se explica la estructura y el contenido de la Plataforma para la Gestión de Subvenciones (PGS). Disponible <apex:outputLink value="http://www.theglobalfund.org/en/fundingmodel/support/videos/" target="_blank"> aqui </apex:outputLink> en inglés y francés.</i>
+</apex:outputPanel>
+<apex:outputPanel rendered="{!If(strLanguage=='RUSSIAN', true, false)}">
+<i>13 минут с разъяснениями по структуре и содержанию Платформы по управлению гратами. Доступно на английском и французском языках <apex:outputLink value="http://www.theglobalfund.org/en/fundingmodel/support/videos/" target="_blank"> здесь. </apex:outputLink></i>
+</apex:outputPanel>
+<apex:outputPanel rendered="{!If(strLanguage=='FRENCH', false, if(strLanguage=='SPANISH', false,if(strLanguage=='RUSSIAN', false,true )))}">
+<i>A 13-minute narrated screencast video explaining the structure of and content in the platform. Available in English and French.<apex:outputLink value="http://www.theglobalfund.org/en/fundingmodel/support/videos/" target="_blank">  Watch video </apex:outputLink></i>
+
+</apex:outputPanel></i></p></li>
+<li><p><apex:outputText style="text-decoration:underline; font-weight:bold;" value="{!$Label.Screencasts}"/><br/>
+<i>None Currently Available</i>
+</p></li>
+</ul>
+</td>
+</tr>
+<tr>
+<td>
+<br/>
+<apex:outputPanel rendered="{!If(Contains($Profile.Name,$Label.PR_Read_Only), false, if(Contains($Profile.Name,$Label.PR_Admin), false,if(Contains($Profile.Name,$Label.PR_Read_Write_Edit), false,if(Contains($Profile.Name,$Label.Applicant_CM_Admin), false,if(Contains($Profile.Name,$Label.Applicant_CM_Read_Write), false,if(Contains($Profile.Name,$Label.Applicant_CM_Read_Only),false,if(Contains($Profile.Name,$Label.CCM),false,if(Contains($Profile.Name,$Label.Applicant_CM_Read_Only),false,if(Contains($Profile.Name,$Label.LFA),false,true)))))))))}">
+
+<apex:outputText style="text-decoration:underline;" value="Internal Global Fund Videos & Screencasts"/>
+<br/>
+<i>None Currently Available</i>
+</apex:outputPanel>
+<br/><br/><br/>
+</td>
+</tr>
+
+</table>
+</apex:outputPanel>
+<apex:outputPanel id="GrantMaking" rendered="{!if(strGuidanceArea=='Grant-making', true, false)}">
+<h2>{!$Label.Grant_making_Guidance}</h2><br/><br/>
+<table>
+<tr>
+<td>
+
+<apex:outputText style="text-decoration:underline;" value="{!$Label.Documentation}"/>
+<br/>
+<br/>
+<ul>
+<li><p><b>{!$Label.GM_Technical_Guidance_Doc}</b> 
+<br/><i>{!$Label.CN_Technical}</i> <br/>
+<!-- <apex:commandLink action="http://www.theglobalfund.org/documents/fundingmodel/FundingModel_GrantManagementPlatformGuidance_ConceptNote_en/" value="download"/> [ PDF - ?5 MB] <i>(Updated 31/09/2014)</i>-->
+<apex:outputLink value="https://theglobalfund--c.eu2.content.force.com/servlet/servlet.FileDownload?file=015b0000001Btmi" target="_blank"> {!$Label.download}</apex:outputLink> [ PDF ]</p>
+</li>
+<li><p><b>{!$Label.Grant_making_Process_Checklist}</b> 
+<br/><i>{!$Label.GM_Process_Checklist}</i> <br/>
+<apex:outputLink value="https://theglobalfund--c.eu2.content.force.com/servlet/servlet.FileDownload?file=015b0000001CfE8" target="_blank"> {!$Label.download}</apex:outputLink> [ Word ]</p>
+</li>
+</ul>
+</td>
+</tr>
+<tr>
+<td>
+<br/>
+<apex:outputPanel rendered="{!If(Contains($Profile.Name,$Label.PR_Read_Only), false, if(Contains($Profile.Name,$Label.PR_Admin), false,if(Contains($Profile.Name,$Label.PR_Read_Write_Edit), false,if(Contains($Profile.Name,$Label.Applicant_CM_Admin), false,if(Contains($Profile.Name,$Label.Applicant_CM_Read_Write), false,if(Contains($Profile.Name,$Label.Applicant_CM_Read_Only),false,if(Contains($Profile.Name,$Label.CCM),false,if(Contains($Profile.Name,$Label.Applicant_CM_Read_Only),false,if(Contains($Profile.Name,$Label.LFA),false,true)))))))))}">
+
+<apex:outputText style="text-decoration:underline;" value="Internal Global Fund Documentation"/><br/>
+<i>None Currently Available</i><br/>
+</apex:outputPanel>
+<br/>
+
+</td>
+</tr>
+
+
+<tr>
+<td>
+
+<apex:outputText style="text-decoration:underline;" value="{!$Label.Videos_Screencasts}"/><br/> 
+<i>{!$Label.None_Currently_Available}</i><br/><br/>
+</td>
+</tr>
+<tr>
+<td>
+
+<apex:outputPanel rendered="{!If(Contains($Profile.Name,$Label.PR_Read_Only), false, if(Contains($Profile.Name,$Label.PR_Admin), false,if(Contains($Profile.Name,$Label.PR_Read_Write_Edit), false,if(Contains($Profile.Name,$Label.Applicant_CM_Admin), false,if(Contains($Profile.Name,$Label.Applicant_CM_Read_Write), false,if(Contains($Profile.Name,$Label.Applicant_CM_Read_Only),false,if(Contains($Profile.Name,$Label.CCM),false,if(Contains($Profile.Name,$Label.Applicant_CM_Read_Only),false,if(Contains($Profile.Name,$Label.LFA),false,true)))))))))}">
+
+<apex:outputText style="text-decoration:underline;" value="Internal Global Fund Videos & Screencasts"/>
+<br/>
+<i>None Currently Available</i>
+</apex:outputPanel>
+<br/><br/><br/>
+</td>
+</tr>
+
+</table>
+</apex:outputPanel>
+<apex:outputPanel id="LFAServices" rendered="{!if(strGuidanceArea=='LFA Services', true, false)}">
+<h2>LFA Services Guidance </h2><br/><br/>
+<table>
+<tr>
+<td>
+
+<!-- <apex:outputText style="text-decoration:underline;" value="{!$Label.Documentation}"/>-->
+<apex:outputText style="text-decoration:underline;" value="Documentation"/>
+<br/>
+<br/>
+<ul>
+<li><p><b>Local Fund Agent User Guide </b> 
+<br/><i>This document is for LFA users and explains how to navigate the LFA Services section of the Grant Management Platform, as well as how to complete an LFA workplan.</i> <br/>
+<!-- <apex:commandLink action="https://theglobalfund.my.salesforce.com/servlet/servlet.FileDownload?file=015b0000000brKc" value="download"/> [ Word] <i>(Updated May 2014)</i>-->
+<apex:outputLink value="https://theglobalfund.my.salesforce.com/servlet/servlet.FileDownload?file=015b0000000brKc" target="_blank"> download</apex:outputLink> [ Word] <i>(Updated {!$Label.LFA_User_Guide_Upd})</i></p>
+
+</li></ul>
+</td>
+</tr>
+<tr>
+<td>
+<br/>
+<apex:outputPanel rendered="{!If(Contains($Profile.Name,$Label.PR_Read_Only), false, if(Contains($Profile.Name,$Label.PR_Admin), false,if(Contains($Profile.Name,$Label.PR_Read_Write_Edit), false,if(Contains($Profile.Name,$Label.Applicant_CM_Admin), false,if(Contains($Profile.Name,$Label.Applicant_CM_Read_Write), false,if(Contains($Profile.Name,$Label.Applicant_CM_Read_Only),false,if(Contains($Profile.Name,$Label.CCM),false,if(Contains($Profile.Name,$Label.Applicant_CM_Read_Only),false,if(Contains($Profile.Name,$Label.LFA),false,true)))))))))}">
+
+<apex:outputText style="text-decoration:underline;" value="Internal Global Fund Documentation"/><br/><br/>
+
+<ul>
+<li><p><b>The Global Fund User Guide</b> 
+<br/><i>This document is for country team users and explains how to navigate the LFA Services section of the Grant Management Platform, as well as how to edit/approve/reject an LFA workplan.</i><br/> 
+<!--<apex:commandLink action="https://theglobalfund.my.salesforce.com/servlet/servlet.FileDownload?file=015b0000000brKh" value="download"/> [ Word]<i>(Updated May 2014)</i> -->
+<apex:outputLink value="https://theglobalfund.my.salesforce.com/servlet/servlet.FileDownload?file=015b0000000brKh" target="_blank"> download</apex:outputLink> [ Word] <i>(Updated May 2014)</i></p>
+
+</li>
+<li><p><b>Frequency Asked Questions</b> 
+<br/><i>Click here for a list of Frequently Asked Questions or ask your own questions:</i>
+<!-- <apex:commandLink action="https://theglobalfund.my.salesforce.com/answers/listQuestion.apexp?c=09ab000000050r8AAA&cat=02nb0000000Jj06" value="link"/>-->
+<apex:outputLink value="https://theglobalfund.my.salesforce.com/answers/listQuestion.apexp?c=09ab000000050r8AAA&cat=02nb0000000Jj06" target="_blank"> Link</apex:outputLink></p>
+
+</li>
+</ul>
+<br/>
+</apex:outputPanel>
+</td>
+</tr>
+<tr>
+<td>
+
+<apex:outputText style="text-decoration:underline;" value="Videos & Screencasts"/><br/><br/> 
+<ul>
+<li><p><apex:outputText style="font-weight:bold;" value="A Brief Orientation to the LFA Services section of the Platform"/><br/> 
+<i>A screencast video explaining how to navigate the LFA Services section on the platform.</i>
+<!-- <apex:commandLink action="https://www.youtube.com/watch?v=eV8gSJUgZnA" value=" Watch video"/>-->
+<apex:outputLink value="https://www.youtube.com/watch?v=eV8gSJUgZnA" target="_blank"> Watch video</apex:outputLink>
+</p></li>
+<li><p><apex:outputText style="font-weight:bold;" value="Components of a Workplan"/><br/>
+<i>A screencast video explaining how to submit a workplan to grant management support via the platform. </i>
+<!-- <apex:commandLink action="https://www.youtube.com/watch?v=YiEVJfgXlE4" value=" Watch video"/>-->
+<apex:outputLink value="https://www.youtube.com/watch?v=YiEVJfgXlE4" target="_blank"> Watch video</apex:outputLink>
+</p></li>
+<li><p><apex:outputText style="font-weight:bold;" value="Understand the Workplan Detail Page"/><br/>
+<i>A screencast video explaining how to submit a workplan to grant management support via the platform.</i>
+<!-- <apex:commandLink action="https://www.youtube.com/watch?v=YiEVJfgXlE4" value=" Watch video"/>-->
+<apex:outputLink value="https://www.youtube.com/watch?v=7rTm9dODF5k" target="_blank"> Watch video</apex:outputLink>
+</p></li>
+<li><p><apex:outputText style="font-weight:bold;" value="Reviewing, Proposing Changes and Submitting your Work Plan"/><br/>
+<i>A screencast video explaining how to submit a workplan to grant management support via the platform. </i>
+<!-- <apex:commandLink action="https://www.youtube.com/watch?v=-WlKs2i0jfs" value=" Watch video"/>-->
+<apex:outputLink value="https://www.youtube.com/watch?v=-WlKs2i0jfs" target="_blank"> Watch video</apex:outputLink>
+</p></li>
+</ul>
+</td> 
+</tr>
+<tr>
+<td>
+<br/>
+<apex:outputPanel rendered="{!If(Contains($Profile.Name,$Label.PR_Read_Only), false, if(Contains($Profile.Name,$Label.PR_Admin), false,if(Contains($Profile.Name,$Label.PR_Read_Write_Edit), false,if(Contains($Profile.Name,$Label.Applicant_CM_Admin), false,if(Contains($Profile.Name,$Label.Applicant_CM_Read_Write), false,if(Contains($Profile.Name,$Label.Applicant_CM_Read_Only),false,if(Contains($Profile.Name,$Label.CCM),false,if(Contains($Profile.Name,$Label.Applicant_CM_Read_Only),false,if(Contains($Profile.Name,$Label.LFA),false,true)))))))))}">
+
+<apex:outputText style="text-decoration:underline;" value="Internal Global Fund Videos & Screencasts"/>
+<br/><br/>
+<ul><li><p><apex:outputText style="text-decoration:underline;font-weight:bold;" value="How to Submit an LFA Workplan"/><br/>
+<i>A screencast video explaining how to submit a workplan to grant management support via the platform.</i>
+
+<apex:outputLink value="https://www.youtube.com/watch?v=vfOuCVLdoTA" target="_blank"> Watch video</apex:outputLink>
+</p></li>
+</ul>
+</apex:outputPanel>
+<br/><br/><br/>
+</td>
+</tr>
+</table>
+</apex:outputPanel>
+<apex:outputPanel id="PET" rendered="{!if(strGuidanceArea=='PET', true, false)}">
+<h2>Performance Evaluation Tools (PET) Guidance </h2><br/><br/>
+<table>
+<!-- <tr>
+<td>
+
+<apex:outputText style="text-decoration:underline;" value="Documentation"/><br/>
+<i>None Currently Available</i><br/><br/>
+</td>
+</tr>
+<tr>
+<td>
+<apex:outputPanel rendered="{!If(Contains($Profile.Name,$Label.PR_Read_Only), false, if(Contains($Profile.Name,$Label.PR_Admin), false,if(Contains($Profile.Name,$Label.PR_Read_Write_Edit), false,if(Contains($Profile.Name,$Label.Applicant_CM_Admin), false,if(Contains($Profile.Name,$Label.Applicant_CM_Read_Write), false,if(Contains($Profile.Name,$Label.Applicant_CM_Read_Only),false,if(Contains($Profile.Name,$Label.CCM),false,if(Contains($Profile.Name,$Label.Applicant_CM_Read_Only),false,if(Contains($Profile.Name,$Label.LFA),false,true)))))))))}">
+
+<apex:outputText style="text-decoration:underline;" value="Internal Global Fund Documentation"/>
+<br/>
+<i>None Currently Available</i><br/><br/>
+</apex:outputPanel>
+</td>
+</tr>-->
+<tr>
+<td>
+
+<apex:outputText style="text-decoration:underline;" value="Videos & Screencasts"/><br/><br/> 
+<ul>
+<li><p><apex:outputText style="text-decoration:underline;font-weight:bold;" value="PET Completion: LFA"/><br/> 
+<i>A screencast video explaining what the LFA should do for PET on the platform.</i>
+<!-- <apex:commandLink action="https://www.youtube.com/watch?v=VPyqJzbmNCg" value=" Watch video"/>-->
+<apex:outputLink value="https://www.youtube.com/watch?v=VPyqJzbmNCg" target="_blank"> Watch video</apex:outputLink>
+</p></li>
+</ul>
+</td>
+</tr>
+<tr>
+<td>
+<br/>
+<apex:outputPanel rendered="{!If(Contains($Profile.Name,$Label.PR_Read_Only), false, if(Contains($Profile.Name,$Label.PR_Admin), false,if(Contains($Profile.Name,$Label.PR_Read_Write_Edit), false,if(Contains($Profile.Name,$Label.Applicant_CM_Admin), false,if(Contains($Profile.Name,$Label.Applicant_CM_Read_Write), false,if(Contains($Profile.Name,$Label.Applicant_CM_Read_Only),false,if(Contains($Profile.Name,$Label.CCM),false,if(Contains($Profile.Name,$Label.Applicant_CM_Read_Only),false,if(Contains($Profile.Name,$Label.LFA),false,true)))))))))}">
+
+<apex:outputText style="text-decoration:underline;" value="Internal Global Fund Videos & Screencasts"/>
+<br/><br/>
+<ul><li><p><apex:outputText style="text-decoration:underline;font-weight:bold;" value="Overall PET Flow"/><br/>
+<i>A screencast video explaining the flow of the PET section on the platform.</i>
+<!-- <apex:commandLink action="https://www.youtube.com/watch?v=GByFtmnn_Q8" value=" Watch video"/>-->
+<apex:outputLink value="https://www.youtube.com/watch?v=GByFtmnn_Q8" target="_blank"> Watch video</apex:outputLink>
+</p></li>
+<li><p><apex:outputText style="text-decoration:underline;font-weight:bold;" value="PET Creation: FPM/PO"/><br/>
+<i>A screencast video explaining how to create a PET on the platform.</i>
+<!-- <apex:commandLink action="https://www.youtube.com/watch?v=ME5YbgpHz_E" value=" Watch video"/>-->
+<apex:outputLink value="https://www.youtube.com/watch?v=ME5YbgpHz_E" target="_blank"> Watch video</apex:outputLink>
+</p></li>
+<li><p><apex:outputText style="text-decoration:underline;font-weight:bold;" value="PET Completion: Technical Team"/><br/>
+<i>A screencast video explaining what the technical team should do for PET on the platform.</i>
+<!-- <apex:commandLink action="https://www.youtube.com/watch?v=kQMuEIBuibc" value=" Watch video"/>-->
+<apex:outputLink value="https://www.youtube.com/watch?v=kQMuEIBuibc" target="_blank"> Watch video</apex:outputLink>
+</p></li>
+<li><p><apex:outputText style="text-decoration:underline;font-weight:bold;" value="PET Completion: Preparation to Send to LFA"/><br/>
+<i>A screencast video explaining how to send the PET to the LFA via the platform. </i>
+<!-- <apex:commandLink action="https://www.youtube.com/watch?v=i_dHZ72me3M" value=" Watch video"/>-->
+<apex:outputLink value="https://www.youtube.com/watch?v=i_dHZ72me3M" target="_blank"> Watch video</apex:outputLink>
+</p></li>
+<li><p><apex:outputText style="text-decoration:underline;font-weight:bold;" value="PET Completion: Finalization"/><br/>
+<i>A screencast video explaining how complete the PET on the platform.</i>
+<!-- <apex:commandLink action="https://www.google.com"  value=" Watch video"/>-->
+<apex:outputLink value="https://www.youtube.com/watch?v=YV8vyCB_zcs" target="_blank"> Watch video</apex:outputLink>
+</p></li>
+</ul>
+</apex:outputPanel>
+<br/><br/><br/>
+</td>
+</tr>
+</table>
+
+</apex:outputPanel>
+<apex:outputPanel id="CRM" rendered="{!if(strGuidanceArea=='CRM', true, false)}">
+<h2>Contact Relationship Management (CRM) Guidance </h2><br/><br/>
+<table>
+<tr>
+<td>
+
+<apex:outputText style="text-decoration:underline;" value="Documentation"/><br/>
+<i>None Currently Available</i>
+<br/>
+<br/>
+</td>
+</tr>
+
+<tr>
+<td>
+<apex:outputPanel >
+
+<apex:outputText style="text-decoration:underline;" value="Internal Global Fund Documentation"/><br/><br/>
+<ul><li><p><apex:outputText style="font-weight:bold;" value="Event Management Quick Guide (iContact)"/><br/>
+Guidance on how to use iContact for event management <br/>
+<apex:outputLink value="https://theglobalfund--c.eu2.content.force.com/servlet/servlet.FileDownload?file=015b0000001BjJr" target="_blank" > download </apex:outputlink> [WORD 220KB] </p>
+
+</li>
+<li><p><apex:outputText style="font-weight:bold;" value="Merge Field Reference Guide (iContact)"/><br/>
+Click here for a list of field names for easy reference <br/>
+<apex:outputLink value="https://theglobalfund--c.eu2.content.force.com/servlet/servlet.FileDownload?file=015b0000001BjH6" target="_blank" > download </apex:outputlink> [WORD 186KB] 
+</p></li>
+<li><p><apex:outputText style="font-weight:bold;" value="User Guide (for 9th floor CRM)"/><br/>
+How to add Organizations and Contacts to the  CRM and modify information <br/>
+<apex:outputLink value="https://theglobalfund--c.eu2.content.force.com/servlet/servlet.FileDownload?file=015b0000001BtmO" target="_blank" > download </apex:outputlink>
+</p></li>
+</ul>
+</apex:outputPanel>
+</td>
+</tr>
+<tr>
+<td>
+
+<apex:outputText style="text-decoration:underline;" value="Videos & Screencasts"/><br/>
+<i>None Currently Available</i><br/><br/>
+</td>
+</tr>
+<tr>
+<td>
+<apex:outputPanel >
+
+<apex:outputText style="text-decoration:underline;" value="Internal Global Fund Videos & Screencasts"/><br/><br/>
+<ul>
+<li><!-- <apex:outputText style="text-decoration:underline;font-weight:bold;" value="CRM"/><br/>-->
+<apex:outputText style="font-weight:bold;" value="Creating Events "/> <apex:outputLink value="https://www.youtube.com/watch?v=j46YfvKj2hY&list=UUnK99myefkgmcKhO9jy8kMA" target="_blank" > Watch video </apex:outputlink></li>
+<li><apex:outputText style="font-weight:bold;" value="Adding Campaign Members "/> <apex:outputLink value="https://www.youtube.com/watch?v=j46YfvKj2hY&list=UUnK99myefkgmcKhO9jy8kMA" target="_blank" > Watch video </apex:outputlink></li>
+<li><apex:outputText style="font-weight:bold;" value="Using MessageBuilder (iContact) "/><apex:outputLink value="https://www.youtube.com/watch?v=j46YfvKj2hY&list=UUnK99myefkgmcKhO9jy8kMA" target="_blank" > Watch video </apex:outputlink></li>
+<li><apex:outputText style="font-weight:bold;" value="Importing a Template to Salesforce (iContact) "/><apex:outputLink value="https://www.youtube.com/watch?v=j46YfvKj2hY&list=UUnK99myefkgmcKhO9jy8kMA" target="_blank" > Watch video </apex:outputlink></li>
+<li><apex:outputText style="font-weight:bold;" value="Sending from iContact (iContact) "/><apex:outputLink value="https://www.youtube.com/watch?v=j46YfvKj2hY&list=UUnK99myefkgmcKhO9jy8kMA" target="_blank" > Watch video </apex:outputlink></li> 
+<!--<apex:commandLink action="" value="Watch Video"/>-->
+
+</ul>
+</apex:outputPanel>
+<br/><br/><br/>
+</td>
+</tr>
+
+</table>
+</apex:outputPanel>
+<apex:outputPanel id="QualitativeFactors" rendered="{!if(strGuidanceArea=='Qualitative Factors', true, false)}">
+<h2>Pre-Concept Note and Qualitative Factors Guidance </h2><br/><br/>
+<table>
+<!-- <tr>
+<td>
+
+<apex:outputText style="text-decoration:underline;" value="Documentation"/><br/>
+<i>None Currently Available</i>
+<br/>
+<br/>
+</td>
+</tr>-->
+<tr>
+<td>
+<apex:outputPanel >
+
+<apex:outputText style="text-decoration:underline;" value="Internal Global Fund Documentation"/><br/>
+<i>None Currently Available</i>
+<br/>
+<br/>
+</apex:outputPanel>
+</td>
+</tr>
+<!-- <tr>
+<td>
+
+
+<apex:outputText style="text-decoration:underline;" value="Videos & Screencasts"/><br/>
+<i>None Currently Available</i>
+<br/>
+<br/>
+</td>
+</tr>-->
+<tr>
+<td>
+<apex:outputPanel >
+
+<apex:outputText style="text-decoration:underline;" value="Internal Global Fund Videos & Screencasts"/>
+<br/><br/>
+<ul>
+<li><p><apex:outputText style="text-decoration:underline;font-weight:bold;" value="Introduction to Pre-Concept Note/Qualitative Factors"/><br/>
+<i>A screencast video explaining how to use the Qualitative Factors section of the platform. </i><apex:outputLink value="https://www.youtube.com/watch?v=bksfCW3-GDc" target="_blank"> Watch Video</apex:outputLink>
+</p>
+</li>
+</ul>
+</apex:outputPanel>
+<br/><br/><br/>
+</td>
+</tr>
+
+
+</table>
+</apex:outputPanel>
+</apex:outputPanel>
+
+ <div>
+    <apex:outputPanel >
+    <apex:outputText style="font-style:italic;font-size:13px;" value="{!$Label.TC_Informative}" />
+    </apex:outputPanel> 
+ 
+  
+   </div>
+ </div>
+ </apex:form>
+   <br/><br/>
+</apex:page>

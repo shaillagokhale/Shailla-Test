@@ -1,0 +1,1039 @@
+<apex:page id="RPs" sidebar="false" standardController="Page__c" extensions="ctrlReportingPeriods" cache="false">
+    <apex:stylesheet value="{!URLFOR($Resource.GoalsJs, 'assets/css/bootstrap.css')}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.GoalsJs, 'assets/css/bootstrap-responsive.css')}"/>
+    <head>
+        <title>Set Reporting Periods</title>
+    </head>
+    <script>function setFocusOnLoad() {}
+    function hidePopup() {
+                var popupEle = document.getElementById('RPs:frm:GeneratePeriod');
+                popupEle.style.display = 'none' ;
+    }
+    function hidePopupEdit() {
+                var popupEle = document.getElementById('RPs:frm:EditPeriod');
+                popupEle.style.display = 'none' ;
+    }
+    
+    
+    </script>
+    
+<!--*******************************************************************************************
+Script for Validating Dates when clicking on Edit Period Button 
+***********************************************************************************************-->  
+    
+    
+    <script>
+ 
+    
+    function validateDate(param)
+    {   
+        
+       //var param = param-1;
+              
+       var strEndDate = document.getElementById('RPs:frm:rptPR:'+param+':end').value;          
+       var strStartDate =  document.getElementById('RPs:frm:rptPR:'+(param+1)+':start').value;
+      
+       
+       var strStartDate1 = formatDate(strStartDate);
+       var strEndDate1 = formatDate(strEndDate);
+       
+       var timeDiff = Math.abs(strStartDate1.getTime() - strEndDate1.getTime());
+       var diffDays = Math.round(timeDiff / (1000 * 3600 * 24)); 
+       
+       var n1 = strStartDate.split('/');
+         var mm1 = n1[1];
+         var n2 = strEndDate.split('/');
+         var mm2 = n2[1]; 
+       // alert(strEndDate);
+       //  alert(strStartDate);
+      //alert(diffDays);
+      //alert(mm1);
+      // alert(mm2);
+        if(mm1==mm2 && diffDays!=1 ){
+         
+         if(diffDays==0){
+         
+         
+         alert('{!$Label.End_And_Start_Date_Unequal}');
+         //alert('End Date and Start Date should not be Equal');
+         return false;
+         }else{
+         //alert('There Should not be Any GAP between End and Start Dates');
+         alert('{!$Label.Period_No_Gap_Alert}');
+         return false;
+         }
+       
+        }
+        if(mm1!=mm2 && diffDays!=0){
+                
+                
+                alert('{!$Label.Period_No_Gap_Alert}');
+                //alert('There Should not be Any GAP between End and Start Dates');
+                return false;
+       }
+       
+                     
+      if(strEndDate1.getTime()>strStartDate1.getTime()){
+        alert('{!$Label.End_And_Start_Date_Unequal}');
+        return false;
+     }
+         
+     
+    return false;
+    }
+    
+    function validateDateOnSave()
+    {
+      var listSize = '{!lstRP.size}';
+      var blncheck = 'false'; 
+       for(var i=0;i<listSize-1;i++){
+                
+               
+                var strEndDate = document.getElementById('RPs:frm:rptPR:'+i+':end').value;
+                var strStartDate = document.getElementById('RPs:frm:rptPR:'+(i+1)+':start').value;
+                
+                var strStartDate1 = formatDate(strStartDate);
+                var strEndDate1 = formatDate(strEndDate);
+                
+                var timeDiff = Math.abs(strStartDate1.getTime() - strEndDate1.getTime());
+                var diffDays = Math.round(timeDiff / (1000 * 3600 * 24)); 
+                
+                var n1 = strStartDate.split('/');
+                var mm1 = n1[1];
+                var n2 = strEndDate.split('/');
+                var mm2 = n2[1];
+                
+                //alert(strEndDate1);
+                //alert(strStartDate1);
+                if(mm1==mm2 && diffDays!=1 ){
+        
+                     blncheck = 'true';
+                }
+                
+                
+             
+                if(strEndDate1.getTime()>strStartDate1.getTime()){
+                alert('{!$Label.End_And_Start_Date_Unequal}');
+                blncheck = 'true';
+                }
+                
+                if(mm1!=mm2 && diffDays!=0){
+                
+                //alert('There Should not be Any GAP between End and Start Dates');
+                blncheck = 'true';
+                //alert(blncheck);
+                }
+       
+            //break;  
+                  
+    }
+    if(blncheck === 'true'){
+                
+                alert('{!$Label.Save_on_Edit_Period}');
+                return false;
+                } 
+    
+    saveChangesValidateJS();
+    //return false;
+    
+    }
+   function formatDate(Date1){
+            try{
+                var strDate = '';
+                var array = Date1.split('/');
+                var dd = array[0];
+                var mm = array[1];
+                var yyyy = array[2];
+                //alert(yyyy);
+                //alert(mm);
+                //alert(dd);
+                //strDate = yyyy + "-" + mm + "-" + dd;
+                strDate = new Date(yyyy,mm,dd);
+                //var st  = strDate.toGMTString();
+                
+                return strDate;
+            }catch(err){
+                return null;
+            }
+        }
+    
+/************************************************************************************************************
+Script to Alert message if while Adding Documents the Due Date is Blank.This alert on clicking Save
+***********************************************************************************************************/        
+    
+     function checkOnSaveDoc(param)
+      {
+        
+        /*var abc = document.getElementById('RPs:frm:HiddenVal').value;
+        alert(abc);
+        if(abc == 'true'){
+        alert('Hi inside If');
+        return false;
+        }*/
+         param = param-1;
+       
+        var startDate = document.getElementById('RPs:frm:rptrTable:'+param+':strDateOP').innerHTML;
+        var endDate = document.getElementById('RPs:frm:rptrTable:'+param+':endDateOP').innerHTML; 
+        var strtDate1 = formatDate(startDate);
+        var endDate1 = formatDate(endDate);
+         
+                var audit = document.getElementById('RPs:frm:rptrTable:'+param+':auditCheck');
+                var auditDate = document.getElementById('RPs:frm:rptrTable:'+param+':auditDate').value;
+                var auditDate1 = formatDate(auditDate);
+                var pu = document.getElementById('RPs:frm:rptrTable:'+param+':puCheck');
+                var puDate = document.getElementById('RPs:frm:rptrTable:'+param+':puDate').value;
+                var puDate1 = formatDate(puDate);
+                var dr = document.getElementById('RPs:frm:rptrTable:'+param+':drCheck');
+                var drDate = document.getElementById('RPs:frm:rptrTable:'+param+':drDate').value;
+                var drDate1 = formatDate(drDate);
+                var efr = document.getElementById('RPs:frm:rptrTable:'+param+':efrCheck');
+                var efrDate = document.getElementById('RPs:frm:rptrTable:'+param+':efrDate').value;
+                var efrDate1 = formatDate(efrDate);
+                
+                if(audit.checked==true && auditDate==''){
+                
+                alert('{!$Label.AR_Due_Date_Missing}');
+                return false;
+                }
+                if(pu.checked==true && puDate==''){
+                 alert('{!$Label.PU_Due_Date_Missing}');
+                return false;
+                }
+                if(dr.checked==true && drDate==''){
+                 alert('{!$Label.DR_Due_Date_Missing}');
+                return false;
+                }
+                if(efr.checked==true && efrDate==''){
+                 alert('{!$Label.EFR_Due_Date_Missing}');
+                return false;
+                }
+       /*var listSize = '{!lstRP.size}';
+       for(var i=0;i<listSize-1;i++){
+                
+                var audit = document.getElementById('RPs:frm:rptrTable:'+i+':auditCheck');
+                var auditDate = document.getElementById('RPs:frm:rptrTable:'+i+':auditDate').value;
+                var pu = document.getElementById('RPs:frm:rptrTable:'+i+':puCheck');
+                var puDate = document.getElementById('RPs:frm:rptrTable:'+i+':puDate').value;
+                var dr = document.getElementById('RPs:frm:rptrTable:'+i+':drCheck');
+                var drDate = document.getElementById('RPs:frm:rptrTable:'+i+':drDate').value;
+                var efr = document.getElementById('RPs:frm:rptrTable:'+i+':efrCheck');
+                var efrDate = document.getElementById('RPs:frm:rptrTable:'+i+':efrDate').value;
+                
+                if(audit.checked==true && auditDate==''){
+                
+                alert('{!$Label.AR_Due_Date_Missing}');
+                return false;
+                }
+                if(pu.checked==true && puDate==''){
+                 alert('{!$Label.PU_Due_Date_Missing}');
+                return false;
+                }
+                if(dr.checked==true && drDate==''){
+                 alert('{!$Label.DR_Due_Date_Missing}');
+                return false;
+                }
+                if(efr.checked==true && efrDate==''){
+                 alert('{!$Label.EFR_Due_Date_Missing}');
+                return false;
+                }
+         
+        //return false;
+        
+        } */
+                
+                
+                //alert(startDate);
+                //alert(endDate); 
+               /* alert(dateString1);
+                alert(dateString2);
+                alert(dateString3);
+                if(audit.checked==true && auditDate!=''){
+                
+                    if(dateString1>dateString3 || dateString3>dateString2){
+                    alert('{!$Label.Due_Date_Btw_PD}');
+                return false;
+                }               
+                }
+                
+                if(pu.checked==true && puDate!=''){
+                if(puDate1<strtDate1 || puDate1>endDate1){
+                alert('{!$Label.Due_Date_Btw_PD}');
+                return false;
+                }
+                }
+                
+                if(dr.checked==true && drDate!=''){
+                if(drDate1<strtDate1 || drDate1>endDate1){
+                alert('{!$Label.Due_Date_Btw_PD}');
+                return false;
+                }
+                }
+                
+                if(efr.checked==true && efrDate!=''){
+                if(efrDate1<strtDate1 || efrDate1>endDate1){
+                alert('{!$Label.Due_Date_Btw_PD}');
+                return false;
+                }
+                }
+        //return false;*/                       
+        saveDocJS(param);         
+        
+        }
+        
+        function oncomp()
+        {
+            var abc = document.getElementById('RPs:frm:HiddenVal').value;
+            
+            //alert(abc);
+            if(abc == 'true'){
+                alert('{!$Label.Due_Date_Btw_PD}');                
+                return false;                
+            }
+            else {
+                saveDocJS1();
+            }            
+        }
+       
+    </script>
+    <style> 
+    .span9 {
+            display: -moz-grid-line;
+            width: 70%;
+        }  
+    div.active{
+        background-color: #D1D1D1;
+    }        
+    .Image{
+            cursor:pointer;
+            height:13px;
+            width:13px;
+            vertical-align:middle;
+        }
+    .h3 {
+        font-size:24px;
+        line-height: 20px;
+        margin-left:20px;
+    }
+    table {
+        font-size:14px;
+        margin-top:16px;
+        position:relative;
+    }
+    td.middle{
+     vertical-align:middle;
+       }
+    td .center{
+         text-align:center;
+         align:center;
+    }
+    .link{
+    color:#2E7BBB;
+    }
+    .linkunderline{
+        color:#2E7BBB;
+        text-decoration:underline;
+    }
+    .h4 {
+        font-size:18px;
+        line-height: 1.5;
+        font-weight:bold;
+    }
+    .dateFormat{
+      visibility:hidden;
+    }
+    .container{
+        margin-left:3%;
+        margin-right:5%;
+        width:90%;
+    }
+    .custPopuptwo{
+            background-color: #ededed;
+            border-width: 0px;
+            border-radius:20px;
+            border-style: solid;
+            z-index: 9;
+            left: 40%;
+            padding:10px;
+            position: absolute;
+            margin-top:10px;
+            top:10%;
+            width:420px;
+            //height:130px;
+        }
+        
+    .custPopupPeriod{
+            background-color: #ededed;
+            border-width: 0px;
+            border-radius:20px;
+            border-style: solid;
+            z-index: 10;
+            left: 40%;
+            padding:10px;
+            position: absolute;
+            margin-top:100px;
+            //top:50%;
+            width:300px;
+            //height:130px;
+        }    
+    .popupButtonYes{
+            background-color: #49C739 !important;
+            background-image: none !important;
+            color: white !important;
+            font-size: 12.9pt !important;
+            font-weight: bold !important;
+            height: 30px !important;
+            width: 150px !important;
+        }
+   .popupButtonCancel{
+            background-color: #d82516 !important;
+            background-image: none !important;
+            color: white !important;
+            font-size: 12.9pt !important;
+            font-weight: bold !important;
+            height: 30px !important;
+            width: 90px !important;
+        }
+    .popupBackground{
+            background-color:black;
+            opacity: 0.50;
+            filter: alpha(opacity = 20);
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            z-index: 9;
+            top: 0;
+            left: 0;
+        }
+    .text{
+        margin-left:20px;
+    }
+
+.table-striped1 tbody > tr:nth-child(odd) > td,
+.table-striped1 tbody > tr:nth-child(odd) > th {
+  background-color: #f9f9f9;
+   margin:20px 40px;
+}
+body .bodyDiv #bodyTable {
+    font-size: 14px;
+    }
+    .pull-right {
+    margin-right: 30px !important;
+}
+        </style>
+    <div>
+     <span class="h3">
+            Reporting Period - {!lstIP[0].Name}                 
+            </span>
+             <span class="pull-right">
+             	<img src="/img/func_icons/util/info16.png" style="padding-bottom:5px"/>
+               <!--TCS 22/08/2014: Remove Profile check from href link : if(CONTAINS($Profile.Name,'PR')  || CONTAINS($Profile.Name,$label.Applicant_CM_Admin) || CONTAINS($Profile.Name,$label.Applicant_CM_Read_Write) || CONTAINS($Profile.Name,$label.Applicant_CM_Read_Only) || CONTAINS($Profile.Name,$label.LFA_GM_Admin_Portal_User)-->
+               <a href="/apex{!if(blnExternalPro==true,'/GM','')}/GrantMakingGuidance?Id={!strGuidanceId}&lang={!strLanguage}" target="_blank" class="linkunderline h4">{!$label.See_Help}</a>
+            </span>
+            <br/><br/>
+              
+    </div>    
+    <apex:form id="frm"> 
+    <apex:outputPanel id="booleanNew">
+        <apex:inputHidden id="HiddenVal" value="{!blnErr}"/>
+        <apex:inputHidden id="HiddenVal2" value="{!blnAddDocument}"/>
+    </apex:outputPanel>
+    <!--TCS 22/08/2014 Replaced rendering condition from If((($Profile.Name == $Label.FPM) || ($Profile.Name == $Label.Technical_Hub) || ($Profile.Name == $Label.Management) || ($Profile.Name == $Label.Access_to_Funding) ||($Profile.Name == $Label.PR_Admin) ||($Profile.Name == $Label.PR_Read_Write_Edit)|| ($Profile.Name == $Label.System_Admin)) ,true,false)-->
+    <apex:outputPanel id="GeneratePeriod" style="display:{!if(!blnGenPeriod==false,'none','')};" rendered="{!blnRepFrequency}">
+        <apex:outputPanel styleClass="popupBackground"/>
+        
+        <apex:outputPanel styleClass="custPopupPeriod" >
+        
+        <h5 style="float:left;">{!$Label.Choose_Reporting_Frequency}</h5><br/>
+       <!--   <table>
+            <tr>
+            <td width="33%"> Yearly</td>
+            <td width="33%"> Semesterly</td>
+            <td width="33%"> Quarterly</td>
+            </tr>
+        </table>-->
+        <apex:outputPanel id="innerPopup" style="line-height: 1px;">           
+      
+       <apex:selectRadio value="{!selectopt}" style="width:100%;" >
+        
+         <table>
+         <tr>       
+         <td width="10%"  >
+         
+        <apex:selectOption itemValue="1" />
+         {!$Label.Reporting_Yearly}
+         </td>
+         <td width="10%" ><apex:selectOption itemValue="2" />
+        {!$Label.Reporting_Semesterly}</td>
+         <td width="10%" ><apex:selectOption itemValue="4" />
+       {!$Label.Reporting_Quarterly}</td>
+         </tr>
+         
+          </table>   
+        </apex:selectRadio>
+    
+     </apex:outputPanel>
+         <table>
+             <tr>
+                <td width="47%" align="right" style="border-top:0px !important;">
+                      <apex:commandButton styleClass="popupButtonYes" value="{!$Label.Generate_Period_Label}" reRender="frm" action="{!GeneratePeriod}" status="Processing">
+                        
+                       </apex:commandButton>
+                 </td>
+                 <td width="6%" style="border-top:0px !important;"></td>
+                  <td width="47%" align="left" style="border-top:0px !important;">
+                       <apex:commandButton styleClass="popupButtonCancel" value="{!$Label.Cancel}" onclick="hidePopup();" reRender="xyz" />
+                  </td>
+              </tr>
+          </table>
+     </apex:outputPanel>   
+    </apex:outputPanel> 
+    
+    
+    <apex:actionRegion >
+    <apex:outputPanel id="EditPeriod" style="display:{!if(blnEditPeriod==false,'none','')};">
+        <!-- <apex:outputPanel styleClass="popupBackground"/>-->
+       
+        <apex:outputPanel id="popupedit" styleClass="custPopuptwo" >
+        <h5 style="float:left;">{!$Label.Heading_Edit_Period} </h5><br/>
+        
+        <apex:outputPanel id="innerTablePopup">           
+        <table width="100%" cellspacing="0" cellpadding="10" border="0">
+                <tr>        
+                    <th align="center">{!$Label.Period_Label}</th>
+                    <th align="center">{!$Label.Period_Start_Date}</th>
+                    <th align="center">{!$Label.Period_End_Date}</th>
+                </tr>  
+                   
+        <apex:repeat id="rptPR" value="{!lstRP}" var="RPEdit">
+            <tr>
+                    <td width="5%" class="middle center">
+                        <apex:outputtext value="{!RPEdit.Period_Number__c}" styleclass="badge badge-inverse"/>
+                    </td>
+                    <td class="middle center" text-align="left">
+                        <apex:inputfield id="start" value="{!RPEdit.Start_Date__c}"  onchange="return validateDate({!RPEdit.Period_Number__c}-2);"/>
+                     <!--   <apex:outputfield style="text-align:left" value="{!RPEdit.Start_Date__c}" rendered="{!if(RPEdit.Period_Number__c==1,true,false)}" styleclass="badge badge-inverse"  /> -->
+                     <script>document.getElementById('RPs:frm:rptPR:0:start').disabled = true; </script>
+                    </td>
+                    <td class="middle center">
+                        <apex:inputField id="end" value="{!RPEdit.End_Date__c}" onchange="return validateDate({!RPEdit.Period_Number__c}-1);"/>
+                     <script>if(document.getElementById('RPs:frm:rptPR:{!lstRP.size-1}:end')!=null){document.getElementById('RPs:frm:rptPR:{!lstRP.size-1}:end').disabled = true;}</script>
+                    </td>
+            </tr>
+         </apex:repeat>         
+         </table>
+     </apex:outputPanel>
+     <table>
+             <tr>
+                <td width="47%" align="right" style="border-top:0px !important;">
+                      <apex:commandButton styleClass="popupButtonYes" value="{!$Label.Save_Changes}" reRender="frm" onclick="return validateDateOnSave();">
+                        
+                       </apex:commandButton>
+                 </td>
+                 <td width="6%" style="border-top:0px !important;"></td>
+                  <td width="47%" align="left" style="border-top:0px !important;">
+                       <apex:commandButton styleClass="popupButtonCancel" value="{!$Label.Cancel}" onclick="hidePopupEdit();" reRender="xyz" />
+                  </td>
+              </tr>
+          </table>
+     </apex:outputPanel>   
+    </apex:outputPanel>
+
+
+			<!-- <apex:actionFunction id="disableOnEdit" action="{!EditPeriod}" name="disableOnEdit" />-->  
+     
+    </apex:actionRegion> 
+    <apex:actionFunction id="saveChangesValidate" action="{!SaveChanges}" name="saveChangesValidateJS" reRender="frm" status="Processing"/ >  
+    
+    <apex:actionFunction id="CheckDocOnSave" reRender="booleanNew,addDoc" action="{!SaveDoc}" name="saveDocJS"  status="Processing" oncomplete="oncomp();">                                                                                              
+          <apex:param name="SaveDocIndex" assignto="{!SaveDocIndex}" value=""/> 
+     </apex:actionFunction>
+    <apex:actionFunction id="CheckDocOnSave1" reRender="frm,dueDatePan,addDoc" action="{!noOperation}" name="saveDocJS1"  status="Processing"/> 
+            
+    
+    <div class="container">
+            <div id="Infopanel" class="alert alert-info">
+                        <button type="button" class="close" data-dismiss="alert" onclick="closePanel();">
+                            ×
+                        </button>
+                        <b>
+                       {!$Label.Period_Page_Title}
+                    </b>
+                    </div>
+            <ul class="breadcrumb">
+                <li>
+                    <!--TCS 22/08/2014: Remove Profile check from href link : if(CONTAINS($Profile.Name,'PR')  || CONTAINS($Profile.Name,$label.Applicant_CM_Admin) || CONTAINS($Profile.Name,$label.Applicant_CM_Read_Write) || CONTAINS($Profile.Name,$label.Applicant_CM_Read_Only) || CONTAINS($Profile.Name,$label.LFA_GM_Admin_Portal_User)-->
+                    <a href="{!if(blnExternalPro==true,'/GM','')}/apex/grantmakinghome" class="link">Grant-Making </a>
+                    <span class="divider">/</span>
+                </li>
+                <li>
+                   <!--TCS 22/08/2014: Remove Profile check from href link : if(CONTAINS($Profile.Name,'PR')  || CONTAINS($Profile.Name,$label.Applicant_CM_Admin) || CONTAINS($Profile.Name,$label.Applicant_CM_Read_Write) || CONTAINS($Profile.Name,$label.Applicant_CM_Read_Only) || CONTAINS($Profile.Name,$label.LFA_GM_Admin_Portal_User)-->
+                    <a href="{!if(blnExternalPro==true,'/GM','')}/apex/grantmakingHome?id={!Page__c.Implementation_Period__r.Grant__r.Country__c}" class="link">{!Page__c.Implementation_Period__r.Grant__r.Country__r.Name}</a>
+                    <span class="divider">/</span>
+                </li>
+               <!-- <li>
+                    {!Page__c.Implementation_Period__r.Grant__r.Name}
+                    <span class="divider">/</span>
+                </li> -->
+                <li>
+                    <!--TCS 22/08/2014: Remove Profile check from href link : if(CONTAINS($Profile.Name,'PR')  || CONTAINS($Profile.Name,$label.Applicant_CM_Admin) || CONTAINS($Profile.Name,$label.Applicant_CM_Read_Write) || CONTAINS($Profile.Name,$label.Applicant_CM_Read_Only) || CONTAINS($Profile.Name,$label.LFA_GM_Admin_Portal_User)-->
+                    <a href="{!if(blnExternalPro==true,'/GM','')}/apex/grantmakingoverview?id={!Page__c.Implementation_Period__r.Id}" class="link">{!Page__c.Implementation_Period__r.Name}</a>
+                </li>
+            </ul>
+                 
+          <div class="row">
+                <c:GMSidebar RecordId="{!Page__c.Id}"/>
+                <!-- div class="span3 side_menu">
+                    <div class="well" style=" padding: 8px 0;">
+                        <div>
+                            <ul class="nav nav-list">
+                                <li>
+                                    <div class="tree-toggler nav-header">
+                                        <a href="{!if($Profile.Name=='PR Standard Portal User','/GM','')}{!if($Profile.Name=='PR Manager Portal User','/GM','')}{!if($Profile.Name=='PR Read-Only Portal User','/GM','')}{!if($Profile.Name=='LFA GM Admin Portal User','/GM','')}{!if($Profile.Name=='LFA GM Editor Portal User','/GM','')}{!if($Profile.Name=='PR Only Portal User','/GM','')}/apex/GrantmakingOverview?ID={!strGIPId}" class="link">Overview</a>
+                                    </div>
+                                </li>
+                                <li class="divider">
+                                </li>
+                                <apex:variable value="{!0}" var="Count"/>
+
+                                <apex:repeat id="rptMain" value="{!lstPages}" var="P">
+                                    <li>
+                                        <div class="tree-toggler nav-header {!if(P.Id=strPageId,'active','')}">
+                                            <apex:inputHidden id="CollapseStatus" value="{!blnExpandSection}" />
+                                            <apex:outputpanel id="collapseimage" style="display:{!if(blnExpandSection != true && P.Modular__c == true,'','none')};margin-right:5px" rendered="{!if(lstModules.size > 0,if(P.Modular__c == true,true,false),false)}">
+                                                <apex:image styleClass="Image" url="{!$Resource.Collepse}" onclick="switchMenu('Module{!Count}','{!$Component.Expandimage}','{!$Component.collapseimage}','{!$Component.CollapseStatus}','true')" title="Expand"/>
+                                            </apex:outputpanel>
+                                            <apex:outputpanel id="Expandimage" style="display:{!if(blnExpandSection == true && P.Modular__c == true,'','none')};margin-right:5px" rendered="{!if(lstModules.size > 0,if(P.Modular__c == true,true,false),false)}">
+                                                  <apex:image styleClass="Image" url="{!$Resource.Expand}" onclick="switchMenu('Module{!Count}','{!$Component.collapseimage}','{!$Component.Expandimage}','{!$Component.CollapseStatus}','false')" title="Collapse"/>
+                                            </apex:outputpanel>
+                                            
+                                            
+                                            <apex:outputtext value="{!P.Name}" rendered="{!P.Modular__c}"/>
+                                            <a href="{!if($Profile.Name=='PR Standard Portal User','/GM','')}{!if($Profile.Name=='PR Manager Portal User','/GM','')}{!if($Profile.Name=='PR Read-Only Portal User','/GM','')}{!if($Profile.Name=='LFA GM Admin Portal User','/GM','')}{!if($Profile.Name=='LFA GM Editor Portal User','/GM','')}{!if($Profile.Name=='PR Only Portal User','/GM','')}/apex/{!P.URL_prefix__c}?id={!P.Id}" class="link" style="display:{!if(P.Modular__c=true,'none','')}">{!P.Name} </a>
+                                        </div>                                    
+                                    </li>
+                                    <apex:variable var="ModuleCount" value="{!0}"/>
+                                    <apex:repeat id="rptModules" value="{!lstModules}" var="M" rendered="{!if(lstModules.Size >0,'true','false')}">
+                                        
+                                        <li id="Module{!Count}" style="display:none;">
+                                            <div class="tree-toggler nav-header}">
+                                                <a href="{!if($Profile.Name=='PR Standard Portal User','/GM','')}{!if($Profile.Name=='PR Manager Portal User','/GM','')}{!if($Profile.Name=='PR Read-Only Portal User','/GM','')}{!if($Profile.Name=='LFA GM Admin Portal User','/GM','')}{!if($Profile.Name=='LFA GM Editor Portal User','/GM','')}{!if($Profile.Name=='PR Only Portal User','/GM','')}/apex/{!P.URL_prefix__c}?id={!M.Id}" style="display:{!if(P.Modular__c=true,'','none')};margin-left:15px;font-size:10px" class="link" title="{!P.Name} - {!M.Name}">{!M.Name}</a>
+                                            </div>
+                                        </li>
+                                        <apex:variable var="ModuleCount" value="{!ModuleCount+1}"/>
+                                    </apex:repeat> 
+                                    <li class="divider">
+                                    </li>
+                                    <apex:variable value="{!Count+1}" var="Count"/>
+                                </apex:repeat>
+                            </ul>
+                        </div>
+                    </div>
+                </div-->
+                <div class="span9">
+                    <span class="h3">
+                        {!$Label.Reporting_Table_Header}                        
+                    </span>
+                    <span class="pull-right">
+                   <!--     <a href="#" class="link">See Help</a> -->
+                    </span>
+                    <br/><br/>
+                    <span class="text">
+                        {!$Label.Reporting_Table_Label}
+                    </span>               
+                <br/>
+              <!-- TCS Replaced Rendering Condition from If((($Profile.Name == 'FPM') || ($Profile.Name == 'System Administrator')) ,true,false)-->  
+             <!-- <apex:commandLink id="edit_period" styleClass="TGFbtn TGFbtn-mini TGFbtn-primary" action="{!EditPeriod}" rerender="EditPeriod" rendered="{!blnEdit}">
+                                        <i class="icon-edit icon-white">
+                                        </i> <strong>{!$Label.Edit_Period_Btn}</strong>
+                </apex:commandLink> -->
+                <span class="pull-right">
+                <apex:commandLink id="edit_period" style="display:{!if(blnChangePer==false,'','none')};" styleClass="TGFbtn TGFbtn-mini TGFbtn-primary" onclick="return OpenConfirmPopup('{!$Component.GeneratePeriod}');" rendered="{!blnChangeFreq}">
+                                        <i class="icon-edit icon-white">
+                                        </i> <strong>{!$Label.Change_Period}</strong>
+                </apex:commandLink>
+                <apex:commandLink reRender="HistoryPopup" status="Processing" action="{!ShowHistoryPopup}">
+                               <apex:image styleClass="Image" url="{!$Resource.History}" title="{!$Label.View_History}" style="height: 25px;width: 20px;" />                                                      
+                               
+                </apex:commandLink>
+                 <apex:outputPanel id="HistoryPopup" >
+						<apex:outputPanel id="popupBackgroundH" styleClass="popupBackgroundHistory" rendered="{!if(blnHistory == true,true,false)}"/>
+							<apex:outputPanel id="custPopupH" styleClass="custPopupHistory" rendered="{!if(blnHistory == true,true,false)}" >
+								<table>
+									<tr>
+										<td><c:FieldHistoryByField TargetRecordId="{!lstIP[0].Id}" TagetObjectAPIname="Implementation_Period__c" RecordTitle="{!lstIP[0].Name}" FieldNames="{!lstIPFreqFields}" /></td>
+									</tr>
+									<tr>
+										<td align="center" style="">
+										<center>
+										<apex:commandButton value="{!$Label.OK}" action="{!HideHistoryPopup}" style="width:50px">
+										</apex:commandButton>
+										</center>
+										</td>
+									</tr>
+								</table>
+						</apex:outputPanel>
+					</apex:outputPanel>	
+                </span>
+                <apex:pageMessages />
+                <apex:outputPanel >
+                
+                <table id="pbTable" class=" table table-striped1" cellspacing="0" cellpadding="10px" width="100%" align="left">
+                <!--<tr>
+                    <th colspan="4"></th>
+                    <th colspan="3">Report Types</th>
+                </tr>-->
+                <tr>
+                    <th>{!$Label.Period_Label}</th>
+                    <th align="center">{!$Label.Period_Start_Date}</th>
+                    <th align="center">{!$Label.Period_End_Date}</th>
+                    <th>{!$Label.Period_Length}</th>
+                    <th>{!$Label.Period_Document}</th>
+                    <th>{!$Label.Period_Document_Due_Date}</th>
+                    <th></th>
+                  <!--  <th>Document</th>
+                    <th>Due Date</th>
+                    <th width="2%">PU Due</th>
+                    <th width="2%">DR Due</th>
+                    <th width="2%">EFR Due</th>
+                    <th width="2%">AR Due</th> -->
+                </tr>
+            <apex:variable value="{!0}" var="CountDoc"/>    
+            <apex:repeat id="rptrTable" value="{!lstRP}" var="RP">
+                <tr>
+                	 
+                    <td width="5%" class="middle center">
+                        <apex:outputtext value="{!RP.Period_Number__c}" styleclass="badge badge-inverse"/> 
+                        
+                    </td>
+                    <td class="middle center">
+                        <apex:outputfield id="strDateOP" value="{!RP.Start_Date__c}"/>
+                    </td>
+                    <td class="middle center">
+                        <apex:outputField id="endDateOP"  value="{!RP.End_Date__c}"/>  
+                    </td>
+                    <td class="middle center">
+                        <apex:outputField value="{!RP.Period_Length__c}"/>  
+                    </td>
+                    <td></td>
+                    <td></td>
+                
+                    <td>
+                    <!--TCS 22/08/2014: Replaced rendered condition from rendered="{!If((($Profile.Name == $Label.FPM) || ($Profile.Name == $Label.Technical_Hub) || ($Profile.Name == $Label.Management) || ($Profile.Name == $Label.Access_to_Funding) ||($Profile.Name == $Label.PR_Admin) ||($Profile.Name == $Label.PR_Read_Write_Edit)|| ($Profile.Name == $Label.System_Admin)) ,true,false)}" -->
+                   
+                    
+                    <apex:commandLink id="editDocumentBtn" styleClass="TGFbtn TGFbtn-mini TGFbtn-primary" action="{!AddDoC}" reRender="AddEditDocument" rendered="{!blnDueDate}" >
+                                        <i class="icon-edit icon-white"></i>
+                                       
+                     </apex:commandLink>
+                  	 <apex:commandLink reRender="HistoryPopup" status="Processing" action="{!ShowHistoryPopup}">
+                               <apex:image styleClass="Image" url="{!$Resource.History}" title="{!$Label.View_History}" style="height: 25px;width: 20px;" />                                                      
+                               
+                     </apex:commandLink>
+                  	
+                 <apex:actionRegion >
+                    <apex:outputPanel id="AddEditDocument" style="display:{!if(blnAddDocument==false,'none','')};">
+                           <apex:outputPanel styleClass="popupBackground"/>
+        
+                              <apex:outputPanel id="addDoc" styleClass="custPopuptwo" >
+                              <apex:pageMessages /> 
+                                <h5 style="float:left;">{!$Label.Add_Document_Label}</h5><br/>
+                                    <apex:outputPanel id="innerPopup">           
+                        <table id="addDocTable">
+                        
+                            <tr>        
+                    
+                                    <th align="center">{!$Label.Period_Document}</th>
+                                    <th align="center"> {!$Label.Document_Name_Label} </th> 
+                                    <th align="center">{!$Label.Period_Document_Due_Date}</th>
+                            </tr> 
+                             <tr>
+                                    <td width="47%" align="right" style="border-top:0px !important;">
+                                         <apex:inputfield id="puCheck" value="{!RP.PU__c}"/> 
+                                         
+                                     </td>
+                                     <td width="47%" align="right" style="border-top:0px !important;">
+                                        {!$Label.PU_Doc_Name}
+                                     </td>
+                                     <td width="6%" style="border-top:0px !important;">
+                                        <apex:outputPanel id="dueDatePan">
+                                        <apex:inputfield id="puDate" value="{!RP.PU_Due_Date__c}"/>
+                                        </apex:outputPanel>
+                                     </td>
+                 
+                            </tr>
+                            
+                            <tr>
+                                    <td width="47%" align="right" style="border-top:0px !important;">
+                                         <apex:inputfield id="auditCheck" value="{!RP.Audit_Report__c}"/>
+                                         
+                                     </td>
+                                     <td width="47%" align="right" style="border-top:0px !important;">
+                                         {!$Label.AR_Doc_Name}
+                                     </td>
+                                     <td width="6%" style="border-top:0px !important;">
+                                        <apex:inputfield id="auditDate" value="{!RP.AR_Due_Date__c}">
+                                      <!-- <apex:actionsupport action="{!check}" event="onchange" rerender="booleanNew"/>-->
+                                        </apex:inputfield>
+                                     </td>
+                 
+                            </tr>
+                           
+                           
+                            <tr>
+                                    <td width="47%" align="right" style="border-top:0px !important;">
+                                         <apex:inputfield id="efrCheck" value="{!RP.EFR__c}"/> 
+                                     </td>
+                                     <td width="47%" align="right" style="border-top:0px !important;">
+                                         {!$Label.EFR_Doc_Name}
+                                     </td>
+                                     <td width="6%" style="border-top:0px !important;">
+                                        <apex:inputfield id="efrDate" value="{!RP.EFR_Due_Date__c}"/>
+                                     </td>
+                 
+                            </tr>
+                             <tr>
+                                    <td width="47%" align="right" style="border-top:0px !important;">
+                                         <apex:inputfield id="drCheck" value="{!RP.DR__c}"/> 
+                                     </td>
+                                     <td width="47%" align="right" style="border-top:0px !important;">
+                                         {!$Label.DR_Doc_Name}
+                                     </td>
+                                     <td width="6%" style="border-top:0px !important;">
+                                        <apex:inputfield id="drDate" value="{!RP.Due_Date__c}"/>
+                                     </td>
+                 
+                            </tr>
+                           
+                        </table>
+                    </apex:outputPanel>
+                    
+                  <table>
+                     <tr>
+                                <td width="47%" align="right" style="border-top:0px !important;">
+                                      <apex:commandButton styleClass="popupButtonYes" value="{!$Label.Save}" onclick="checkOnSaveDoc({!RP.Period_Number__c});return false;">
+                                       <!--  <apex:param value="{!RP.Period_Number__c}" name="SaveDocIndex"/>-->
+                                      </apex:commandButton>
+                                </td>
+                                <td width="6%" align="left" style="border-top:0px !important;">
+                                       <apex:commandButton styleClass="popupButtonCancel" value="{!$Label.Cancel}" action="{!CancelDocPopup}" reRender="AddEditDocument" />
+                                  </td>
+                                 <td width="47%" style="border-top:0px !important;"></td>
+                                <!--  <td width="6%" align="left" style="border-top:0px !important;">
+                                       <apex:commandButton styleClass="popupButtonCancel" value="{!$Label.Cancel}" action="{!CancelDocPopup}" reRender="AddEditDocument" />
+                                  </td> -->
+                     </tr>
+                 </table>
+                </apex:outputPanel>   
+                </apex:outputPanel>  
+                
+              </apex:actionRegion>
+                 </td>
+            
+                </tr>
+                <tr style="display:{!if(RP.PU__c == False,'none','')}">      
+                    <td></td>
+                    <td></td>  
+                    <td></td>
+                    <td></td>                
+                                   
+                    <td class="middle center">
+                       <!-- <apex:inputfield value="{!RP.PU__c}"/>-->
+                        {!$Label.PU_Doc_Name}
+                    </td> 
+                    <td class="middle center">
+                        <apex:outputfield value="{!RP.PU_Due_Date__c}"/>
+                    </td> 
+                    <td></td>
+                </tr> 
+                <tr style="display:{!if(RP.DR__c == False,'none','')}">      
+                    <td></td>
+                    <td></td>                 
+                    <td></td>
+                    <td></td>                
+                    <td class="middle center">
+                     <!--  <apex:inputfield value="{!RP.DR__c}"/>-->
+                        {!$Label.DR_Doc_Name}
+                    </td> 
+                    <td class="middle center">
+                        <apex:outputfield value="{!RP.Due_Date__c}"/>
+                    </td> 
+                    <td></td>
+                </tr>
+                <tr style="display:{!if(RP.EFR__c == False,'none','')}">      
+                    <td></td>
+                    <td></td>                 
+                    <td></td>
+                    <td></td>                
+                    <td class="middle center">
+                       <!--  <apex:inputfield value="{!RP.EFR__c}"/>-->
+                       {!$Label.EFR_Doc_Name}
+                    </td> 
+                    <td class="middle center">
+                        <apex:outputfield value="{!RP.EFR_Due_Date__c}"/>
+                    </td> 
+                    <td></td>
+                </tr>
+                <tr style="display:{!if(RP.Audit_Report__c == False,'none','')}">      
+                    <td></td>
+                    <td></td>                 
+                    <td></td>
+                    <td></td>                
+                    <td class="middle center">
+                     <!-- <apex:inputfield value="{!RP.Audit_Report__c}"/>-->
+                         {!$Label.AR_Doc_Name}
+                    </td> 
+                    <td class="middle center">
+                        <apex:outputfield value="{!RP.AR_Due_Date__c}"/>
+                    </td> 
+                    <td></td>
+              
+                
+               </tr>
+               <apex:variable value="{!CountDoc+1}" var="CountDoc"/>
+				    
+				    <apex:outputPanel id="HistoryPopup" >
+						<apex:outputPanel id="popupBackgroundH" styleClass="popupBackgroundHistory" rendered="{!if(blnHistory == true,true,false)}"/>
+							<apex:outputPanel id="custPopupH" styleClass="custPopupHistory" rendered="{!if(blnHistory == true,true,false)}" >
+								<table>
+									<tr>
+										<td><c:FieldHistory TargetRecordId="{!RP.Id}" TagetObjectAPIname="Period__c" RecordTitle="{!RP.Period_Number__c}" /></td>
+									</tr>
+									<tr>
+										<td align="center" style="">
+										<center>
+										<apex:commandButton value="{!$Label.OK}" action="{!HideHistoryPopup}" style="width:50px">
+										</apex:commandButton>
+										</center>
+										</td>
+									</tr>
+								</table>
+						</apex:outputPanel>
+					</apex:outputPanel>	
+                 			
+				</apex:repeat>                
+                 <tr style="display:{!if(lstRP.size > 0,'none','')}">
+                     <td colspan="6">
+                       {!$Label.No_Reporting_Period}
+                    </td>
+                 </tr>       
+                          
+            </table>
+            </apex:outputPanel>
+           <!--  <center>
+                <apex:commandButton value="Save Changes" action="{!SaveChanges}" reRender="frm"/>
+            </center> -->
+            </div>
+            <br/>
+       </div>
+     </div>
+         <script>
+     function OpenConfirmPopup(popId,count){
+     		
+            document.getElementById(popId).style.display = '';
+           
+            return false;
+        }
+     function closePanel(){
+                document.getElementById('Infopanel').style.display = 'none';
+            }
+            function switchMenu(obj,obj1,obj2,hdn,val) 
+        {   
+            var AllLI = document.getElementsByTagName('li');
+            for(var i=0;i<AllLI.length;i++){
+                if(AllLI[i].id == obj){
+                    if(AllLI[i].style.display != 'none'){
+                        AllLI[i].style.display = 'none';
+                    }else{
+                        AllLI[i].style.display = '';
+                    }
+                }
+            }
+            document.getElementById(hdn).value=val; 
+            
+            var e2 = document.getElementById(obj1);                                       
+            if ( e2.style.display != 'none' ) {
+                e2.style.display = 'none';
+            }
+            else {
+                e2.style.display = '';
+            }
+            var e3 = document.getElementById(obj2);                                       
+            if ( e2.style.display != 'none' ) {
+                e3.style.display = 'none';
+            }
+            else {
+                e3.style.display = '';
+            }
+        }
+        
+        function CloseConfirmPopup(panelId){
+            document.getElementById(panelId).style.display = 'none';
+            return false;
+        }
+        
+          
+  function focusonme() {
+            window.location.hash = '#HistoryPopup';
+        }
+     </script>
+     
+         <style>
+        .ProcessingBackground
+        {
+            background-color: black;
+            opacity: 0.50;
+            filter: alpha(opacity = 50);
+            width: 100%;
+            height: 100%;
+            position: fixed;
+            z-index: 9999;
+            top:0;
+            left:0;
+        }
+        .Processing
+        {
+            z-index: 9999;
+            left: 50%;
+            top: 50%;
+            text-align: center;
+            position: fixed;
+        }  
+        
+        .popupBackgroundHistory{
+            background-color:black;
+            opacity: 0.20;
+            filter: alpha(opacity = 20);
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            z-index: 11;
+            /*z-index: 9996;*/
+            top: 0;
+            left: 0;
+           
+        }    
+
+
+    .custPopupHistory{
+            background-color: white;
+            border-width: 0px;
+            border-radius:10px;
+            border-style: solid;
+            z-index: 12 !important;
+            /*z-index: 9997;*/
+            left: 12%;
+            padding:10px;
+            position: absolute;
+            top:30%;
+        }      
+        </style>
+        <div id="divProcessing" style="display:none;">
+            <div class="ProcessingBackground"></div>
+            <div class="Processing">
+                <apex:image alt="Processing" url="{!$Resource.LoadingCircle}" />
+            </div>
+        </div>  
+        <apex:actionStatus id="Processing" onstart="document.getElementById('divProcessing').style.display = '';" onstop="document.getElementById('divProcessing').style.display = 'none';">                            
+        </apex:actionStatus>   
+    </apex:form>
+</apex:page>

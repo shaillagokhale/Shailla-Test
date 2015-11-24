@@ -1,0 +1,1002 @@
+<apex:page standardController="Implementation_Period__c" extensions="ctrlGMIntegratedView" renderas="PDF" standardStylesheets="false" showHeader="false" applyHtmlTag="false" applyBodyTag="false">
+<html>
+<head>
+<style type="text/css">
+
+/* pagination */
+
+@page {
+    size:A3 portrait;
+    margin:20mm;
+    }
+
+@page:first {
+    }
+
+@bottom-right {
+    content: "Page " counter(page) " of " counter(pages);
+    }
+
+.pagebreak {
+    page-break-after:always;
+    }
+    
+.nopagebreak {
+    page-break-after:never;
+    }
+
+/* type styles */
+table {
+    border-collapse:collapse; 
+    table-layout:fixed;
+ }
+ 
+* {
+    font-family:Arial,sans-serif;
+    }
+
+td,th {
+    font-size:12px;
+    }
+
+.badge {
+    background-color:black;
+    color:white;
+    font:bold 10px Arial,sans-serif;
+    line-height:150%;
+    padding:1px 8px;
+    -moz-border-radius:2px;
+    -webkit-border-radius:2px;
+    border-radius:2px;
+    }
+ul,li {
+    list-style:none;
+    margin-left:0;
+    padding-left:0;
+    }
+thead.head,thead.subhead,tr.head,tr.subhead {
+    border:1px solid black; 
+    }
+th,tr.head td {
+    background-color:#8DB4E2;
+    font-weight:bold;
+    }
+.subhead {
+    text-align:left;
+    font-weight:bold;
+    background-color:#E8E8E8;
+    }
+tr.head td.overhead {
+    text-align:center;
+    font-weight:bold;
+    background-color:#E8E8E8;
+    }
+.underhead {
+    border:1px solid gray;
+    }
+.intervention {
+    text-align:left;
+    font-weight:bold;
+    background-color:#DAEEF3;
+    }
+tr.head td.assume {
+    border:1px solid gray;
+    }
+</style>
+</head>
+<body>
+  <h1>
+      {!Implementation_Period__c.Name} – Grant-Making Integrated View
+  </h1>
+  <table style="width:510px">
+  <tr>
+      <td>
+          <apex:outputText value="Downloaded : " style="font-weight:bold;"/>
+      </td>
+      <td align="left">
+          <apex:outputText value="{0,date}">
+              <apex:param value="{!Today}"/>
+          </apex:outputText>
+      </td>
+      <td align="right">
+          <apex:outputText value="Language :" style="font-weight:bold;"/>
+      </td>
+      <td>
+          <apex:outputText value="{!Implementation_Period__c.Concept_Note__r.Language__c}"/>
+      </td>
+  </tr>
+  </table>
+  <h2>A. Program Details</h2>
+    <table>
+        <tr>
+            <td>
+              <table>
+                  <tr>
+                      <td>
+                          <b>Country : </b>
+                      </td>
+                      <td>
+                           {!Implementation_Period__c.Country__c}
+                      </td>
+                      <td align="right" style="width:200px"> 
+                          <b>Grant Currency :</b>
+                      </td>
+                      <td>
+                          {!Implementation_Period__c.Currency_of_Grant_Agreement__c}
+                      </td>
+                  </tr>
+                  <tr>
+                              <td>
+                                  <b>Component :</b>
+                              </td>
+                              <td>
+                                  {!Implementation_Period__c.Component__c}
+                              </td>
+                               <td align="right"> 
+                                  <b>GAC approved ceiling :</b>
+                              </td>
+                              <td>
+                                  <Apex:outputtext value="&nbsp;{!Implementation_Period__c.Concept_Note__r.GAC_Approved_Ceiling__c}&nbsp;" escape="false"/>
+                              </td>
+                          </tr>
+                          <tr>
+                              <td>
+                                  <b>Start Month : </b>
+                              </td>
+                              <td>
+                                  {!Implementation_Period__c.Start_Month__c}
+                              </td>  
+                              <td align="right"> 
+                                  <b>Total budget requested by PR :</b>
+                              </td>
+                              <td>
+                                  <Apex:outputtext value="&nbsp;{!Implementation_Period__c.Total_Budget__c}&nbsp;" escape="false"/>
+                              </td>               
+                          </tr>
+                          <tr>
+                              <td>
+                                  <b>Start Year : </b>
+                              </td>
+                              <td align="left">
+                                  {!YEAR(Implementation_Period__c.Start_Date__c)}
+                              </td>                 
+                          </tr>
+                              
+                      </table>
+                  </td>
+          <td>
+         <!--  </td>
+          </tr>
+          </table>-->  
+          <!--<br/>-->
+         
+          <table border="1" style="width:450px">
+              <tr class="head">
+                  <td colspan="6">
+                      Reporting Periods                   
+                  </td>
+              </tr>
+              <tr>
+                    <th>{!$Label.Period_Label}</th>
+                    <th align="center">{!$Label.Period_Start_Date}</th>
+                    <th align="center">{!$Label.Period_End_Date}</th>
+                    <th>{!$Label.Period_Length}</th>
+                    <th>{!$Label.Period_Document}</th>
+                    <th>{!$Label.Period_Document_Due_Date}</th>
+                    
+               
+                </tr>
+              
+            <apex:repeat id="rptrTable" value="{!lstRP}" var="RP">
+                <tr>
+                    <td width="5%" class="middle center">
+                        <apex:outputtext value="{!RP.Period_Number__c}" styleclass="badge badge-inverse"/>
+                        
+                    </td>
+                    <td class="middle center">
+                        <apex:outputfield id="strDateOP" value="{!RP.Start_Date__c}"/>
+                    </td>
+                    <td class="middle center">
+                        <apex:outputField id="endDateOP"  value="{!RP.End_Date__c}"/>  
+                    </td>
+                    <td class="middle center">
+                        <apex:outputField value="{!RP.Period_Length__c}"/>  
+                    </td>
+                    <td></td>
+                    <td></td>
+                    
+                
+                
+                </tr>
+                <tr style="display:{!if(RP.PU__c == False,'none','')}">      
+                    <td></td>
+                    <td></td>  
+                    <td></td>
+                    <td></td>                
+                                   
+                    <td class="middle center">
+                       <!-- <apex:inputfield value="{!RP.PU__c}"/>-->
+                        {!$Label.PU_Doc_Name}
+                    </td> 
+                    <td class="middle center">
+                        <apex:outputfield value="{!RP.PU_Due_Date__c}"/>
+                    </td> 
+                  
+                </tr> 
+                <tr style="display:{!if(RP.DR__c == False,'none','')}">      
+                    <td></td>
+                    <td></td>                 
+                    <td></td>
+                    <td></td>                
+                    <td class="middle center">
+                     <!--  <apex:inputfield value="{!RP.DR__c}"/>-->
+                        {!$Label.DR_Doc_Name}
+                    </td> 
+                    <td class="middle center">
+                        <apex:outputfield value="{!RP.Due_Date__c}"/>
+                    </td> 
+                   
+                </tr>
+                <tr style="display:{!if(RP.EFR__c == False,'none','')}">      
+                    <td></td>
+                    <td></td>                 
+                    <td></td>
+                    <td></td>                
+                    <td class="middle center">
+                       <!--  <apex:inputfield value="{!RP.EFR__c}"/>-->
+                       {!$Label.EFR_Doc_Name}
+                    </td> 
+                    <td class="middle center">
+                        <apex:outputfield value="{!RP.EFR_Due_Date__c}"/>
+                    </td> 
+                    
+                </tr>
+                <tr style="display:{!if(RP.Audit_Report__c == False,'none','')}">      
+                    <td></td>
+                    <td></td>                 
+                    <td></td>
+                    <td></td>                
+                    <td class="middle center">
+                     <!-- <apex:inputfield value="{!RP.Audit_Report__c}"/>-->
+                         {!$Label.AR_Doc_Name}
+                    </td> 
+                    <td class="middle center">
+                        <apex:outputfield value="{!RP.AR_Due_Date__c}"/>
+                    </td> 
+                    
+               </tr>
+              
+                </apex:repeat>                
+                 <tr style="display:{!if(lstRP.size > 0,'none','')}">
+                     <td colspan="6">
+                       {!$Label.No_Reporting_Period}
+                    </td>
+                 </tr>       
+          </table>
+           </td>
+          </tr>
+          </table>  
+  <h2>B. Program Goals and Impact Indicators</h2>
+  <table border="1" style="width:450px">
+      <tr class="head">
+          <td style="width:80px">
+              Goals
+          </td>
+          <td>&nbsp;</td>
+      </tr>
+      <apex:repeat value="{!lstGoals}" var="Goal">
+      <tr>
+          <td style="width:80px">
+              <span class="badge">{!Goal.Number__c}</span>
+          </td>
+          <td>
+              {!Goal.Goal__c}
+          </td>
+      </tr>
+      </apex:repeat>
+      </table>
+      <br/>
+      
+      <table border="1" style="width:100%">
+      <tr class="head">
+          <td rowspan="2" style="width:80px">
+              Goal(s)
+          </td>
+          <td rowspan="2" style="width:200px">
+              Impact Indicator
+          </td>
+          <td rowspan="2" style="width:150px">
+              Data Source
+          </td>
+          <td colspan="6" class="overhead">
+              Targets
+          </td>
+          <td rowspan="2" class="assume" style="width:150px">
+              Assumptions
+          </td>
+      </tr>
+      <tr class="head">
+          <td>
+              {!YEAR(Implementation_Period__c.Start_Date__c)}
+          </td>
+          <td>
+              Report Due
+          </td>
+          <td>
+              {!YEAR(Implementation_Period__c.Start_Date__c)+1}
+          </td>
+          <td>
+              Report Due
+          </td>
+          <td>
+              {!YEAR(Implementation_Period__c.Start_Date__c)+2}
+          </td>
+          <td class="assume">
+              Report Due
+          </td>
+      </tr>
+      <apex:repeat value="{!lstImpact}" var="impact">
+       <tr>
+           <td style="width:80px">
+               <apex:repeat value="{!impact.Indicator_Goal_Junctions__r}" var="jxn">
+                           <span class="badge"><apex:outputtext value="{!jxn.Goal_Objective__r.Number__c}"/></span>
+                           <!-- apex:outputtext value=", " rendered="{!if(impact.Indicator_Goal_Junctions__r.size=1,false,true)}"/ -->
+               </apex:repeat>
+           </td>
+           <td>
+               {!impact.Indicator_Full_Name__c}
+           </td>
+           <td>
+               {!impact.Baseline_Sources__c}
+           </td>
+           <td>
+<!--           {!impact.Target_Value_Y1__c}-->
+<apex:outputText id="ity1" value="{!if(impact.Decimal_Places__c == '0','{0,number,####}',if
+
+(impact.Decimal_Places__c == '1','{0,number,###0.0}',if(impact.Decimal_Places__c == 
+
+'2','{0,number,###0.00}',if(impact.Decimal_Places__c == '3','{0,number,###0.000}',if
+
+(impact.Decimal_Places__c == '4','{0,number,###0.0000}','')))))}">
+<apex:param value="{!(impact.Target_Value_Y1__c)}"/>
+                                                    </apex:outputText>
+                                                    
+               
+               
+
+           </td>
+           <td>
+               <apex:outputText value="{0,date}">
+                              <apex:param value="{!impact.Y1_Report_Due__c}"/>
+               </apex:outputText>
+           </td>
+           <td>
+ <!--              {!impact.Target_Value_Y2__c}-->
+               
+<apex:outputText id="ity2" value="{!if(impact.Decimal_Places__c == '0','{0,number,####}',if
+
+(impact.Decimal_Places__c == '1','{0,number,###0.0}',if(impact.Decimal_Places__c == 
+
+'2','{0,number,###0.00}',if(impact.Decimal_Places__c == '3','{0,number,###0.000}',if
+
+(impact.Decimal_Places__c == '4','{0,number,###0.0000}','')))))}" >
+                                                        <apex:param value="{!
+
+(impact.Target_Value_Y2__c)}"/>
+                                                    </apex:outputText>
+         
+               
+           </td>
+           <td>
+               <apex:outputText value="{0,date}">
+                              <apex:param value="{!impact.Y2_Report_Due__c}"/>
+               </apex:outputText>
+           </td>
+           <td>
+              <!--{!impact.Target_Value_Y3__c}-->
+                             <apex:outputText id="ity3" value="{!if(impact.Decimal_Places__c == '0','{0,number,####}',if
+
+(impact.Decimal_Places__c == '1','{0,number,###0.0}',if(impact.Decimal_Places__c == 
+
+'2','{0,number,###0.00}',if(impact.Decimal_Places__c == '3','{0,number,###0.000}',if
+
+(impact.Decimal_Places__c == '4','{0,number,###0.0000}','')))))}" >
+                                                        <apex:param value="{!(impact.Target_Value_Y3__c)}"/>
+                                                    </apex:outputText>
+           </td>
+           <td>
+               <apex:outputText value="{0,date}">
+                              <apex:param value="{!impact.Y3_Report_Due__c}"/>
+               </apex:outputText>
+           </td>
+           <!--<td>
+               {!impact.Target_Value_Y4__c}
+           </td>
+           <td>
+               <apex:outputText value="{0,date}">
+                              <apex:param value="{!impact.Y4_Report_Due__c}"/>
+               </apex:outputText>
+           </td>-->
+           <td>
+               {!impact.Comments__c}
+           </td>
+       </tr>
+     </apex:repeat>       
+  </table>
+  <h2>C. Program Objectives and Outcome Indicators</h2>
+  <table border="1" style="width:450px">
+      <tr class="head">
+          <td style="width:80px">
+              Objectives
+          </td>
+          <td>&nbsp;</td>
+      </tr>
+      <apex:repeat value="{!lstObjectives}" var="obj">
+      <tr>
+          <td>
+              <span class="badge">{!obj.Number__c}</span>
+          </td>
+          <td>
+              {!obj.Goal__c}
+          </td>
+      </tr>
+      </apex:repeat>
+      </table>
+      <br/>
+      
+      <table border="1" style="width:100%">
+      <tr class="head">
+          <td rowspan="2" style="width:80px">
+              Goal(s)
+          </td>
+          <td rowspan="2" style="width:200px">
+              Impact Indicator
+          </td>
+          <td rowspan="2" style="width:150px">
+              Data Source
+          </td>
+          <td colspan="6" class="overhead">
+              Targets
+          </td>
+          <td rowspan="2" class="assume" style="width:150px">
+              Assumptions
+          </td>
+      </tr>
+      <tr class="head">
+          <td>
+              {!YEAR(Implementation_Period__c.Start_Date__c)}
+          </td>
+          <td>
+              Report Due
+          </td>
+          <td>
+              {!YEAR(Implementation_Period__c.Start_Date__c)+1}
+          </td>
+          <td>
+              Report Due
+          </td>
+          <td>
+              {!YEAR(Implementation_Period__c.Start_Date__c)+2}
+          </td>
+          <td class="assume">
+              Report Due
+          </td>
+      </tr>
+      <apex:repeat value="{!lstOutcome}" var="outcome">
+       <tr>
+           <td style="width:80px">
+               <apex:repeat value="{!outcome.Indicator_Goal_Junctions__r}" var="jxn">
+                   <li>
+                       <span class="badge"><apex:outputtext value="{!jxn.Goal_Objective__r.Number__c}"/></span>
+                   </li>
+               </apex:repeat>
+           </td>
+           <td>
+               {!outcome.Indicator_Full_Name__c}
+           </td>
+           <td>
+               {!outcome.Baseline_Sources__c}
+           </td>
+           <td>
+
+<apex:outputText id="oty1" value="{!if(outcome.Decimal_Places__c == '0','{0,number,####}',if
+
+(outcome.Decimal_Places__c == '1','{0,number,###0.0}',if(outcome.Decimal_Places__c == 
+
+'2','{0,number,###0.00}',if(outcome.Decimal_Places__c == '3','{0,number,###0.000}',if
+
+(outcome.Decimal_Places__c == '4','{0,number,###0.0000}','')))))}">
+<apex:param value="{!(outcome.Target_Value_Y1__c)}"/>
+                                                    </apex:outputText>
+                                                    
+               
+               
+
+          
+          
+              <!-- {!outcome.Target_Value_Y1__c}-->
+           </td>
+           <td>
+               <apex:outputText value="{0,date}">
+                              <apex:param value="{!outcome.Y1_Report_Due__c}"/>
+               </apex:outputText>
+           </td>
+           <td>
+
+<apex:outputText id="oty2" value="{!if(outcome.Decimal_Places__c == '0','{0,number,####}',if
+
+(outcome.Decimal_Places__c == '1','{0,number,###0.0}',if(outcome.Decimal_Places__c == 
+
+'2','{0,number,###0.00}',if(outcome.Decimal_Places__c == '3','{0,number,###0.000}',if
+
+(outcome.Decimal_Places__c == '4','{0,number,###0.0000}','')))))}" >
+<apex:param value="{!(outcome.Target_Value_Y2__c)}"/>
+</apex:outputText>
+                                              
+           </td>
+           <td>
+               <apex:outputText value="{0,date}">
+                              <apex:param value="{!outcome.Y2_Report_Due__c}"/>
+               </apex:outputText>
+           </td>
+           <td>
+<!--{!outcome.Target_Value_Y3__c}-->
+<apex:outputText id="oty3" value="{!if(outcome.Decimal_Places__c == '0','{0,number,####}',if
+
+(outcome.Decimal_Places__c == '1','{0,number,###0.0}',if(outcome.Decimal_Places__c == 
+
+'2','{0,number,###0.00}',if(outcome.Decimal_Places__c == '3','{0,number,###0.000}',if
+
+(outcome.Decimal_Places__c == '4','{0,number,###0.0000}','')))))}">
+<apex:param value="{!(outcome.Target_Value_Y3__c)}"/>
+                                                    </apex:outputText>
+                                                    
+           </td>
+           <td>
+               <apex:outputText value="{0,date}">
+                              <apex:param value="{!outcome.Y3_Report_Due__c}"/>
+               </apex:outputText>
+           </td>
+           <!--<td>
+               {!outcome.Target_Value_Y4__c}
+           </td>
+           <td>
+               <apex:outputText value="{0,date}">
+                              <apex:param value="{!outcome.Y4_Report_Due__c}"/>
+               </apex:outputText>
+           </td>-->
+           <td>
+               {!outcome.Comments__c}
+           </td>
+       </tr>
+     </apex:repeat>       
+  </table>
+  <h2>D. Program Budget</h2>
+  <table border="1">
+          <tr class="head">
+              <td style="width:280px">&nbsp;
+              </td>
+              <td>
+                  P1
+              </td>
+              <td>
+                  P2
+              </td>
+              <td>
+                  Total Y1
+              </td>
+              <td>
+                  P3
+              </td>
+              <td>
+                  P4
+              </td>
+              <td>
+                  Total Y2
+              </td>
+              <td>
+                  P5
+              </td>
+              <td>
+                  P6
+              </td>
+              <td>
+                  Total Y3
+              </td>
+              <td rendered="{!if(Implementation_Period__c.Length_Years__c = '4',true,false)}">
+                  P7
+              </td>
+              <td rendered="{!if(Implementation_Period__c.Length_Years__c = '4',true,false)}">
+                  P8
+              </td>
+              <td rendered="{!if(Implementation_Period__c.Length_Years__c = '4',true,false)}">
+                  Total Y4
+              </td>
+      </tr>
+      <tr>
+          <td>
+              Total Program Budget (in {!Implementation_Period__c.Currency_of_Grant_Agreement__c} Thousands)
+          </td>
+          <td>
+              {!round(Implementation_Period__c.P1_Grant_Amount__c/1000,0)}
+          </td>
+          <td>
+              {!round(Implementation_Period__c.P2_Grant_Amount__c/1000,0)}
+          </td>
+          <td>
+              {!round((Implementation_Period__c.P1_Grant_Amount__c+Implementation_Period__c.P2_Grant_Amount__c)/1000,0)}
+          </td>
+          <td>
+              {!round(Implementation_Period__c.P3_Grant_Amount__c/1000,0)}
+          </td>
+          <td>
+              {!round(Implementation_Period__c.P4_Grant_Amount__c/1000,0)}
+          </td>
+          <td>
+              {!round((Implementation_Period__c.P3_Grant_Amount__c+Implementation_Period__c.P4_Grant_Amount__c)/1000,0)}
+          </td>
+          <td>
+              {!round(Implementation_Period__c.P5_Grant_Amount__c/1000,0)}
+          </td>
+          <td>
+              {!round(Implementation_Period__c.P6_Grant_Amount__c/1000,0)}
+          </td>
+          <td>
+              {!round((Implementation_Period__c.P5_Grant_Amount__c+Implementation_Period__c.P6_Grant_Amount__c)/1000,0)}
+          </td>
+          <td rendered="{!if(Implementation_Period__c.Length_Years__c = '4',true,false)}">
+              {!round(Implementation_Period__c.P7_Grant_Amount__c/1000,0)}
+          </td>
+          <td rendered="{!if(Implementation_Period__c.Length_Years__c = '4',true,false)}">
+              {!round(Implementation_Period__c.P8_Grant_Amount__c/1000,0)}
+          </td>
+          <td rendered="{!if(Implementation_Period__c.Length_Years__c = '4',true,false)}">
+              {!round((Implementation_Period__c.P7_Grant_Amount__c+Implementation_Period__c.P8_Grant_Amount__c)/1000,0)}
+          </td>
+      </tr>
+      </table>
+      <table border="1">
+      <tr class="subhead">
+          <td style="width:280px">
+              By Recipient
+          </td>
+          <td colspan="12">&nbsp;</td>
+      </tr>
+      <apex:repeat value="{!lstBLPayee}" var="imp">      
+      <tr>
+          <td style="width:280px">
+              {!imp.PayeeName}
+          </td>
+          <td>
+              {!round(imp.PayeeCostP1/1000,0)}
+          </td>
+          <td>
+              {!round(imp.PayeeCostP2/1000,0)}
+          </td>
+          <td>
+              {!round((imp.PayeeCostP1+imp.PayeeCostP2)/1000,0)}
+          </td>
+          <td>
+              {!round(imp.PayeeCostP3/1000,0)}
+          </td>
+          <td>
+              {!round(imp.PayeeCostP4/1000,0)}
+          </td>
+          <td>
+              {!round((imp.PayeeCostP3+imp.PayeeCostP4)/1000,0)}
+          </td>
+          <td>
+              {!round(imp.PayeeCostP5/1000,0)}
+          </td>
+          <td>
+              {!round(imp.PayeeCostP6/1000,0)}
+          </td>
+          <td>
+              {!round((imp.PayeeCostP5+imp.PayeeCostP6)/1000,0)}
+          </td>
+          <td rendered="{!if(Implementation_Period__c.Length_Years__c = '4',true,false)}">
+              {!round(imp.PayeeCostP7/1000,0)}
+          </td>
+          <td rendered="{!if(Implementation_Period__c.Length_Years__c = '4',true,false)}">
+              {!round(imp.PayeeCostP8/1000,0)}
+          </td>
+          <td rendered="{!if(Implementation_Period__c.Length_Years__c = '4',true,false)}">
+              {!round((imp.PayeeCostP7+imp.PayeeCostP8)/1000,0)}
+          </td>
+      </tr>
+      </apex:repeat>
+      <tr class="subhead">
+          <td colspan="13">
+              By Cost Grouping
+          </td>
+      </tr>     
+      <apex:repeat value="{!lstBLCost}" var="cg">
+      <tr>
+          <td>
+              {!cg.CostGrouping}
+          </td>
+          <td>
+              {!round(cg.CostP1/1000,0)}
+          </td>
+          <td>
+              {!round(cg.CostP2/1000,0)}
+          </td>
+          <td>
+              {!round((cg.CostP1+cg.CostP2)/1000,0)}
+          </td>
+          <td>
+              {!round(cg.CostP3/1000,0)}
+          </td> 
+          <td>
+              {!round(cg.CostP4/1000,0)}
+          </td> 
+          <td>
+              {!round((cg.CostP3+cg.CostP4)/1000,0)}
+          </td>
+          <td>
+              {!round(cg.CostP5/1000,0)}
+          </td>
+          <td>
+              {!round(cg.CostP6/1000,0)}
+          </td>
+          <td>
+              {!round((cg.CostP5+cg.CostP6)/1000,0)}
+          </td>
+          <td rendered="{!if(Implementation_Period__c.Length_Years__c = '4',true,false)}">
+              {!round(cg.CostP7/1000,0)}
+          </td> 
+          <td rendered="{!if(Implementation_Period__c.Length_Years__c = '4',true,false)}">
+              {!round(cg.CostP8/1000,0)}
+          </td>
+          <td rendered="{!if(Implementation_Period__c.Length_Years__c = '4',true,false)}">
+              {!round((cg.CostP7+cg.CostP8)/1000,0)}
+          </td>
+      </tr>          
+      </apex:repeat>
+      </table>
+      
+<div class="pagebreak"></div>
+
+  <h2>E. Modules</h2>
+      <apex:repeat value="{!lstModules}" var="mod">
+      <table border="1" style="page-break-after:avoid">
+      <tr class="head">
+          <td style="width:200px">
+              {!mod.objModule.Name}
+          </td>
+          <td style="width:80px"></td>
+          <td style="width:80px"></td>
+          <td style="width:80px"></td>
+          <td colspan="13"></td>
+      </tr>
+      <tr class="subhead" style="page-break-after:avoid">
+          <td colspan="4">
+             Total budget for module :
+              <!--Sum up all budget lines for this module-->
+          </td>
+          <td colspan="13">
+              Targets
+          </td>
+      </tr>
+      <tr class="indicator" style="display:{!if(mod.lstIndicator.size > 0,'','none')};page-break-after:avoid">
+          <td rowspan="2" rendered="{!if(mod.lstIndicator.size > 0,true,false)}">
+              Coverage/Output Indicator
+          </td>
+          <td rowspan="2">
+              Tied To
+          </td>
+          <td rowspan="2">
+              Target Accumulation
+          </td>
+          <td rowspan="2">
+              Data Source
+          </td>
+          
+              <td colspan="2">P1</td>
+              <td colspan="2">P2</td>
+              <!--<td style="background-color:#E8E8E8"></td>-->
+              <td colspan="2">P3</td>
+              <td colspan="2">P4</td>
+              <!--<td style="background-color:#E8E8E8"></td>-->
+              <td colspan="2">P5</td>
+              <td colspan="2">P6</td>              
+              <!--<td style="background-color:#E8E8E8"></td>-->
+          
+          <td rowspan="2" style="width:80px">
+              Comments
+          </td>
+      </tr>
+      <tr style="display:{!if(mod.lstIndicator.size > 0,'','none')}">
+          <td>N/D</td>
+          <td>%</td> 
+          <td>N/D</td>
+          <td>%</td> 
+          <!--<td style="background-color:#E8E8E8"></td>-->
+          <td>N/D</td>
+          <td>%</td> 
+          <td>N/D</td>
+          <td>%</td> 
+          <!--<td style="background-color:#E8E8E8"></td>-->
+          <td>N/D</td>
+          <td>%</td> 
+          <td>N/D</td>
+          <td>%</td> 
+          <!--<td style="background-color:#E8E8E8"></td>-->
+      </tr>
+     
+      <apex:repeat value="{!mod.lstIndicator}" var="cov">
+      <tr style="display:{!if(mod.lstIndicator.size > 0,'','none')}">
+          <td rowspan="2">
+              {!cov.objIndicator.Indicator_Full_Name__c}
+          </td>
+          <td rowspan="2">
+              {!cov.objIndicator.Tied_To__c}
+          </td>
+          <td rowspan="2">
+              {!cov.objIndicator.Target_Accumulation__c}
+          </td>
+          <td rowspan="2">
+              {!cov.objIndicator.Baseline_Sources__c}
+          </td>
+          
+          
+          
+          <apex:repeat value="{!cov.lstPeriodResultsIndicator}" var="PR">
+              <td>{!PR.objResult.Target_Numerator__c}</td>
+              <td rowspan="2">{!PR.objResult.Target__c}</td> 
+              <!--<td rowspan="2" style="background-color:#E8E8E8"></td>
+              <td>[Num]</td>
+              <td rowspan="2">[%]</td> 
+              <td>[Num]</td>
+              <td rowspan="2">[%]</td> 
+              <td rowspan="2" style="background-color:#E8E8E8"></td>
+              <td>[Num]</td>
+              <td rowspan="2">[%]</td> 
+              <td>[Num]</td>
+              <td rowspan="2">[%]</td> 
+              <td rowspan="2" style="background-color:#E8E8E8"></td>-->
+          </apex:repeat>
+      </tr>
+      <tr>
+          <apex:repeat value="{!cov.lstPeriodResultsIndicator}" var="PR">
+          
+          <td>{!PR.objResult.Target_Denominator__c}</td>
+          <!--<td>[D]</td>
+          <td>[D]</td>
+          <td>[D]</td>
+          <td>[D]</td>
+          <td>[D]</td>-->
+          </apex:repeat>
+      </tr>
+      </apex:repeat>
+      </table>
+
+
+   <!--Repeat list of interventions under this module for each intervention repeat the below-->
+      <br/>
+      <apex:repeat value="{!mod.lstIntervention}" var="int">
+      <table border="1" style="margin-left:206px">
+          <tr class="intervention">
+              <td class="head" style="width:160px">
+                  {!int.objIntervention.Name}
+              </td>
+              <!--<td colspan="18" style="background-color:#DAEEF3">
+                  {!int.objIntervention.Catalog_Intervention__r.Description__c}
+              </td>-->
+              <td style="width:80px">
+                  Data Source
+              </td>
+              <td>
+                  P1
+              </td>
+              <td>
+                  P2
+              </td>
+              <td>
+                  Total
+              </td>
+              <td>
+                  P3
+              </td>
+              <td>
+                  P4
+              </td>
+              <td>
+                  Total
+              </td>
+              <td>
+                  P5
+              </td>
+              <td>
+                  P6
+              </td>
+              <td>
+                  Total
+              </td>
+              <td rendered="{!if(Implementation_Period__c.Length_Years__c = '4',true,false)}">
+                  P7
+              </td>
+              <td rendered="{!if(Implementation_Period__c.Length_Years__c = '4',true,false)}">
+                  P8
+              </td>
+              <td rendered="{!if(Implementation_Period__c.Length_Years__c = '4',true,false)}">
+                  Total
+              </td>
+          </tr>
+          <tr>
+              <td>
+                  Budget for intervention
+              </td>
+              <td style="background-color:#F8F8F8"></td>
+              <td>
+                  {!int.objIntervention.P1_Grant_Amount__c/1000}
+              </td>
+              <td>
+                  {!int.objIntervention.P2_Grant_Amount__c/1000}
+              </td>
+              <td>
+                  {!(int.objIntervention.P1_Grant_Amount__c+int.objIntervention.P2_Grant_Amount__c)/1000}
+              </td>
+              <td>
+                  {!int.objIntervention.P3_Grant_Amount__c/1000}
+              </td>
+              <td>
+                  {!int.objIntervention.P4_Grant_Amount__c/1000}
+              </td>
+              <td>
+                  {!(int.objIntervention.P3_Grant_Amount__c+int.objIntervention.P4_Grant_Amount__c)/1000}
+              </td>
+              <td>
+                  {!int.objIntervention.P5_Grant_Amount__c/1000}
+              </td>
+              <td>
+                  {!int.objIntervention.P6_Grant_Amount__c/1000}
+              </td>
+              <td>
+                  {!(int.objIntervention.P5_Grant_Amount__c+int.objIntervention.P6_Grant_Amount__c)/1000}
+              </td>
+              
+              <td rendered="{!if(Implementation_Period__c.Length_Years__c = '4',true,false)}">
+                  {!int.objIntervention.P7_Grant_Amount__c/1000}
+              </td>
+              <td rendered="{!if(Implementation_Period__c.Length_Years__c = '4',true,false)}">
+                  {!int.objIntervention.P8_Grant_Amount__c/1000}
+              </td>
+              <td rendered="{!if(Implementation_Period__c.Length_Years__c = '4',true,false)}">
+                  {!(int.objIntervention.P7_Grant_Amount__c+int.objIntervention.P8_Grant_Amount__c)/1000}
+              </td>
+          </tr>
+          <apex:repeat value="{!int.lstIndicatorInt}" var="Indicator">
+              <tr style="display:{!if(int.lstIndicatorInt.size>0,'','none')}">
+                  <td>
+                      {!Indicator.objIndicator.Indicator_Full_Name__c}
+                  </td>
+                  <td>
+                     {!Indicator.objIndicator.Data_Source__c}
+                  </td>
+                  <apex:variable value="{!0}" var="Count"/>
+                  <apex:repeat value="{!Indicator.lstPeriodResultsIndicator}" var="Results">
+                      <td colspan="2">
+                          {!Results.objResult.Target__c}
+                      </td>
+                      <apex:outputPanel rendered="{!if(Count == 1 || Count == 3 || Count == 5,true,false)}">
+                          <td ></td>
+                      </apex:outputPanel>
+                      <apex:variable value="{!Count+1}" var="Count"/>
+                  </apex:repeat>
+                  <!--<td colspan="2"></td>
+                  <td colspan="2"></td>
+                  <td></td>
+                  <td colspan="2"></td>
+                  <td colspan="2"></td>
+                  <td></td>-->
+              </tr>
+          </apex:repeat>
+        </table>
+        <br/>
+        </apex:repeat>
+        <br/>
+     </apex:repeat>     
+</body>
+</html>              
+</apex:page>

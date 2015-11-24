@@ -1,0 +1,21 @@
+<apex:page sidebar="false" showHeader="false" >   
+<apex:includeScript value="{!URLFOR($Resource.ScrollJS,'Scrolljs/jquery.min.js')}" />
+<apex:includeScript value="{!URLFOR($Resource.ScrollJS,'Scrolljs/jquery.nicescroll.min.js')}" />     
+<div  id="boxscroll" class="chatterFeedPanel1">    
+    <chatter:feed id="chatterFeed1" entityId="{!$CurrentPage.parameters.ServiceId}"/>        
+</div>    
+    <style>
+        .chatterFeedPanel1{
+            height: 325px;
+            overflow: scroll;
+            width: 98%; 
+            display: inline-block;
+          }
+        
+    </style>
+   <script>
+    $(document).ready(function(){
+         var nicesx = $("#boxscroll").niceScroll({touchbehavior:false,cursorcolor:"#558ed5",cursoropacitymax:0.6,cursorwidth:8,autohidemode:false});    
+     });
+    </script> 
+     </apex:page>

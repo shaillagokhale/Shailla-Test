@@ -1,0 +1,76 @@
+<apex:page controller="CN_Training">
+
+    <apex:stylesheet value="{!URLFOR($Resource.GoalsJs, 'assets/css/bootstrap.css')}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.GoalsJs, 'assets/css/bootstrap-responsive.css')}"/>
+    
+    <style>
+    .h3 {
+        font-size:24px;
+        line-height: 40px;
+    }
+    h3 {
+        font-size:24px;
+        line-height: 20px;
+    }
+    h2 {
+        font-size:18px;
+        line-height: 30px;
+    }
+    </style>
+   
+   <br/>
+   <h3>Training Videos and Guidance</h3>
+   <br/><br/>
+   
+   <apex:form id="frm">
+   
+   <h2>{!$Label.Standard_Concept_Note_Guidance} (English):</h2><br/>
+   
+   <apex:outputPanel rendered="{!strLanguage == 'ENGLISH'}">
+       <apex:commandLink styleClass="TGFbtn TGFbtn-mini TGFbtn-primary" action="https://theglobalfund--c.eu2.content.force.com/servlet/servlet.FileDownload?file=015b0000000bhQT" style="margin-left:20px;margin-top:6px;padding-top:3px;padding-bottom:3px" target="_blank">
+             <i class="icon-download icon-white">
+             <!--</i> <strong>Download Concept Note Narrative</strong>--></i> <strong>{!$Label.Download_Guidance}</strong>
+       </apex:commandLink><br/>
+   </apex:outputPanel>
+   
+   <apex:outputPanel rendered="{!strLanguage == 'FRENCH'}">
+       <apex:commandLink styleClass="TGFbtn TGFbtn-mini TGFbtn-primary" action="https://theglobalfund--c.eu2.content.force.com/servlet/servlet.FileDownload?file=015b0000000bhQT" style="margin-left:20px;margin-top:6px;padding-top:3px;padding-bottom:3px" target="_blank">
+             <i class="icon-download icon-white">
+             <!--</i> <strong>Download Concept Note Narrative</strong>--></i> <strong>{!$Label.Download_Guidance}</strong>
+       </apex:commandLink><br/>
+   </apex:outputPanel>
+   
+   <apex:outputPanel rendered="{!strLanguage == 'RUSSIAN'}">
+       <apex:commandLink styleClass="TGFbtn TGFbtn-mini TGFbtn-primary" action="https://theglobalfund--c.eu2.content.force.com/servlet/servlet.FileDownload?file=015b0000000bhQT" style="margin-left:20px;margin-top:6px;padding-top:3px;padding-bottom:3px" target="_blank">
+             <i class="icon-download icon-white">
+             <!--</i> <strong>Download Concept Note Narrative</strong>--></i> <strong>{!$Label.Download_Guidance}</strong>
+       </apex:commandLink><br/>
+   </apex:outputPanel>
+   
+   <apex:outputPanel rendered="{!strLanguage == 'SPANISH'}">
+       <apex:commandLink styleClass="TGFbtn TGFbtn-mini TGFbtn-primary" action="https://theglobalfund--c.eu2.content.force.com/servlet/servlet.FileDownload?file=015b0000000bhQT" style="margin-left:20px;margin-top:6px;padding-top:3px;padding-bottom:3px" target="_blank">
+             <i class="icon-download icon-white">
+             <!--</i> <strong>Download Concept Note Narrative</strong>--></i> <strong>{!$Label.Download_Guidance}</strong>
+       </apex:commandLink><br/>
+   </apex:outputPanel>
+   
+   
+ 
+
+ </apex:form>
+   <br/><br/>
+   
+   <html>
+   <!-- Training Videos -->
+   
+   <!-- Sample training video 1 -->
+   <h2>Concept Note Walkthrough:</h2><br/>
+   <iframe width="560" height="315" src="//www.youtube.com/embed/heQmcGCavuU" frameborder="0"></iframe><br/><br/>
+   
+   <!-- Sample training video 2 -->
+   <!-- <h2>Concept Note Submission:</h2><br/>
+   <iframe width="560" height="315" src="//www.youtube.com/embed/W4GyKTRduhs" frameborder="0"></iframe><br/><br/> -->
+   
+   </html>
+
+</apex:page>

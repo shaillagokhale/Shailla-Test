@@ -1,0 +1,1176 @@
+<!--*******************************************************************************
+* VisualForce {Page}: Module__c
+* DateCreated: 12/11/2013
+----------------------------------------------------------------------------------
+* Purpose/Methods:
+* - Update Grant Intervention records with budget figures for the Concept Note, 
+    per intervention and per recipient
+----------------------------------------------------------------------------------
+* History:
+* - VERSION  DATE            DETAIL FEATURES/CSR/TTP
+    1.0      12/11/2013      INITIAL DEVELOPMENT   
+********************************************************************************-->
+<apex:page id="page" standardController="Module__c" extensions="CN_Budget" sidebar="false" showheader="true"> 
+<apex:stylesheet value="{!URLFOR($Resource.GoalsJs, 'assets/css/bootstrap.css')}"/>
+<apex:stylesheet value="{!URLFOR($Resource.GoalsJs, 'assets/css/bootstrap-responsive.css')}"/>
+<apex:includeScript value="{!$Resource.jquery142}" />
+<script src="{!URLFOR($Resource.charCounter)}" type="text/javascript"></script>
+<style>
+    .oe_loading {
+        z-index: 9999;
+        position: fixed;
+        top: 10%;
+        right: 50%;
+        width:800px;
+        background-color: #ededed;
+        border-radius:10px;
+        border-style: solid;
+        border-width: 0px;
+        border-radius: 10px;
+        border-style: solid;
+    }
+    .TGFbtn:hover,
+    .TGFbtn:focus {
+        color: white !important;
+        background-position: 0 0px !important;
+    }
+    .TGFbtn-IntDesc{
+        background-color: #33CCFF;
+        background-image: linear-gradient(to bottom, #0078A8, #27C0F3);
+        background-repeat: repeat-x;
+        border-color: rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.25);
+        color: #FFFFFF;
+        text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
+    }
+    .headerRowUpper{
+        border:1px solid #E0E3E5 !important;
+        font-weight:bold !important;         
+    }
+    .headerRowLower{
+        border:1px solid #E0E3E5 !important;
+        font-weight:bold !important;
+        background-color:#0066BB !important;
+        color:white !important;
+        white-space: normal !important;
+    }
+    .totalRow{
+        border-top:1px;
+        font-weight:bold !important;
+    }
+    .TDstyle{
+        border:1px solid #E0E3E5 !important;
+        vertical-align: top;
+    }
+    input{
+        width: 50px;
+    }
+    label {
+        font-weight: bold;
+        display: inherit;
+    }
+    .pageContent {
+        color: #4A4A56; 
+        font-size: 0.9em; 
+        font-weight: bold; 
+        padding-left: 1px;
+    }
+    .link{
+        color:#2E7BBB !important;
+    }
+    .pageTitleIcon {
+        margin-top: 5px;
+        background-image: url("/img/sprites/master.png");
+        background-position: 0 -1058px;
+        height: 32px;
+        width: 32px;
+        display: inline;
+        float: left;
+        margin-right: 5px;
+        margin-left: 10px;
+    }
+    .pageDescription{
+        font-size: 1.8em; 
+        font-weight: normal;
+        line-height: 1.1em;
+    }
+    .sidebarMenu{
+        width : 270px;
+    }
+    .custContainer{
+        width: 100%;
+        height: 100%;
+        top: 0;
+        position: absolute;
+    }
+    .custPopup{
+        background-color: #ededed;
+        border-width: 0px;
+        border-radius:10px;
+        border-style: solid;
+        z-index: 9999;
+        padding:10px;
+        width:800px;
+        position:absolute;
+    }
+    .custPopupAssump{
+        background-color: #ededed;
+        border-width: 0px;
+        border-radius:10px;
+        border-style: solid;
+        z-index: 9999;
+        margin-top:-150px;
+        padding:10px;
+        position: absolute;
+        left:40%;
+        width:40%;
+    }
+    .tenright{
+        margin-right:10px;
+        {!if(!blnSave == true,'display:none','')};
+    }
+    
+    .cancelButton{
+        margin-right:10px;
+    }
+    .custPopupDelete{
+        background-color: #ededed;
+        border-width: 0px;
+        border-radius:10px;
+        border-style: solid;
+        z-index: 9999;
+        margin-top:35px;
+        padding:10px;
+        position: absolute;
+        width:30%;
+    }
+    .popupBackground{
+        background-color:black;
+        opacity: 0.50;
+        filter: alpha(opacity = 20);
+        position: fixed;
+        width: 100%;
+        height: 100%;
+        z-index: 9998;
+        top: 0;
+        left: 0;
+    }
+    
+    .custPopupApply{
+        background-color: #ededed;
+        border-width: 0px;
+        border-radius:10px;
+        border-style: solid;
+        z-index: 9999;
+        left:50%;
+        margin-top:-60px;
+        padding:10px;
+        position: absolute;
+        width:366px;
+        height:163px;
+    }
+    .amountfield{
+        width:110px;
+    }
+    .popupButtonYes{
+        background-color: #49C739 !important;
+        background-image: none !important;
+        color: white !important;
+        font-size: 12.9pt !important;
+        font-weight: bold !important;
+        height: 30px !important;;
+        width: 90px !important;;
+    }
+    .popupButtonCancel{
+        background-color: #d82516 !important;
+        background-image: none !important;
+        color: white !important;
+        font-size: 12.9pt !important;
+        font-weight: bold !important;
+        height: 30px !important;;
+        width: 90px !important;;
+    }
+    .deletePopup{
+        background-color: #EDEDED !important;
+        border-top: 0px !important;
+        text-align:center !important;
+    }
+    .deletePopupCancel{
+        background-color: #EDEDED !important;
+        border-top: 0px !important;
+        text-align:left !important;
+    }
+    .TGFbtn-mini{
+        margin-top:6px;
+    }
+    .h3{
+        display: inline-table;
+        font-size: 24px;
+        font-weight: bold;
+        margin-bottom: 15px;
+        margin-top: 15px;
+    }
+    .h4{
+        font-size:18px;
+        font-weight:bold;
+        line-height:1.5;
+    }
+    .chatterFeedPanel{
+        height: 225px !important;
+    }
+    .TDborderbottom{
+        border-bottom:1px solid #000000 !important;
+    }
+    .lightblue{
+    background-color:#DDEFF4;
+    }
+    .webkitright {
+        text-align: right;
+        white-space: nowrap;
+    };
+    .headerSearchContainer {
+        margin-top: -20px !important;
+    }    
+    .phHeaderCustomLogo .headerSearchLeftRoundedCorner {
+        margin-top: -20px !important;
+    } 
+    .margin20{
+        margin-left:1%;
+        margin-bottom:16px;
+        margin-top:16px;
+        width:60%;
+    }
+    .containerTGF{
+        <!--display: inline-block;-->
+        margin-left:1%;
+        margin-right:1%;
+        width:97%;
+    }
+    td .noborder{
+        border:0px;
+    }  
+</style> 
+<script>
+  $(document).ready(function () {
+      $('label.tree-toggler').click(function () {
+          $(this).parent().children('ul.tree').toggle(300);
+      });
+      
+       if ( $.browser.webkit ) {
+        $("#phHeaderLogoImage").parents("table").find("td").eq(2).removeClass("right").addClass("webkitright");  
+        
+       };
+  });
+ document.getElementById('{!$Component.txtIndicativeY1}').disabled = {!(!blnEditDescription || !blnEditAllocatedValues || !blnEditAboveAllocatedValues || !blnEditAssumptions)};
+ <!-- Changes for Cancel Button -16th Dec Start -->
+function confirmRed()
+{
+    var r = confirm("{!$Label.Are_you_sure} \n{!$Label.Save_Changes_Warning}");
+    if (r == true)
+    {    
+        if(!'{!blnExternalPro}')
+                {
+                    window.open('/GM/apex/CNOverview?id={!Module__c.Concept_Note__c}','_self');
+                }
+                else
+                {
+                    window.open('/apex/CNOverview?id={!Module__c.Concept_Note__c}','_self');
+                }
+    } 
+    else 
+    {
+        
+    }    
+}
+ <!-- Changes for Cancel Button -16th Dec End-->
+<!-- alert('ALL LI ======!!>>'+ {!$Component.txtIndicativeY1});-->
+   function switchMenu(obj,obj1,obj2,hdn,val) 
+        {  
+            var AllLI = document.getElementsByTagName('li');
+             
+            for(var i=0;i<AllLI.length;i++){
+                if(AllLI[i].id == obj){
+                    if(AllLI[i].style.display != 'none'){
+                        AllLI[i].style.display = 'none';
+                    }else{
+             
+                        AllLI[i].style.display = '';
+                    }
+                }
+            }
+            document.getElementById(hdn).value=val; 
+            
+            var e2 = document.getElementById(obj1);                                       
+            if ( e2.style.display != 'none' ) {
+                e2.style.display = 'none';
+            }
+            else {
+                e2.style.display = '';
+            }
+            var e3 = document.getElementById(obj2);                                       
+            if ( e2.style.display != 'none' ) {
+                e3.style.display = 'none';
+            }
+            else {
+                e3.style.display = '';
+            }
+        }
+</script>
+<script LANGUAGE="JavaScript1.2" TYPE="text/javascript">
+
+ /*   var tempDisableBeforeUnload = false;
+
+    function unloadMessage(){
+        message = "You may have unsaved work."
+        return message;
+    }
+    function setBunload(on){
+        if(tempDisableBeforeUnload == false && blnReadOnly != true) window.onbeforeunload = (on) ? unloadMessage : null;
+        else return false;
+    }
+    setBunload(true);
+
+    function switchMenu(obj,obj1,obj2,hdn,val) 
+        {  
+            var AllLI = document.getElementsByTagName('li');
+            for(var i=0;i<AllLI.length;i++){
+                if(AllLI[i].id == obj){
+                    if(AllLI[i].style.display != 'none'){
+                        AllLI[i].style.display = 'none';
+                    }else{
+                        AllLI[i].style.display = '';
+                    }
+                }
+            }
+            document.getElementById(hdn).value=val; 
+            
+            var e2 = document.getElementById(obj1);                                       
+            if ( e2.style.display != 'none' ) {
+                e2.style.display = 'none';
+            }
+            else {
+                e2.style.display = '';
+            }
+            var e3 = document.getElementById(obj2);                                       
+            if ( e2.style.display != 'none' ) {
+                e3.style.display = 'none';
+            }
+            else {
+                e3.style.display = '';
+            }
+        }*/
+</script>
+<div style="margin-left:1%;margin-right:1%">        
+        <span class="h3">
+            {!$label.Module_Budget} <!--Module budget-->        
+        </span>
+        <span class="pull-right">
+            <img src="/img/func_icons/util/info16.png" style="padding-bottom:8px"/>
+            <a href="{!if((blnExternalPro),'/GM','')}/apex/CN_Guidance_New?Id={!strGuidanceId}&lang={!strLanguage}" target="_blank" class="link h4">{!$Label.See_Help}</a>
+        </span>
+</div>
+<div class="margin20">
+<div id="Infopanel" class="alert alert-info">
+    <b>
+        {!$label.Note}
+    </b>
+    <button type="button" class="close" data-dismiss="alert" onclick="closePanel();">
+        ×
+    </button>
+</div>
+    <c:CNbreadcrumb recordId="{!Module__c.Id}"/>
+    <chatter:feedWithFollowers entityId="{!Module__c.id}"/>
+</div>
+<apex:form id="frm">
+<apex:inputtext value="{!blnBlockNavigate}" id="BlockNavigate" style="display:none;"/>
+<div class="containerTGF">
+  <div class="row">
+  <table width="100%">
+    <tr>
+      <td width="20%" valign="top" align="left">
+                   <!--START SIDEBAR-->  
+         <c:Sidebar RecordId="{!Module__c.Id}" />                     
+                   <!--END SIDEBAR, START MAIN SECTION-->           
+      </td>
+      <td>
+    <table width="100%">        
+        <tr>
+            <td>
+                <table class="table table-bordered" style="margin-top:12px">
+                    <tr>
+                        <td rowspan="2" align="left" width="70%" class="noborder">
+                            <span class="h3">
+                             {!If(strLanguage == 'FRENCH',Module__c.French_Name__c,if(strLanguage == 'RUSSIAN',Module__c.Russian_Name__c,if(strLanguage == 'SPANISH',Module__c.Spanish_Name__c,Module__c.Name)))}
+                            </span>
+                        </td>
+                        <td class="lightblue">
+                            <b>
+                               {!$label.Allocated_Module} <!--Total Allocated for entire module--> ({!Module__c.Concept_Note__r.CurrencyIsoCode})
+                            </b>
+                        </td>
+                        <td style="background-color:#D8D8D8;">
+                            <b>
+                                <apex:outputText id="otxtTotalIndicative" value="{0,number,###,###,###}">
+                                    <apex:param value="{!intTotalIndicative}"/>
+                                </apex:outputText>
+                            </b>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td  class="lightblue">
+                            <b>
+                                {!$label.Above_Allocated_Module} <!--Total Above Allocated for entire module--> ({!Module__c.Concept_Note__r.CurrencyIsoCode})
+                            </b>
+                        </td>                        
+                        <td style="background-color:#D8D8D8;">
+                            <b>
+                                <apex:outputText id="otxtTotalAbove" value="{0,number,###,###,###}">
+                                    <apex:param value="{!intTotalAbove}"/>
+                                </apex:outputText>
+                            </b>
+                        </td>
+                    </tr>
+              </table>
+              <table width="100%" style="margin-bottom:12px">
+                    <tr>
+                        <td class="noborder" align="center">
+                            <apex:actionFunction action="{!SaveDraft}" name="actSaveDraft" reRender="frm" status="Processing"/>
+                            <apex:commandlink styleClass="TGFbtn TGFbtn-mini TGFbtn-success tenright" style="width:80px;height:20px" id="btnSaveDraft" onclick="return validateSave('{!lstCNIntervention.size}');tempDisableBeforeUnload = true;">
+                                <strong>{!$Label.Save}</strong>
+                            </apex:commandlink>
+
+                            <!--<apex:commandlink styleClass="TGFbtn TGFbtn-mini TGFbtn-primary tenright" id="btnSaveReturn" action="{!SaveReturn}" onclick="tempDisableBeforeUnload = true;" reRender="frm" status="Processing"> 
+                                <strong>{!$Label.Save_Return}</strong>
+                            </apex:commandlink>-->
+                         <!-- Changes for Cancel Button -16th Dec Start -->
+                           <!-- <apex:commandlink styleClass="TGFbtn TGFbtn-mini TGFbtn-danger cancelButton" id="btnCancel" style="width:80px;height:20px" onclick="return confirm('{!$Label.Are_you_sure} \n{!$Label.Save_Changes_Warning} ');tempDisableBeforeUnload = true;" 
+                            action="{!if((blnExternalPro),'/GM','')}/apex/CNOverview?id={!Module__c.Concept_Note__c}" > -->
+                             
+                             <apex:commandlink styleClass="TGFbtn TGFbtn-mini TGFbtn-danger cancelButton" id="btnCancel" style="width:80px;height:20px" onclick="confirmRed();" reRender="xyz">   
+                             <strong>{!$Label.Cancel}</strong>
+                             </apex:commandlink>
+                               
+                               <!-- Changes for Cancel Button -16th Dec End-->
+                                    
+                        </td>
+                    </tr>
+               </table>
+            </td> 
+        </tr>
+         
+        <tr> 
+            <td> 
+                <!--<a href="{!if(CONTAINS($Profile.Name,'PR')||CONTAINS($Profile.Name,'LFA')||CONTAINS($Profile.Name,'CM')||CONTAINS($Profile.Name,'CCM'),'/GM','')}/apex/CN_Guidance_New?Id={!strGuidanceId}&lang={!strLanguage}" target="_blank" class="pull-right link">
+                    See Help
+                </a>-->
+                 <table class="table table-striped">
+                     <thead>
+                         <tr class="headerRow">
+                             <th class="headerRowLower" width="17%">
+                                <apex:outputlabel value="{!$Label.Intervention}"/> <!-- value="Intervention"-->
+                             </th>  
+                             <th class="headerRowLower"  width="11%">
+                                <apex:outputlabel value="{!$Label.Intervention_Description}" /> <!--value="Description of Intervention"-->
+                             </th> 
+                             <th class="headerRowLower"  width="17%">
+                                <apex:outputlabel value="{!$Label.Responsible_PRs}" /> <!--value="Responsible PR(s)"-->
+                             </th>
+                             <th class="headerRowLower"  width="11%">
+                             <!-- ****************************************************************************
+                             The label does not have a line break, so the original tag 
+                             is commented and the label corresponding(without line break) to the textis added
+                             ********************************************************************************* -->
+                                <apex:outputlabel >{!$Label.Indicative_Above_Indicative}</apex:outputlabel> <!--  <apex:outputlabel >Allocated or<br/> Above Allocated</apex:outputlabel> -->
+                             
+                             </th>
+                             <th class="headerRowLower" width="8%">
+                                <apex:outputlabel value="{!YEAR(Module__c.Concept_Note__r.Start_Date__c)}"/>
+                             </th>
+                             <th class="headerRowLower" width="8%">
+                                <apex:outputlabel value="{!YEAR(Module__c.Concept_Note__r.Start_Date__c)+1}"/>
+                             </th>
+                             <th class="headerRowLower" width="8%">
+                                <apex:outputlabel value="{!YEAR(Module__c.Concept_Note__r.Start_Date__c)+2}"/>
+                             </th>
+                             <th class="headerRowLower" width="8%" style="display:{!if(Module__c.Concept_Note__r.Number_of_Years__c == '4','','none')};">
+                                <apex:outputlabel value="{!YEAR(Module__c.Concept_Note__r.Start_Date__c)+3}"/>
+                             </th>
+                             <th class="headerRowLower"  width="12%">
+                                <apex:outputlabel value="{!$Label.Assumptions_Other_Funding}" /> <!--value="Assumptions and other funding"-->
+                             </th>               
+                         </tr>
+                     </thead>
+                     <tbody>
+                         <apex:variable var="CNCount" value="{!0}"/>
+                         
+                         <apex:repeat id="rptrCNI" value="{!lstCNIntervention}" var="CNI">
+                             <tr>
+                                <td class="dataCell TDstyle TDborderbottom" rowspan="{!(CNI.lstGrantIntervention.size*2)+1}">
+                                   <!-- <apex:outputText value="{!CNI.objIntervention.Name}" />--->
+                                   <apex:outputText value="{!CNI.objIntervention.Custom_Intervention_Name__c}" rendered="{!IF(CNI.objIntervention.Standard_or_Custom__c = 'Custom',true,false)}"/>
+                                   <apex:outputText value="{!If(strLanguage == 'FRENCH',CNI.objIntervention.French_Name__c,if(strLanguage == 'RUSSIAN',CNI.objIntervention.Russian_Name__c,if(strLanguage == 'SPANISH',CNI.objIntervention.Spanish_Name__c,CNI.objIntervention.Name)))}" rendered="{!IF(CNI.objIntervention.Standard_or_Custom__c = 'Custom', false,true)}"/>
+                                    <apex:outputLabel style="display:none;" id="ChildSize" value="{!CNI.lstGrantIntervention.size}"/>
+                                </td>
+                                <td class="dataCell TDstyle TDborderbottom" rowspan="{!(CNI.lstGrantIntervention.size*2)+1}">
+                                    <apex:commandLink id="btnEnterDesc" onclick="return TogglePopup('{!$Component.InterDescPopup}');" styleClass="TGFbtn TGFbtn-mini {!If(strLanguage == 'FRENCH',if(CNI.objIntervention.Description_of_Intervention_French__c == Null, ' TGFbtn-warning ', ' TGFbtn-success '),if(strLanguage == 'RUSSIAN',if(CNI.objIntervention.Description_of_Intervention_Russian__c == Null, ' TGFbtn-warning ', ' TGFbtn-success '),if(strLanguage == 'SPANISH',if(CNI.objIntervention.Description_of_Intervention_Spanish__c == Null, ' TGFbtn-warning ', ' TGFbtn-success '),if(CNI.objIntervention.Description_of_Intervention__c == Null, ' TGFbtn-warning ', ' TGFbtn-success '))))}" style="border-right:1px solid #E0E3E5 !important;">
+                                        <strong>{!$label.Enter_Descriptions} <!--Enter Description--></strong>
+                                    </apex:commandLink>
+                                    <apex:outputPanel id="InterDescPopup" style="display:none;">
+                                        <apex:outputPanel id="popupBackground1" styleClass="popupBackground"/>
+                                        <apex:outputPanel id="custPopup1" style="left: 18%;" styleClass="oe_loading">
+                                            <table width="100%">
+                                                <tr>
+                                                    <td>
+                                                        <b>{!$label.Enter_Descriptions}: <!--Enter Description:--> {!CNI.objIntervention.Name}</b>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td>
+                                                    {!$label.Budget_Instructions}
+                                                        <!--
+                                                        Please describe 1) Rationale for Global Fund support, 
+                                                        2) Linkages to national strategic plan, 
+                                                        3) Target population &amp; geographic scope,  
+                                                        4) Implementation approach, and 
+                                                        5) Other relevant information. Please differentiate between scope of allocated and above allocated request
+                                                        -->
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td style="text-align:center;">
+                                                        <apex:inputField id="txtDescIntervention" value="{!CNI.objIntervention.Description_of_Intervention__c}" rendered="{!IF(strLanguage != 'RUSSIAN' && strLanguage != 'FRENCH' && strLanguage != 'SPANISH',true,false)}"  style="resize:none; width:700px;height:200px;display:{!IF((blnEditDescription),'','none')}"/>
+                                                        <apex:inputTextArea value="{!CNI.objIntervention.Description_of_Intervention__c}" rendered="{!IF(((strLanguage != 'RUSSIAN' && strLanguage != 'FRENCH' && strLanguage != 'SPANISH') && !blnEditDescription),true,false)}" disabled="true" style="resize:none; width:700px;height:200px;"/>
+                                                        <apex:inputField id="txtDescIntervention_Rus" value="{!CNI.objIntervention.Description_of_Intervention_Russian__c}" rendered="{!IF(strLanguage == 'RUSSIAN',true,false)}"  style="resize:none; width:700px;height:200px;display:{!IF((blnEditDescription),'','none')}"/>
+                                                        <apex:inputTextArea value="{!CNI.objIntervention.Description_of_Intervention_Russian__c}" rendered="{!IF((strLanguage == 'RUSSIAN' && !blnEditDescription),true,false)}" disabled="true" style="resize:none; width:700px;height:200px;"/>
+                                                        <apex:inputField id="txtDescIntervention_Fr" value="{!CNI.objIntervention.Description_of_Intervention_French__c}" rendered="{!IF(strLanguage == 'FRENCH',true,false)}"  style="resize:none; width:700px;height:200px;display:{!IF((blnEditDescription),'','none')}" />
+                                                        <apex:inputTextArea value="{!CNI.objIntervention.Description_of_Intervention_French__c}" rendered="{!IF((strLanguage == 'FRENCH' && !blnEditDescription),true,false)}" disabled="true" style="resize:none; width:700px;height:200px;"/>
+                                                        <apex:inputField id="txtDescIntervention_Es" value="{!CNI.objIntervention.Description_of_Intervention_Spanish__c}" rendered="{!IF(strLanguage == 'SPANISH',true,false)}"  style="resize:none; width:700px;height:200px;display:{!IF((blnEditDescription),'','none')}"/>
+                                                        <apex:inputTextArea value="{!CNI.objIntervention.Description_of_Intervention_Spanish__c}" rendered="{!IF((strLanguage == 'SPANISH' && !blnEditDescription),true,false)}" disabled="true" style="resize:none; width:700px;height:200px;"/>
+                                                        
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td >
+                                                       <apex:commandButton style="width:50px;" value="{!$Label.OK}" onclick="ChangeColorDesc('{!If(strLanguage == 'RUSSIAN',$Component.txtDescIntervention_Rus,If(strLanguage == 'FRENCH',$Component.txtDescIntervention_Fr,If(strLanguage == 'SPANISH',$Component.txtDescIntervention_Es,$Component.txtDescIntervention)))}','{!$Component.btnEnterDesc}'); return TogglePopup('{!$Component.InterDescPopup}');" /> 
+                                                     <!--<apex:commandButton style="width:50px;" value="OK" onclick="return TogglePopup1(this);" />-->
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                        </apex:outputPanel>
+                                    </apex:outputPanel>
+                                </td>
+                            </tr>
+                            <apex:variable var="GICount" value="{!0}"/>
+                            <apex:repeat id="rptrGI" value="{!CNI.lstGrantIntervention}" var="GI">
+                                <tr>
+                                    <td class="dataCell TDstyle TDborderbottom" rowspan="2" >
+                                        
+                                        <!-- <apex:commandLink action="{!EditPR}" reRender="frm" status="Processing">
+                                            <apex:image styleClass="Image" url="{!$Resource.EditImage}" width="15px" height="20px" rendered="{! if(GI.blnEdit == false,true,false)}"/>
+                                            <apex:param value="{!CNCount}" name="DeleteIndexCN" />
+                                            <apex:param value="{!GICount}" name="DeleteIndexGI" />
+                                        </apex:commandLink>&nbsp;-->
+                                      <!--Note-->  <!-- <apex:commandLink reRender="frm" status="Processing" onclick="return OpenPopup('{!$Component.tstpopup}');" rendered="{! if(GI.blnEdit == false,true,false)}">
+                                            <apex:image styleClass="Image" url="{!$Resource.DeleteImage}" width="15px" height="20px"/>
+                                        </apex:commandLink>-->
+                                      <!--Note-->  <apex:commandLink reRender="HistoryPopup" status="Processing" action="{!ShowHistoryPopup}" rendered="{! if(GI.blnHistory == false,true,false)}"  >
+                                            <apex:image styleClass="Image" url="{!$Resource.History}" width="15px" height="20px" title="{!$Label.View_History}"/>
+                                            <apex:param value="{!CNCount}" name="HistoryIndexCN" />
+                                            <apex:param value="{!GICount}" name="HistoryIndexGI" />
+                                            
+                                        </apex:commandLink>
+                                            <!-- Field History -->
+                                        <apex:outputPanel id="HistoryPopup" >
+                                            <apex:outputPanel id="popupBackground1" styleClass="popupBackgroundHistory" rendered="{! if(GI.blnHistory == true,true,false)}" />
+                                            <apex:outputPanel id="custPopup1" styleClass="custPopupHistory" rendered="{! if(GI.blnHistory == true,true,false)}">
+                                               
+                                                    <table >
+                                                    <tr>
+                                                        <td style="background-color:transparent;border:none;">
+                                                            <c:FieldHistory TargetRecordId="{!GI.objGI.id}" TagetObjectAPIname="{!APIname}" RecordTitle="{!GI.objGI.Name}"  /> 
+                                                            <!--varMapOfField="{!mapofField}" -->
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td align="center" style="padding-left:380px;border:none;">
+                                                            <apex:commandButton value="{!$Label.OK}" action="{!HidePopupHistory}" style="width:50px" reRender="frm" status="Processing"> 
+                                                        </apex:commandButton>
+                                                        </td>
+                                                    </tr>
+                                                    </table>                                                 
+                                                    
+                                                 
+                                            </apex:outputPanel>
+                                            </apex:outputPanel>
+                                            
+                                            <apex:outputPanel rendered="{! if(GI.blnEdit== false,true,false)}">
+                                                &nbsp;&nbsp;<apex:outputText value="{!GI.objGI.Implementation_Period__r.Principal_Recipient__r.Short_Name__c}"/>
+                                            </apex:outputPanel>
+                                            <apex:outputPanel rendered="{! if(GI.blnEdit == true,true,false)}">
+                                                <apex:selectList value="{!strGIPId}" multiselect="false" size="1">
+                                                    <apex:selectOptions value="{!lstPRName}" ></apex:selectOptions>
+                                                </apex:selectList>
+                                                <apex:commandButton value="{!$Label.Save}" action="{!SavePR}" style="width:50px" reRender="frm" status="Processing">
+                                                    <apex:param value="{!CNCount}" name="DeleteIndexCN" />
+                                                    <apex:param value="{!GICount}" name="DeleteIndexGI" />
+                                                </apex:commandButton>
+                                                <apex:commandButton value="{!$Label.Cancel}" action="{!CancelPR}" style="width:50px" reRender="frm" status="Processing">
+                                                    <apex:param value="{!CNCount}" name="DeleteIndexCN" />
+                                                    <apex:param value="{!GICount}" name="DeleteIndexGI" />
+                                                </apex:commandButton>
+                                            </apex:outputPanel>
+                                        <apex:outputPanel id="tstpopup" style="display:none;">
+                                            <apex:outputPanel id="popupBackground" styleClass="popupBackground"/>
+                                            <apex:outputPanel id="custPopup" styleClass="custPopupDelete">
+                                                <table width="100%" cellspacing="0" cellpadding="0" border="0" >
+                                                    <tr>
+                                                        <td colspan="3" class="deletePopup">
+                                                            <apex:outputtext style="color:#6590c4; font-size: 13.9pt;font-weight: bold;" value="{!$Label.Remove_PR_Intervention_Warning}"/> <!-- Are you sure you want to remove this PR from this Intervention?-->
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td colspan="3" class="deletePopup">
+                                                            <apex:outputtext style="color:#6590c4; font-size: 13.9pt;font-weight: bold;" value="{!$Label.Delete_Budget_Data}" /> <!--This will delete any budget data stored for this PR for this Intervention"-->
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td width="47%" class="deletePopup">
+                                                            <apex:commandButton styleClass="popupButtonYes" value="{!$Label.Yes}" action="{!DeletePR}" reRender="frm" status="Processing">
+                                                                <apex:param value="{!CNCount}" name="DeleteIndexCN" />
+                                                                <apex:param value="{!GICount}" name="DeleteIndexGI" />
+                                                            </apex:commandButton>
+                                                        </td>
+                                                        <td width="6%" class="deletePopup"></td>
+                                                        <td width="47%" align="left" class="deletePopupCancel">
+                                                            <apex:commandButton styleClass="popupButtonCancel" value="{!$Label.Cancel}" onclick="return ClosePopup('{!$Component.tstpopup}');"/>
+                                                        </td>
+                                                    </tr>
+                                                </table>
+                                            </apex:outputPanel>
+                                        </apex:outputPanel>
+                                    </td>
+                                    <td class="dataCell TDstyle lightblue" style="background-color:#DDEFF4">
+                                        <apex:outputText value="{!$Label.Indicative} ({!Module__c.Concept_Note__r.CurrencyIsoCode})" />
+                                    </td>
+                                    <td class="dataCell TDstyle" >
+                                        <apex:inputField id="txtIndicativeY1" styleclass="amountfield" onchange="Calculate('{!lstCNIntervention.size}');" value="{!GI.objGI.Indicative_Y1__c}"/>
+                                    </td>
+                                    <td class="dataCell TDstyle" >
+                                        <apex:inputField id="txtIndicativeY2" styleclass="amountfield" onchange="Calculate('{!lstCNIntervention.size}');" value="{!GI.objGI.Indicative_Y2__c}"/>
+                                    </td>
+                                    <td class="dataCell TDstyle" >
+                                        <apex:inputField id="txtIndicativeY3" styleclass="amountfield" onchange="Calculate('{!lstCNIntervention.size}');" value="{!GI.objGI.Indicative_Y3__c}"/>
+                                    </td>
+                                    <td class="dataCell TDstyle" style="display:{!if(Module__c.Concept_Note__r.Number_of_Years__c == '4','','none')};">
+                                        <apex:inputField id="txtIndicativeY4" styleclass="amountfield" onchange="Calculate('{!lstCNIntervention.size}');" value="{!GI.objGI.Indicative_Y4__c}"/>
+                                    </td>
+                                    <td class="dataCell TDstyle TDborderbottom" rowspan="2">
+                                        <apex:commandLink id="btnAssu" onclick="return TogglePopup('{!$Component.CostAssumption}');" styleClass="TGFbtn TGFbtn-mini {!If(strLanguage == 'FRENCH',IF((GI.objGI.CN_Cost_Assumptions_French__c != '') && (GI.objGI.CN_Other_Funding_French__c!= ''), ' TGFbtn-success',' TGFbtn-warning '),if(strLanguage == 'RUSSIAN',IF((GI.objGI.CN_Cost_Assumptions_Russian__c != '') && (GI.objGI.CN_Other_Funding_Russian__c!= ''), ' TGFbtn-success',' TGFbtn-warning '),if(strLanguage == 'SPANISH',IF((GI.objGI.CN_Cost_Assumptions_Spanish__c != '') && (GI.objGI.CN_Other_Funding_Spanish__c!= ''), ' TGFbtn-success',' TGFbtn-warning '),IF((GI.objGI.CN_Cost_Assumptions__c != '') && (GI.objGI.CN_Other_Funding__c!= ''), ' TGFbtn-success',' TGFbtn-warning '))))}" style="border-right:1px solid #E0E3E5 !important;">
+                                            <strong>{!$Label.Assumptions}</strong>
+                                        </apex:commandLink>
+                                        <apex:outputPanel id="CostAssumption" style="display:none;">
+                                            <apex:outputPanel id="popupBackground2" styleClass="popupBackground"/>
+                                            <apex:outputPanel id="custPopup2" styleClass="custPopupAssump">
+                                                <table width="100%">
+                                                    <tr>
+                                                        <td>
+                                                            <b>{!$label.Cost_Assumptions_GF} <!--Cost Assumptions for the request of the Global Fund--> </b>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>
+                                                            <!--Please describe: -->
+                                                            {!$label.Please_Describe}
+                                                            {!$label.Budget_Items}
+                                                            <!--
+                                                            1)Cost assumptions and data sources, 
+                                                            2)Key activities, 
+                                                            3)Other relevant information. 
+                                                            Please differentiate between allocated and above allocated
+                                                            -->
+                                                        </td>
+                                                    </tr>                                            
+                                                    <tr>
+                                                        <td style="text-align:center;">
+                                                            <apex:inputField id="txtCostAss" value="{!GI.objGI.CN_Cost_Assumptions__c}" rendered="{!IF(strLanguage != 'RUSSIAN' && strLanguage != 'FRENCH' && strLanguage != 'SPANISH',true,false)}" style="resize:none; width:400px;height:200px;"/>
+                                                            <apex:inputField id="txtCostAss_Rus" value="{!GI.objGI.CN_Cost_Assumptions_Russian__c}" rendered="{!IF(strLanguage == 'RUSSIAN',true,false)}" style="resize:none; width:400px;height:200px;"/>
+                                                            <apex:inputField id="txtCostAss_Fr" value="{!GI.objGI.CN_Cost_Assumptions_French__c}" rendered="{!IF(strLanguage == 'FRENCH',true,false)}" style="resize:none; width:400px;height:200px;"/>
+                                                            <apex:inputField id="txtCostAss_Es" value="{!GI.objGI.CN_Cost_Assumptions_Spanish__c}" rendered="{!IF(strLanguage == 'SPANISH',true,false)}" style="resize:none; width:400px;height:200px;"/>
+                                                      
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>
+                                                            <b> {!$label.Other_Funding} <!--Other Funding received for this intervention (including scope of activies funded)--> </b>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td style="text-align:center;">
+                                                            <apex:inputField id="txtCNFund" value="{!GI.objGI.CN_Other_Funding__c}" rendered="{!IF(strLanguage != 'RUSSIAN' && strLanguage != 'FRENCH' && strLanguage != 'SPANISH',true,false)}" style="resize:none; width:400px;height:200px;"/>
+                                                            <apex:inputField id="txtCNFund_Rus" value="{!GI.objGI.CN_Other_Funding_Russian__c}" rendered="{!IF(strLanguage == 'RUSSIAN',true,false)}" style="resize:none; width:400px;height:200px;"/>
+                                                            <apex:inputField id="txtCNFund_Fr" value="{!GI.objGI.CN_Other_Funding_French__c}" rendered="{!IF(strLanguage == 'FRENCH',true,false)}" style="resize:none; width:400px;height:200px;"/>
+                                                            <apex:inputField id="txtCNFund_Es" value="{!GI.objGI.CN_Other_Funding_Spanish__c}" rendered="{!IF(strLanguage == 'SPANISH',true,false)}" style="resize:none; width:400px;height:200px;"/>
+                                                       
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td style="text-align: center;">
+                                                            <apex:commandButton style="width:50px;" value="{!$Label.OK}" onclick="ChangeColorAssu('{!If(strLanguage == 'RUSSIAN',$Component.txtCostAss_Rus,If(strLanguage == 'FRENCH',$Component.txtCostAss_Fr,If(strLanguage == 'SPANISH',$Component.txtCostAss_Es,$Component.txtCostAss)))}',
+                                                            '{!If(strLanguage == 'RUSSIAN',$Component.txtCNFund_Rus,If(strLanguage == 'FRENCH',$Component.txtCNFund_Fr,If(strLanguage == 'SPANISH',$Component.txtCNFund_Es,$Component.txtCNFund)))}','{!$Component.btnAssu}'); return TogglePopup('{!$Component.CostAssumption}');" />
+                                                        </td>
+                                                    </tr>
+                                                </table>
+                                            </apex:outputPanel>
+                                        </apex:outputPanel>                                      
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="dataCell TDstyle TDborderbottom" style="background-color:#DDEFF4">
+                                        <apex:outputText value="{!$Label.Above} ({!Module__c.Concept_Note__r.CurrencyIsoCode})" />
+                                    </td>
+                                    <td class="dataCell TDstyle TDborderbottom" >
+                                        <apex:inputField id="txtAboveY1" styleclass="amountfield" onchange="Calculate('{!lstCNIntervention.size}');" value="{!GI.objGI.Above_Indicative_Y1__c}"/>
+                                    </td>
+                                    <td class="dataCell TDstyle TDborderbottom" >
+                                        <apex:inputField id="txtAboveY2" styleclass="amountfield" onchange="Calculate('{!lstCNIntervention.size}');" value="{!GI.objGI.Above_Indicative_Y2__c}"/>
+                                    </td>
+                                    <td class="dataCell TDstyle TDborderbottom" >
+                                        <apex:inputField id="txtAboveY3" styleclass="amountfield" onchange="Calculate('{!lstCNIntervention.size}');" value="{!GI.objGI.Above_Indicative_Y3__c}"/>
+                                    </td>
+                                    <td class="dataCell TDstyle TDborderbottom" style="display:{!if(Module__c.Concept_Note__r.Number_of_Years__c == '4','','none')};">
+                                        <apex:inputField id="txtAboveY4" styleclass="amountfield" onchange="Calculate('{!lstCNIntervention.size}');" value="{!GI.objGI.Above_Indicative_Y4__c}"/>
+                                    </td>
+                                </tr>
+                                <apex:variable value="{!GICount+1}" var="GICount"/>
+                            </apex:repeat>
+                            <apex:variable value="{!CNCount+1}" var="CNCount"/>
+                        </apex:repeat>
+                        <tr>
+                            <td style="border:0px none !important;" colspan="2">
+                            </td>
+                            <td class="dataCell TDstyle" colspan="2" style="text-align:right;background-color:#DDEFF4;">
+                                <b>{!$Label.Indicative_Request} ({!Module__c.Concept_Note__r.CurrencyIsoCode})</b>
+                            </td>
+                            <td style="background-color:#D8D8D8;vertical-align:middle" class="dataCell TDstyle">
+                                <b>
+                                    <apex:outputText id="otxtTotalIndicativeY1" value="{0,number,###,###,###}">
+                                        <apex:param value="{!intTotalIndicativeY1}"/>
+                                    </apex:outputText>
+                                </b>
+                            </td>
+                            <td class="dataCell TDstyle" style="background-color:#D8D8D8;vertical-align:middle">
+                                <b>
+                                    <apex:outputText id="otxtTotalIndicativeY2" value="{0,number,###,###,###}">
+                                        <apex:param value="{!intTotalIndicativeY2}"/>
+                                    </apex:outputText>
+                                </b>
+                            </td>
+                            <td class="dataCell TDstyle" style="background-color:#D8D8D8;vertical-align:middle">
+                                <b>
+                                    <apex:outputText id="otxtTotalIndicativeY3" value="{0,number,###,###,###}">
+                                        <apex:param value="{!intTotalIndicativeY3}"/>
+                                    </apex:outputText>
+                                </b>
+                            </td>
+                            <td class="dataCell TDstyle" style="background-color:#D8D8D8;vertical-align:middle;display:{!if(Module__c.Concept_Note__r.Number_of_Years__c == '4','','none')};">
+                                <b>
+                                    <apex:outputText id="otxtTotalIndicativeY4" value="{0,number,###,###,###}">
+                                        <apex:param value="{!intTotalIndicativeY4}"/>
+                                    </apex:outputText>
+                                </b>
+                            </td>
+                            <td style="border:0px none !important;">
+                            </td>
+                        </tr>      
+                        <tr>
+                            <td style="border:0px none !important;" colspan="2">
+                            </td>
+                            <td class="dataCell TDstyle" colspan="2" style="text-align:right;background-color:#DDEFF4;">
+                                <b>{!$Label.Above_Indicative_Request_Module} ({!Module__c.Concept_Note__r.CurrencyIsoCode})</b>
+                            </td>
+                            <td class="dataCell TDstyle" style="background-color:#D8D8D8;vertical-align:middle">
+                                <b>
+                                    <apex:outputText id="otxtTotalAboveY1" value="{0,number,###,###,###}">
+                                        <apex:param value="{!intTotalAboveY1}"/>
+                                    </apex:outputText>
+                                </b>
+                            </td>
+                            <td class="dataCell TDstyle" style="background-color:#D8D8D8;vertical-align:middle">
+                                <b>
+                                    <apex:outputText id="otxtTotalAboveY2" value="{0,number,###,###,###}">
+                                        <apex:param value="{!intTotalAboveY2}"/>
+                                    </apex:outputText>
+                                </b>
+                            </td>
+                            <td class="dataCell TDstyle" style="background-color:#D8D8D8;vertical-align:middle">
+                                <b>
+                                    <apex:outputText id="otxtTotalAboveY3" value="{0,number,###,###,###}">
+                                        <apex:param value="{!intTotalAboveY3}"/>
+                                    </apex:outputText>
+                                </b>
+                            </td>
+                            <td class="dataCell TDstyle" style="background-color:#D8D8D8;vertical-align:middle;display:{!if(Module__c.Concept_Note__r.Number_of_Years__c == '4','','none')};">
+                                <b>
+                                    <apex:outputText id="otxtTotalAboveY4" value="{0,number,###,###,###}">
+                                        <apex:param value="{!intTotalAboveY4}"/>
+                                    </apex:outputText>
+                                </b>
+                            </td>
+                            <td style="border:0px none !important;">
+                            </td>
+                        </tr>                        
+                     </tbody>                    
+                 </table>
+            </td>
+        </tr>
+    </table>
+    </td>
+    </tr>
+   </table>
+  </div>
+</div>  
+
+    <style>
+        .ProcessingBackground
+        {
+            background-color: black;
+            opacity: 0.50;
+            filter: alpha(opacity = 50);
+            width: 100%;
+            height: 100%;
+            position: fixed;
+            z-index: 9999;
+            top:0;
+            left:0;
+        }
+        .Processing
+        {
+            z-index: 9999;
+            left: 50%;
+            top: 50%;
+            text-align: center;
+            position: fixed;
+        }
+        .deletePopup{
+            background-color: #EDEDED !important;
+            border-top: 0px !important;
+            text-align:center !important;
+        }
+        .popupButtonCancel{
+            background-color: #d82516 !important;
+            background-image: none !important;
+            color: white !important;
+            font-size: 12.9pt !important;
+            font-weight: bold !important;
+            height: 30px !important;;
+            width: 90px !important;;
+        }
+        .popupButtonYes{
+            background-color: #49C739 !important;
+            background-image: none !important;
+            color: white !important;
+            font-size: 12.9pt !important;
+            font-weight: bold !important;
+            height: 30px !important;;
+            width: 90px !important;;
+        }
+        .custPopupHistory{
+            background-color: white;
+            border-width: 0px;
+            border-radius:10px;
+            border-style: solid;
+            /*z-index: 9999;*/
+            z-index: 51;
+            left: 12%;
+            padding:10px;
+            position: absolute;
+            top:8%;
+        }
+        .popupBackgroundHistory{
+            background-color:black;
+            opacity: 0.20;
+            filter: alpha(opacity = 20);
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            /*z-index: 9998;*/
+            z-index: 50;
+            top: 0;
+            left: 0;
+            
+        }
+    </style>
+    <div id="divProcessing" style="display:none;">
+        <div class="ProcessingBackground"></div>
+        <div class="Processing">
+            <apex:image alt="Processing" url="{!$Resource.LoadingCircle}" />
+        </div>
+    </div>  
+    <apex:actionStatus id="Processing" onstart="document.getElementById('divProcessing').style.display = '';" onstop="document.getElementById('divProcessing').style.display = 'none';">                            
+    </apex:actionStatus> 
+    <apex:actionFunction id="acfDeletPR" name="acfDeletPR" action="{!DeletePR}">
+        <apex:param name="dltIndexGI" value=""/>
+        <apex:param name="dltIndexCN" value=""/>
+    </apex:actionFunction>
+    <!-- Field History 
+    <apex:outputPanel id="HistoryPopup" >
+        <apex:outputPanel id="popupBackground" styleClass="popupBackgroundHistory" rendered="{!GI.blnEdit}"/>
+        <apex:outputPanel id="custPopup" styleClass="custPopupHistory" rendered="{!GI.blnEdit}"> 
+            <apex:pageBlock id="pageB" >
+                <apex:pageBlockButtons location="bottom" >
+                    <apex:commandButton id="popupCancel" value="Cancel" reRender="frm" status="Processing" action="{!HidePopupHistory}" />
+                </apex:pageBlockButtons>
+                <apex:pageBlockTable value="{!lstaccHistory}" var="History" width="100%">
+                    <apex:column headerValue="Field" style="vertical-align:top;" width="20%" >
+                        <apex:outputText value="{!History.Field}" />
+                    </apex:column>
+                    <apex:column headerValue="Modify By" style="vertical-align:top;" width="20%">
+                        <apex:outputText value="{!History.CreatedById}" />
+                    </apex:column>
+                    <apex:column headerValue="Modify Date" style="vertical-align:top;" width="20%">
+                        <apex:outputText value="{0,date,EEE  MM-dd-yyyy}">
+                             <apex:param value="{!History.CreatedDate}"  />
+                        </apex:outputText>
+                    </apex:column>
+                    <apex:column headerValue="Value Change From" style="vertical-align:top;" width="20%" >
+                        <apex:outputText value="{!History.OldValue}" />
+                    </apex:column>
+                    <apex:column headerValue="Value Change To" style="vertical-align:top;" width="20%">
+                        <apex:outputText value="{!History.NewValue}" />
+                    </apex:column>
+                </apex:pageBlockTable>
+            </apex:pageBlock>
+        </apex:outputPanel>
+        </apex:outputPanel>-->
+  <script>
+        var nodes = document.getElementsByTagName('input');
+        for(var i = 0; i < nodes.length; i++)
+        {
+            if(nodes[i].type == "text" && nodes[i].id != 'phSearchInput'){
+                nodes[i].disabled = {!(!blnEditDescription || !blnEditAllocatedValues || !blnEditAboveAllocatedValues || !blnEditAssumptions)};
+            }
+        }
+        var nodesTextArea = document.getElementsByTagName('textarea');
+        for(var i = 0; i < nodesTextArea.length; i++)
+        {            
+            nodesTextArea[i].disabled = {!(!blnEditDescription || !blnEditAllocatedValues || !blnEditAboveAllocatedValues || !blnEditAssumptions)};            
+        }
+    </script>    
+</apex:form>
+<script>
+    function deletePR(GISaveIndex,CNSaveIndex){
+        alert('hi');
+        acfDeletPR(GISaveIndex,CNSaveIndex);
+    }
+    function OpenPopup(PopupPanelId){
+        document.getElementById(PopupPanelId).style.display = '';
+        return false;
+    }
+    function ClosePopup(PopupPanelId){
+        document.getElementById(PopupPanelId).style.display = 'none';
+        return false;
+    }
+    
+    function ChangeColorAssu(txtCAss,txtCNFund,btnID){
+        
+        var txt = document.getElementById(txtCAss);
+        var txtCNF =document.getElementById(txtCNFund);
+        var btn= document.getElementById(btnID);
+        //alert('txt ='+txtCAss);
+         if(txt.value!='' && txtCNF.value!=''){
+             btn.className = btn.className.replace(" TGFbtn-warning ","");
+             btn.className = btn.className+" TGFbtn-success ";
+         }else{
+             btn.className = btn.className.replace(" TGFbtn-success ","");
+             btn.className = btn.className+" TGFbtn-warning ";             
+         }
+        
+    }
+    function ChangeColorDesc(txtId,btnID){
+        
+        var txt = document.getElementById(txtId);
+        var btn= document.getElementById(btnID);
+        //alert('txt ='+txtId);
+         if(txt.value==''){
+             btn.className = btn.className.replace(" TGFbtn-success ","");
+             btn.className = btn.className+" TGFbtn-warning ";
+         }else{
+             btn.className = btn.className.replace(" TGFbtn-warning ","");
+             btn.className = btn.className+" TGFbtn-success ";             
+         }
+    }
+    function TogglePopup(PopupId){
+        
+        var objPopup = document.getElementById(PopupId);
+        if(objPopup.style.display==''){
+            objPopup.style.display='none';
+        }else{
+            objPopup.style.display='';
+        }
+        return false;
+    }
+    
+     function RemoveComma(CostValue){
+        CostValue += '';
+        var ReComma = new RegExp("\\,","g");
+        var ReQuate = new RegExp("\\'","g");
+        CostValue = CostValue.replace(ReComma,"");
+        CostValue = CostValue.replace(ReQuate,"");
+        CostValue = CostValue.replace(",.",".");
+        CostValue = CostValue.replace("'.",".");
+        if(isNaN(CostValue)==true || CostValue==''){
+            return 0;
+        }else{
+            return parseInt(CostValue);
+        }
+    }
+    function addCommas(nStr)
+    {
+        
+        nStr += '';
+        x = nStr.split('.');
+        x1 = x[0];
+        x2 = x.length > 1 ? '.' + x[1] : '';
+        var rgx = /(\d+)(\d{3})/;
+        while (rgx.test(x1)) {
+            x1 = x1.replace(rgx, '$1' + ',' + '$2');
+        }
+        return x1 + x2;
+    }
+    
+    function checkValidValue(ElementId){
+        var element = document.getElementById(ElementId);
+        var CostValue = element.value;
+        CostValue += '';
+        var ReComma = new RegExp("\\,","g");
+        var ReQuate = new RegExp("\\'","g");
+        CostValue = CostValue.replace(ReComma,"");
+        CostValue = CostValue.replace(ReQuate,"");
+        CostValue = CostValue.replace(",.",".");
+        CostValue = CostValue.replace("'.",".");
+        if(element != null && isNaN(CostValue) == true){
+            return false;
+        }
+        return true;
+    }
+    function validateSave(CNSize){
+        var blnCheckValue = true;
+        for(var CNInt=0;CNInt<CNSize;CNInt++){
+            var GISize = document.getElementById('page:frm:rptrCNI:'+CNInt+':ChildSize').innerHTML;
+            for(var GInt=0;GInt<GISize;GInt++){
+                if(checkValidValue("page:frm:rptrCNI:"+CNInt+":rptrGI:"+GInt+":txtIndicativeY1") == false){
+                    blnCheckValue = false;
+                    break;
+                }
+                else if(checkValidValue("page:frm:rptrCNI:"+CNInt+":rptrGI:"+GInt+":txtIndicativeY2") == false){
+                   blnCheckValue = false;
+                    break;
+                }
+                else if(checkValidValue("page:frm:rptrCNI:"+CNInt+":rptrGI:"+GInt+":txtIndicativeY3") == false){
+                    blnCheckValue = false;
+                    break;
+                }
+                else if(checkValidValue("page:frm:rptrCNI:"+CNInt+":rptrGI:"+GInt+":txtIndicativeY4") == false){
+                    blnCheckValue = false;
+                    break;
+                }
+                else if(checkValidValue("page:frm:rptrCNI:"+CNInt+":rptrGI:"+GInt+":txtAboveY1") == false){
+                    blnCheckValue = false;
+                    break;
+                }
+                else if(checkValidValue("page:frm:rptrCNI:"+CNInt+":rptrGI:"+GInt+":txtAboveY2") == false){
+                    blnCheckValue = false;
+                    break;
+                }
+                else if(checkValidValue("page:frm:rptrCNI:"+CNInt+":rptrGI:"+GInt+":txtAboveY3") == false){
+                    blnCheckValue = false;
+                    break;
+                }
+                else if(checkValidValue("page:frm:rptrCNI:"+CNInt+":rptrGI:"+GInt+":txtAboveY4") == false){
+                    blnCheckValue = false;
+                    break;
+                }
+            }
+        }
+        if(blnCheckValue == false){
+            alert('Please enter valid value.');
+            return false;
+        }else{
+            actSaveDraft();
+            return false;
+        }
+    }
+    function Calculate(CNSize){
+        var CNInt=0;
+        var GInt=0;
+        var objIndicativeY1 = document.getElementById("page:frm:rptrCNI:"+CNInt+":rptrGI:"+GInt+":txtIndicativeY1");
+        var objIndicativeY2 = document.getElementById("page:frm:rptrCNI:"+CNInt+":rptrGI:"+GInt+":txtIndicativeY2");
+        var objIndicativeY3 = document.getElementById("page:frm:rptrCNI:"+CNInt+":rptrGI:"+GInt+":txtIndicativeY3");
+        var objIndicativeY4 = document.getElementById("page:frm:rptrCNI:"+CNInt+":rptrGI:"+GInt+":txtIndicativeY4");
+    
+        var objaboveY1 = document.getElementById("page:frm:rptrCNI:"+CNInt+":rptrGI:"+GInt+":txtAboveY1");
+        var objaboveY2 = document.getElementById("page:frm:rptrCNI:"+CNInt+":rptrGI:"+GInt+":txtAboveY2");
+        var objaboveY3 = document.getElementById("page:frm:rptrCNI:"+CNInt+":rptrGI:"+GInt+":txtAboveY3");
+        var objaboveY4 = document.getElementById("page:frm:rptrCNI:"+CNInt+":rptrGI:"+GInt+":txtAboveY4");
+    
+        var intTotalIndicativeY1=0;
+        var intTotalIndicativeY2=0;
+        var intTotalIndicativeY3=0;
+        var intTotalIndicativeY4=0;
+    
+        var intTotalAboveY1=0;
+        var intTotalAboveY2=0;
+        var intTotalAboveY3=0;
+        var intTotalAboveY4=0;
+        
+        
+        for(var CNInt=0;CNInt<CNSize;CNInt++){
+            var GISize = document.getElementById('page:frm:rptrCNI:'+CNInt+':ChildSize').innerHTML;
+            for(var GInt=0;GInt<GISize;GInt++){
+                if(document.getElementById("page:frm:rptrCNI:"+CNInt+":rptrGI:"+GInt+":txtIndicativeY1") != null){
+                    
+                    objIndicativeY1 = document.getElementById("page:frm:rptrCNI:"+CNInt+":rptrGI:"+GInt+":txtIndicativeY1");
+                    objIndicativeY2 = document.getElementById("page:frm:rptrCNI:"+CNInt+":rptrGI:"+GInt+":txtIndicativeY2");
+                    objIndicativeY3 = document.getElementById("page:frm:rptrCNI:"+CNInt+":rptrGI:"+GInt+":txtIndicativeY3");
+                    objIndicativeY4 = document.getElementById("page:frm:rptrCNI:"+CNInt+":rptrGI:"+GInt+":txtIndicativeY4");
+            
+                    objaboveY1 = document.getElementById("page:frm:rptrCNI:"+CNInt+":rptrGI:"+GInt+":txtAboveY1");
+                    objaboveY2 = document.getElementById("page:frm:rptrCNI:"+CNInt+":rptrGI:"+GInt+":txtAboveY2");
+                    objaboveY3 = document.getElementById("page:frm:rptrCNI:"+CNInt+":rptrGI:"+GInt+":txtAboveY3");
+                    objaboveY4 = document.getElementById("page:frm:rptrCNI:"+CNInt+":rptrGI:"+GInt+":txtAboveY4");
+                    
+                    intTotalIndicativeY1 += RemoveComma(objIndicativeY1.value);
+                    intTotalIndicativeY2 += RemoveComma(objIndicativeY2.value);
+                    intTotalIndicativeY3 += RemoveComma(objIndicativeY3.value);
+                    intTotalIndicativeY4 += RemoveComma(objIndicativeY4.value);
+                    
+                    intTotalAboveY1 += RemoveComma(objaboveY1.value);
+                    intTotalAboveY2 += RemoveComma(objaboveY2.value);
+                    intTotalAboveY3 += RemoveComma(objaboveY3.value);
+                    intTotalAboveY4 += RemoveComma(objaboveY4.value);
+                    
+                    //GInt++;
+                }
+            }
+        }
+           
+        document.getElementById("page:frm:otxtTotalIndicativeY1").innerHTML=addCommas(intTotalIndicativeY1);
+        document.getElementById("page:frm:otxtTotalIndicativeY2").innerHTML=addCommas(intTotalIndicativeY2);
+        document.getElementById("page:frm:otxtTotalIndicativeY3").innerHTML=addCommas(intTotalIndicativeY3);
+        document.getElementById("page:frm:otxtTotalIndicativeY4").innerHTML=addCommas(intTotalIndicativeY4);
+    
+        document.getElementById("page:frm:otxtTotalAboveY1").innerHTML=addCommas(intTotalAboveY1);
+        document.getElementById("page:frm:otxtTotalAboveY2").innerHTML=addCommas(intTotalAboveY2);
+        document.getElementById("page:frm:otxtTotalAboveY3").innerHTML=addCommas(intTotalAboveY3);
+        document.getElementById("page:frm:otxtTotalAboveY4").innerHTML=addCommas(intTotalAboveY4);
+        
+        if('{!Module__c.Concept_Note__r.Number_of_Years__c}' == '4'){
+            document.getElementById("page:frm:otxtTotalIndicative").innerHTML=addCommas(intTotalIndicativeY1 + intTotalIndicativeY2 + intTotalIndicativeY3 + intTotalIndicativeY4);
+            document.getElementById("page:frm:otxtTotalAbove").innerHTML= addCommas(intTotalAboveY1 + intTotalAboveY2 + intTotalAboveY3 +intTotalAboveY4);
+        }else{
+            document.getElementById("page:frm:otxtTotalIndicative").innerHTML=addCommas(intTotalIndicativeY1 + intTotalIndicativeY2 + intTotalIndicativeY3);
+            document.getElementById("page:frm:otxtTotalAbove").innerHTML= addCommas(intTotalAboveY1 + intTotalAboveY2 + intTotalAboveY3);
+        }
+    }
+    
+</script>
+</apex:page>

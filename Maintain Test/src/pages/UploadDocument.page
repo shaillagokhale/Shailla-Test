@@ -1,0 +1,89 @@
+<apex:page id="page" standardController="DocumentUpload_GM__c" extensions="extensionDocumentUpload" sidebar="false" showheader="false">
+    <apex:form id="frm">
+            <apex:outputPanel id="scptpnl">
+                <apex:outputPanel rendered="{!refreshPage}">
+                <!-- This panel is only shown when the controller wants the parent page to perform a 'reload' -->
+                    <script>
+                        // force the browser to reload the 'top' page using the current URL                         
+                        if({!success})
+                        {  
+                               alert('File uploaded successfully');
+                               redirectURL();
+                        }
+                        else 
+                        {
+                            if({!showsize})
+                            {
+                                alert('This file exceeds the maximum size limit of 10MB.');
+                            }
+                            else
+                            {
+                                 alert('This file is empty.');
+                            }
+                        }                       
+                        function redirectURL() {
+                        if("{!$User.ContactId}" != '') {
+                            var base_url = window.location.protocol + '//' + window.location.host;
+                     <!--       base_url += '/GM/{!objDocumentUpload.Id}';   -->
+                             base_url += '/GM/{!objDocumentUpload.Id}';               
+                            window.parent.location = base_url;
+                        }
+                        else {
+                            var base_url = window.location.protocol + '//' + window.location.host;
+                            base_url += '/{!objDocumentUpload.Id}';                  
+                            window.parent.location = base_url;
+                        }             
+                    }
+                    </script>            
+                </apex:outputPanel>             
+            </apex:outputPanel>           
+            <apex:outputPanel >
+                 <table>
+                  <tr>
+                        <apex:inputFile id="ipFile" value="{!objFeedItem.ContentData}" filename="{!objFeedItem.ContentFileName}" filesize="{!objFeedItem.ContentSize}" />
+                    </tr>
+                    <tr>
+                        <td align="center" colspan="2">
+                        <br></br>
+                        <apex:commandbutton value="Upload" reRender="scptpnl" onclick="return ValidateUploadFile('{!$Component.ipFile}');"/>&nbsp;&nbsp;
+                        <apex:commandButton value="Cancel" onclick="return closePopup('{!$Component.tstPopup2}');" />
+                        </td>
+                    </tr>
+                </table>  
+            </apex:outputPanel>
+            <apex:actionFunction action="{!uploadFile}" name="actuploadFile" />
+            <apex:outputPanel id="tstPopup2" style="display:none;"/>
+            <Style>
+                .Processing
+                {
+                    z-index: 9999;
+                    left: 50%;
+                    top: 50%;
+                    text-align: Centre;
+                    position: fixed;
+                }        
+            </style>
+            <div id="divProcessing" style="display:none;">
+            <div class="ProcessingBackground"></div>
+                <div class="Processing">
+                    <apex:image alt="Processing" url="{!$Resource.LoadingCircle}" />
+                </div>
+            </div>
+            <apex:actionStatus id="Processing" onstart="document.getElementById('divProcessing').style.display = '';" onstop="document.getElementById('divProcessing').style.display = 'none';">                            
+            </apex:actionStatus>         
+            <Script>
+                function ValidateUploadFile(fileid)
+                {
+                    if(document.getElementById(fileid).value == '')
+                    {
+                        alert('{!$Label.Select_File}.');
+                    }
+                    else
+                    {                        
+                        document.getElementById('divProcessing').style.display = '';
+                        actuploadFile();
+                    }
+                }                                        
+            </Script>
+    </apex:form>
+</apex:page>

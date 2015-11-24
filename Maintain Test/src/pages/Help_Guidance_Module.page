@@ -1,0 +1,25 @@
+<apex:page controller="Help_Guidance_Module" showHeader="true" sidebar="false">
+
+<apex:outputPanel >
+ <apex:sectionHeader title="Guidance for {!guidance.GM_Guidance_Name__c}"/> 
+
+  <apex:outputField value="{!guidance.English_Guidance__c}" rendered="{!if(strLanguage == 'ENGLISH', true, false)}"/>
+  <apex:outputField value="{!guidance.English_Guidance_Overflow__c}" rendered="{!if(strLanguage == 'ENGLISH', true, false)}"/>
+  
+  <apex:outputField value="{!guidance.French_Guidance__c}" rendered="{!if(strLanguage == 'FRENCH', true, false)}"/> 
+  <apex:outputField value="{!guidance.French_Guidance_Overflow__c}" rendered="{!if(strLanguage == 'FRENCH', true, false)}"/>
+  
+  <apex:outputField value="{!guidance.Russian_Guidance__c}" rendered="{!if(strLanguage == 'RUSSIAN', true, false)}"/>
+  <apex:outputField value="{!guidance.Russian_Guidance_Overflow__c}" rendered="{!if(strLanguage == 'RUSSIAN', true, false)}"/>
+   
+  <apex:outputField value="{!guidance.Spanish_Guidance__c}" rendered="{!if(strLanguage == 'SPANISH', true, false)}"/>
+  <apex:outputField value="{!guidance.Spanish_Guidance_Overflow__c}" rendered="{!if(strLanguage == 'SPANISH', true, false)}"/>
+  
+</apex:outputPanel>
+<!--
+    <apex:outputPanel rendered="{!!blnDisplay}">
+    <apex:sectionHeader title="Guidance"/>
+    <h5>Sorry, this guidance page is unavailable at the moment.</h5>
+</apex:outputPanel>
+-->
+</apex:page>

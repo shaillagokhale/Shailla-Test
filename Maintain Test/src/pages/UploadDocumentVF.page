@@ -1,0 +1,206 @@
+<apex:page id="page" sidebar="false" standardController="Implementation_Period__c" extensions="UploadDocumentext">
+    <apex:stylesheet value="{!URLFOR($Resource.GoalsJs, 'assets/css/bootstrap.css')}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.GoalsJs, 'assets/css/bootstrap-responsive.css')}"/>
+    <apex:includeScript value="{URLFOR(!$Resource.GoalsJs, 'assets/js/bootstrap.js')}" />
+    <style>
+        .ProcessingBackground
+        {
+            background-color: black;
+            opacity: 0.50;
+            filter: alpha(opacity = 50);
+            width: 100%;
+            height: 100%;
+            position: fixed;
+            z-index: 9999;
+            top:0;
+            left:0;
+        }
+        .Processing
+        {
+            z-index: 9999;
+            left: 50%;
+            top: 50%;
+            text-align: center;
+            position: fixed;
+        }
+    </style>
+    <script>
+        function openPopup(popupId){
+                //document.getElementById(cmdLink).style.display = 'none';
+                document.getElementById(popupId).style.display = '';                                
+                return false;
+        }
+        
+        function showpleasespecify(type,specify,row1,row2){
+            if(document.getElementById(type).value == 'Other') {
+                document.getElementById(specify).style.display = '';
+                document.getElementById(row1).style.display = '';
+                document.getElementById(row2).style.display = '';
+            }
+            else {              
+                document.getElementById(specify).style.display = 'none';
+                document.getElementById(row1).style.display = 'none';
+                document.getElementById(row2).value = '';
+                document.getElementById(row2).style.display = 'none';
+            }                                
+            return false;
+        }
+        
+/*  Commented working for Feedback #230
+        function closePopup(ipfile,type,language,Section,Description,Name,Internal){                
+                //document.getElementById(cmdLink).style.display = '';
+                document.getElementById(Name).value= '';
+                document.getElementById(Internal).value= false;
+                document.getElementById(type).value= '';
+                document.getElementById(language).value= '';
+                document.getElementById(Section).value= '';
+                document.getElementById(Description).value= '';                                
+                document.getElementById(ipfile).value = '';                                   
+                return false;
+        }
+*/
+        
+        function ValidateUploadFile(fileid,Type,Description,specify){
+                if(document.getElementById(fileid).value == ''){
+                    alert('{!$Label.Select_File}.');
+                    return false;
+                }else{                                                                                                                                                                                                                              
+                    if(document.getElementById(Type).value == ''){
+                        alert('{!$Label.Specify_File_Type}.');
+                        return false;
+                    }else{
+                        if(document.getElementById(Description).value == ''){
+                            alert('{!$Label.Specify_Description}.');
+                            return false;
+                        }else{
+                            if(document.getElementById(Type).value == 'Other' && document.getElementById(specify).value.length < 5){                                
+                                alert('Please enter atleast 5 characters in Please Specify text box');
+                                return false;
+                            }else{
+                                document.getElementById('divProcessing').style.display = '';
+                                actuploadFile();
+                                return false;
+                            }
+                 }  } }
+        }
+    </script>
+        
+    <apex:form id="form">       
+        <apex:pageBlock id="UploadDoc">
+            <apex:pageBlockButtons >
+<!-- Commented working on Feedback #230            
+                <apex:commandLink id="backlink" action="{!returntoIP}">
+                    <b> Return to Implementation Period </b>
+                </apex:commandLink>
+-->
+            <apex:commandButton value="{!$Label.Upload}" onclick="return ValidateUploadFile('{!$Component.ipFile}','{!$Component.ifType}','{!$Component.ifDescription}','{!$Component.ispecify}');">                                                                    
+            </apex:commandButton>&nbsp;&nbsp;
+            <apex:commandButton value="{!$Label.Cancel}" action="{!returntoIP}">                                                                    
+            </apex:commandButton>
+            </apex:pageBlockButtons>                      
+            
+            <apex:outputPanel id="tstPopup2">
+                <apex:outputPanel id="popupBackground2" />
+                    <apex:outputPanel id="custPopup2">
+                        <table width="100%" cellspacing="0" cellpadding="0" border="0" >
+                                                        <tr>
+                                                            <td align="left" width="20%">
+                                                               <apex:outputLabel id="Name" value="{!$Label.Name}:"></apex:outputLabel>
+                                                            </td>
+                                                            <td>                                                                
+                                                                <apex:inputField id="ipName" value="{!objDocumentUpload.Name}" />
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td align="left" width="20%">
+                                                               <apex:outputLabel id="olType" value="{!$Label.Select_Type}:"></apex:outputLabel>
+                                                            </td>
+                                                            <td>                                                                
+                                                                <apex:inputField id="ifType" value="{!objDocumentUpload.GMType__c}" onchange="showpleasespecify('{!$Component.ifType}','{!$Component.SpecifyText}','{!$Component.ospecify}','{!$Component.ispecify}');"/>                                                                
+                                                            </td>
+                                                        </tr>
+                                                        <apex:outputPanel id="SpecifyText" style="display:none">
+                                                        <tr>                                                            
+                                                            <td align="left" width="20%">
+                                                               <apex:outputLabel id="ospecify" value="Please Specify:" style="display:none"></apex:outputLabel>
+                                                            </td>
+                                                            <td>                                                                
+                                                                <apex:inputField id="ispecify" value="{!objDocumentUpload.Please_Specify__c}" style="display:none"/>
+                                                            </td>
+                                                        </tr>
+                                                        </apex:outputPanel>
+                                                        <tr>
+                                                            <td align="left" width="20%" >
+                                                                <apex:outputLabel id="olLanguage" value="{!$Label.Select_Language}: "></apex:outputLabel>
+                                                            </td>
+                                                            <td>
+                                                                <apex:inputField id="ifLanguage" value="{!objDocumentUpload.Language__c}" />
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td width="20%">
+                                                                <apex:outputlabel id="oSection" value="{!$Label.Section}"/>                                                                
+                                                            </td>
+                                                            <td>
+                                                                <apex:inputfield id="iSection" value="{!objDocumentUpload.Section__c}"/>
+                                                            </td>
+                                                        </tr>
+                                                        <tr style="display:{!if(blnIsExtUser == true,'none','')}">
+                                                            <td align="left" width="20%">
+                                                               <apex:outputLabel id="internal" value="{!$Label.TGF_Internal_Label}:"></apex:outputLabel>
+                                                            </td>
+                                                            <td>                                                                
+                                                                <apex:inputField id="ipinternal" value="{!objDocumentUpload.TGF_Internal__c}" />
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td colspan="2" align="left" width="20%">
+                                                                <apex:inputFile id="ipFile" value="{!objFeedItem.ContentData}" filename="{!objFeedItem.ContentFileName}" filesize="{!objFeedItem.ContentSize}"/>                                                                
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td style="color:#D00000;font-weight:bold;" colspan="2" align="left">
+                                                                {!$Label.Max_File_Size} 
+                                                            </td>
+                                                        </tr>
+                                                        <tr><td style="height:17px;"></td></tr>
+                                                        
+                                                        <tr>
+                                                            <td  align="left">
+                                                                {!$Label.Description}
+                                                            </td>
+                                                            <td align="left">
+                                                                <apex:inputTextArea id="ifDescription" value="{!objFeedItem.body}" styleclass="countable1" style="resize:none;width:250px;height:80px;length:250px"/>
+                                                            </td>
+                                                        </tr>
+                                                       
+                                                        <tr>
+                                                       
+                                                           <td align="center" colspan="1">
+                                                                <br></br>
+                                                                <apex:actionFunction action="{!uploadFile}" name="actuploadFile"/>                                                                                                                                      
+                                                                <apex:outputPanel id="HiddenPanel1">
+                                                                    <apex:inputHidden value="{!fileoverload}" id="ipfilesize"/>
+                                                                    <apex:inputHidden value="{!fileSize}" id="actfilesize"/> 
+                                                                </apex:outputPanel>
+                                                                                                                               
+                                                                <!-- Commented working on feedback #230 placed both buttons in pageblockbutton section                                                                 
+                                                                <apex:commandButton value="{!$Label.Cancel}" onclick="return closePopup('{!$Component.ipfile}','{!$Component.ifType}','{!$Component.ifLanguage}','{!$Component.iSection}','{!$Component.ifDescription}','{!$Component.ipName}','{!$Component.ipinternal}');">                                                                    
+                                                                </apex:commandButton>
+                                                                --> 
+                                                           </td>
+                                                        </tr>
+                    </table>
+                </apex:outputPanel>
+            </apex:outputPanel>
+            <div id="divProcessing" style="display:none;">
+                <div class="ProcessingBackground"></div>
+                <div class="Processing">
+                        <apex:image alt="Processing" url="{!$Resource.LoadingCircle}" />
+                </div>
+            </div>  
+            <apex:actionStatus id="Processing" onstart="document.getElementById('divProcessing').style.display = '';" onstop="document.getElementById('divProcessing').style.display = 'none';">                            
+            </apex:actionStatus>                                               
+        </apex:pageBlock>
+    </apex:form>
+</apex:page>

@@ -1,0 +1,1605 @@
+<apex:page id="GMoverview" sidebar="false" standardController="Implementation_Period__c" extensions="ctrlGrantMakingOverview" >
+    <apex:stylesheet value="{!URLFOR($Resource.GoalsJs, 'assets/css/bootstrap.css')}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.GoalsJs, 'assets/css/bootstrap-responsive.css')}"/>
+    <apex:includeScript id="a" value="https://www.google.com/jsapi" />
+    <apex:includeScript value="{!$Resource.jquery142}" />
+    <apex:includeScript value="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"/>
+    <head>
+        <title>Grant-Making Overview</title>
+    </head>
+    <script>
+    function setFocusOnLoad() {}
+    </script>
+    <script type= "text/javaScript" > 
+    function showText(popupId){
+    var popId = popupId;
+    
+    if( popId.indexOf('img') != -1){
+  
+    document.getElementById("GMoverview:frm:ipf1").style.display = "";
+    document.getElementById("GMoverview:frm:opf1").style.display = "none";    
+    }
+    if(popId.indexOf('ipf1') != -1)
+    {       
+     savetextinJS();
+    }
+    }
+     
+    
+  function focusonme() {
+            window.location.hash = '#HistoryPopup';
+        }
+    </script>
+   
+    <style>
+    .h3 {
+        font-size:24px;
+        //line-height: 20px;
+        line-height: 1.5;
+        //margin-left:20px;
+        font-weight:bold;
+    }
+     .h4 {
+        font-size:18px;
+        line-height: 1.5;
+        font-weight:bold;
+    }
+    .bold{
+        font-weight:bold;
+    }
+    table {
+        font-size:14px;
+        //margin:20px 40px;
+        position:relative;
+    }
+    .table-margin{
+        margin:20px 40px;        
+    }
+    td .middle{
+     vertical-align:middle;
+       }
+    td .border{
+        border-width: 1px;
+        border-radius:10px;
+        border-style: solid;
+       }       
+    .link{
+    color:#2E7BBB;
+    }
+     .linkunderline{
+        color:#2E7BBB;
+        text-decoration:underline;
+    }
+    .dateFormat{
+      visibility:hidden;
+    }
+    .container{
+        margin-left:1%;
+        margin-right:1%;
+        width:97%
+    }
+    .text{
+        margin-left:20px;
+    }
+    table-striped{
+        margin-left:20px;
+    }
+    
+    .table {
+        margin-bottom: 20px;
+        width: 100%;
+        align-self: center;
+    }
+    .table-striped1 tbody > tr:nth-child(odd) > td,
+    .table-striped1 tbody > tr:nth-child(odd) > th {
+      background-color: #f9f9f9;
+       margin:20px 40px;
+    }
+    .Image{
+        cursor:pointer;
+        height:13px;
+        width:13px;
+        vertical-align:middle;
+    }
+    table .thin td {
+         height:25;   
+    }
+    .custPopup{
+        background-color: #ededed;
+        border-width: 0px;
+        border-radius:10px;
+        border-style: solid;
+        z-index: 9999;
+        left: 50%;
+        margin-top:-60px;
+        padding:10px;
+        position: absolute;
+        width:300px;
+        height:160px;
+    }
+    h3{
+        font-size:18px;
+        
+        
+    }
+    .custPopupDialog{
+        background-color: #FFFFFF;
+        border-width: 0px;
+        border-radius:10px;
+        border-style: solid;
+        z-index: 9999;
+        left: 40%;
+        top:30%;
+        padding:10px;
+        position: absolute;
+        width:600px;
+        height:400px;
+    }
+    .custPopupGrantInfo{
+        background-color: #ededed;
+        border-width: 2px;
+        border-radius:10px;
+        border-style: solid;
+        z-index: 9999;
+        padding:10px;
+        position: absolute;
+        left:10%;
+        top:0%;
+        width:750px;//600px
+        height:750px;//400px
+    }
+    .popupBackground{
+        background-color:black;
+        opacity: 0.50;
+        filter: alpha(opacity = 20);
+        position: fixed;
+        width: 100%;
+        height: 100%;
+        z-index: 9998;
+        top: 0;
+        left: 0;
+    }
+    .popupBackgroundDialog{
+        background-color:black;
+        opacity: 0.50;
+        filter: alpha(opacity = 20);
+        position: fixed;
+        width: 100%;
+        height: 100%;
+        z-index: 9998;
+        top: 0;
+        left: 0;
+    }
+    .popupButtonYes{
+        background-color: #49C739 !important;
+        background-image: none !important;
+        color: white !important;
+        font-size: 12.9pt !important;
+        font-weight: bold !important;
+        height: 30px !important;;
+        width: 90px !important;;
+    }
+    .popupButtonCancel{
+        background-color: #d82516 !important;
+        background-image: none !important;
+        color: white !important;
+        font-size: 12.9pt !important;
+        font-weight: bold !important;
+        height: 30px !important;;
+        width: 90px !important;;
+    }
+    .deletePopup{
+        background-color: #EDEDED !important;
+        border-top: 0px !important;
+        text-align:center !important;
+        white-space: normal !important;
+    }
+    .deletePopupCancel{
+        background-color: #EDEDED !important;
+        border-top: 0px !important;
+        text-align:left !important;
+    }
+    .webkitright {
+        text-align: right;
+        white-space: nowrap;
+    };
+    .headerSearchContainer {
+        margin-top: -20px !important;
+    }    
+    .phHeaderCustomLogo .headerSearchLeftRoundedCorner {
+        margin-top: -20px !important;
+    }  
+    
+    
+    .popupBackgroundHistory{
+            background-color:black;
+            opacity: 0.20;
+            filter: alpha(opacity = 20);
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            z-index: 9998;
+            /*z-index: 50;*/
+            top: 0;
+            left: 0;
+           
+        }    
+
+
+    .custPopupHistory{
+            background-color: white;
+            border-width: 0px;
+            border-radius:10px;
+            border-style: solid;
+            z-index: 9999;
+            /*z-index: 51;*/
+            left: 12%;
+            padding:10px;
+            position: absolute;
+            top:30%;
+        }
+    .ButtonColor{
+    	background-image: linear-gradient(to bottom, #62c462, #51a351) !important;
+    	background-color: #51a351 !important;
+    	
+    	
+    }
+    .ButtonColor:hover{
+    	background-color: #51a351 !important;
+    	background-position: 0 -30px !important;
+    }
+    </style>
+     
+    <script>
+    
+
+    $(document).ready(function () {
+         
+         
+         
+          $('label.tree-toggler').click(function () {
+              $(this).parent().children('ul.tree').toggle(300);
+          });
+          
+           if ( $.browser.webkit ) {
+            $("#phHeaderLogoImage").parents("table").find("td").eq(2).removeClass("right").addClass("webkitright");  
+            //$("#phHeaderLogoImage").parents("table").find("td").eq(0).removeClass("left").addClass("webkitleft1");           
+           };
+           
+      });
+    
+    </script>
+    <apex:form id="frm"> 
+    
+  
+    <apex:actionFunction action="{!saveText}" name="savetextinJS" rerender="opp1" status="Processing"/> 
+    
+    <!-- TCS 04/09/2014: Added for Saving and cancelling Edit Grant Info Popup -->
+    <apex:actionFunction action="{!saveIP}" name="GrantInfo" rerender="frm" status="Processing"/>
+    <apex:actionFunction action="{!CancelIP}" name="CancelPopup" rerender="grantInfoPopup" status="Processing"/>
+    
+    <div class="container">
+            <span class="h3">
+            {!$label.Grant_Making_Overview_label} - {!Implementation_Period__c.Name}                 
+            </span>
+            <span class="pull-right">
+                <img src="/img/func_icons/util/info16.png" style="padding-bottom:5px"/>
+                <!-- TCS 25/8/2014 Replaced Rendering Condition from if((CONTAINS($Profile.Name,'PR') || CONTAINS($Profile.Name,$label.Applicant_CM_Admin) || CONTAINS($Profile.Name,$label.Applicant_CM_Read_Write) || CONTAINS($Profile.Name,$label.Applicant_CM_Read_Only) || CONTAINS($Profile.Name,$label.LFA_GM_Admin_Portal_User)),'/GM','')-->
+                <a href="{!if(blnExternalPro==true,'/GM','')}/apex/GrantMakingGuidance?Id={!strGuidanceId}&lang={!strLanguage}" target="_blank" class="linkunderline h4">{!$label.See_Help}</a>
+            </span>
+            <br/><br/>
+            <div id="Infopanel" class="alert alert-info">
+                <button type="button" class="close" data-dismiss="alert" onclick="closePanel();">
+                    ×
+                </button>
+                <b>
+                {!$label.GM_Overview_Narrative}
+            </b>
+            </div>
+            <ul class="breadcrumb">
+                <li>
+                    <!-- TCS 25/8/2014 Replaced Rendering Condition from if($Profile.Name=='PR Standard Portal User','/GM','')}{!if($Profile.Name=='PR Manager Portal User','/GM','')}{!if($Profile.Name=='PR Read-Only Portal User','/GM','')}{!if($Profile.Name=='LFA GM Admin Portal User','/GM','')}{!if($Profile.Name=='LFA GM Editor Portal User','/GM','')}{!if($Profile.Name=='PR Only Portal User','/GM','')}{!if($Profile.Name==$Label.PR_Read_Only,'/GM','')}{!if((CONTAINS($Profile.Name,$Label.Applicant_CM_Admin) || CONTAINS($Profile.Name,$Label.Applicant_CM_Read_Write) || CONTAINS($Profile.Name,$Label.Applicant_CM_Read_Only) || CONTAINS($Profile.Name,$Label.LFA_GM_Admin_Portal_User)),'/GM','') -->
+                    <a href="{!if(blnExternalPro==true,'/GM','')}/apex/grantmakinghome" class="link">{!$label.Grant_Making} </a>
+                    <span class="divider">/</span>
+                </li>
+                <li>
+                <!-- TCS 25/8/2014 Replaced Rendering Condition from if($Profile.Name=='PR Standard Portal User','/GM','')}{!if($Profile.Name=='PR Manager Portal User','/GM','')}{!if($Profile.Name=='PR Read-Only Portal User','/GM','')}{!if($Profile.Name=='LFA GM Admin Portal User','/GM','')}{!if($Profile.Name=='LFA GM Editor Portal User','/GM','')}{!if($Profile.Name=='PR Only Portal User','/GM','')}{!if($Profile.Name==$Label.PR_Read_Only,'/GM','')}{!if((CONTAINS($Profile.Name,$Label.Applicant_CM_Admin) || CONTAINS($Profile.Name,$Label.Applicant_CM_Read_Write) || CONTAINS($Profile.Name,$Label.Applicant_CM_Read_Only) || CONTAINS($Profile.Name,$Label.LFA_GM_Admin_Portal_User)),'/GM','') -->
+                    <a href="{!if(blnExternalPro==true,'/GM','')}/apex/grantmakingHome?id={!Implementation_Period__c.Grant__r.Country__c}" class="link">{!Implementation_Period__c.Principal_Recipient__r.Country__r.Name}</a>
+                    <span class="divider">/</span>
+                </li>
+        
+                <li>
+                    <a href="{!if(blnExternalPro==true,'/GM','')}/apex/grantmakingoverview?id={!Implementation_Period__c.Id}" class="link">{!Implementation_Period__c.Name}</a>
+                </li>
+            </ul>
+          <div class="row">
+                <table style="width: 100%; cellpadding: 0;">
+                    <tr>
+                        <td width="20%" valign="top" align="left"><c:GMSidebar RecordId="{!lstPages[0].Id}" /></td>
+                        <td valign="top" align="left">
+
+
+                            <div>
+
+                                <table style="width: 100%; cellpadding: 5px;">
+
+                                    <tr>
+                                        <td>
+                                            <div align="left" style="margin-left: 20px">
+                                                <!--<div style="width:1100px;">-->
+                                                <!--<apex:commandLink styleClass="TGFbtn TGFbtn-mini TGFbtn-primary" action="{!if($Profile.Name=='PR Standard Portal User','/GM','')}{!if($Profile.Name=='PR Manager Portal User','/GM','')}{!if($Profile.Name=='PR Read-Only Portal User','/GM','')}{!if($Profile.Name=='LFA GM Admin Portal User','/GM','')}{!if($Profile.Name=='LFA GM Editor Portal User','/GM','')}{!if($Profile.Name=='PR Only Portal User','/GM','')}/apex/GM_IntegratedView?Id={!Implementation_Period__c.Id}" style="margin-left:20px;margin-top:6px;padding-top:3px;padding-bottom:3px" target="_blank">
+                                     <i class="icon-download icon-white">
+                                     </i> <strong>Download Integrated View XLS</strong>
+                                </apex:commandLink>-->
+                                                <!-- TCS 25/08/2014: Replacing action condition for Profile Level Acces using CSTSetting if($Profile.Name=='PR Standard Portal User','/GM','')}{!if($Profile.Name=='PR Manager Portal User','/GM','')}{!if($Profile.Name=='PR Read-Only Portal User','/GM','')}{!if($Profile.Name=='LFA GM Admin Portal User','/GM','')}{!if($Profile.Name=='LFA GM Editor Portal User','/GM','')}{!if($Profile.Name=='PR Only Portal User','/GM','') -->
+                                                <!-- TCS 21/8/2014: Removing Rendering condifition for Profile Level "{!blndwnloadIngrted == true}"-->
+                                                <!-- TCS 25/08/2014: Removing rendering condition rendered="{!blndwnloadIngrted == true}"  as per Security Document -->
+                                                <!-- TCS 31/7/2014: Removing Rendering condifition for Profile Level access using CSTSetting "{!If($Profile.Name==$Label.PR_Read_Only, false, true)}"-->
+                                                <!-- TCS 21/8/2014: Removing Rendering condifition for Profile Level "{!blndwnloadIngrted == true}"-->
+                                                <apex:commandLink styleClass="TGFbtn TGFbtn-mini TGFbtn-primary"
+                                                    action="{!if(blnExternalPro==true,'/GM','')}/apex/GM_IntegratedView_pdf?Id={!Implementation_Period__c.Id}"
+                                                    style="margin-left:20px;margin-top:6px;padding-top:3px;padding-bottom:3px"
+                                                    target="_blank">
+                                                    <i class="icon-download icon-white"> </i>
+                                                    <strong>{!$Label.Download_Integrated_View_PDF}</strong>
+                                                </apex:commandLink>
+
+                                                <!-- TCS 25/8/2014 Removed Profile check from rendering  if((CONTAINS($Profile.Name,$Label.Applicant_CM_Admin) || CONTAINS($Profile.Name,$Label.Applicant_CM_Read_Write) || CONTAINS($Profile.Name,$Label.Applicant_CM_Read_Only) || CONTAINS($Profile.Name,$Label.LFA_GM_Admin_Portal_User) || CONTAINS($Profile.Name,$Label.PR_Read_Only)),false,true)}"-->
+                                                <!-- TCS 25/8/2014: Replaced Profile check from action condition  action="{!if($Profile.Name=='PR Standard Portal User','/GM','')}{!if($Profile.Name=='PR Manager Portal User','/GM','')}{!if($Profile.Name=='PR Read-Only Portal User','/GM','')}{!if($Profile.Name=='LFA GM Admin Portal User','/GM','')}{!if($Profile.Name=='LFA GM Editor Portal User','/GM','')}{!if($Profile.Name=='PR Only Portal User','/GM','') -->
+                                                <!--  <apex:commandLink styleClass="TGFbtn TGFbtn-mini TGFbtn-primary" action="{!if(blnExternalPro==true,'/GM','')}{!$Label.Budget_Line_Report}{!Implementation_Period__c.Id}&enc=UTF-8&xf=xls" style="margin-left:20px;margin-top:6px;padding-top:3px;padding-bottom:3px" rerender="frm" >
+                                     <i class="icon-download icon-white">
+                                     </i> <strong>{!$Label.Download_All_Budget_Lines}</strong>
+                                </apex:commandLink>-->
+                                                <!--<apex:commandLink styleClass="TGFbtn TGFbtn-mini TGFbtn-primary" action="{!if($Profile.Name=='PR Standard Portal User','/GM','')}{!if($Profile.Name=='PR Manager Portal User','/GM','')}{!if($Profile.Name=='PR Read-Only Portal User','/GM','')}{!if($Profile.Name=='LFA GM Admin Portal User','/GM','')}{!if($Profile.Name=='LFA GM Editor Portal User','/GM','')}{!if($Profile.Name=='PR Only Portal User','/GM','')}/apex/PR_Update_Form?id={!Implementation_Period__c.Id}" style="margin-left:20px;margin-top:6px;padding-top:3px;padding-bottom:3px">
+                                     <i class="icon-edit icon-white">
+                                     </i> <strong>PR Update Form</strong>
+                                </apex:commandLink>
+                                <apex:commandLink styleClass="TGFbtn TGFbtn-mini TGFbtn-primary" action="{!if($Profile.Name=='PR Standard Portal User','/GM','')}{!if($Profile.Name=='PR Manager Portal User','/GM','')}{!if($Profile.Name=='PR Read-Only Portal User','/GM','')}{!if($Profile.Name=='LFA GM Admin Portal User','/GM','')}{!if($Profile.Name=='LFA GM Editor Portal User','/GM','')}{!if($Profile.Name=='PR Only Portal User','/GM','')}/apex/BankAccountInformation?id={!Implementation_Period__c.Id}" style="margin-left:20px;margin-top:6px;padding-top:3px;padding-bottom:3px">
+                                     <i class="icon-edit icon-white">
+                                     </i> <strong>Bank Account Form</strong>
+                                </apex:commandLink>-->
+                                                <!--</td>
+                        </tr>
+                        <tr>
+                        <td>-->
+                                                <!--TCS 25/08/2014: Removed rendering condition 'rendered="{!If($Profile.Name==$Label.PR_Read_Only, false, true)}"' as per security matrix -->
+                                                <!-- TCS 31/7/2014 Updated rendering condition from "{!If($Profile.Name==$Label.PR_Read_Only, false, true)}" -->
+                                                <!-- TCS 21/8/2014 Updated rendering condition from "{!blnGrantInfo == true}" -->
+                                                <apex:commandLink styleClass="TGFbtn TGFbtn-mini TGFbtn-primary"
+                                                    onclick="return OpenConfirmPopup('{!$Component.grantInfoPopup}');"
+                                                    style="margin-left:20px;margin-top:6px;padding-top:3px;padding-bottom:3px">
+                                                    <i class="icon-download icon-white"> </i>
+                                                    <strong>{!$Label.Enter_Grant_Information}</strong>
+                                                </apex:commandLink>
+
+                                            <!-- <apex:outputPanel id="HistoryPopup" style="display:none;">
+                                                    <apex:outputPanel id="popupBackgroundH"
+                                                        styleClass="popupBackgroundHistory" />
+                                                    <apex:outputPanel id="custPopupH"
+                                                        styleClass="custPopupHistory">
+                                                        <table>
+                                                            <tr>
+                                                                <td><c:FieldHistoryByField TargetRecordId="{!Implementation_Period__c.Id}"
+                                                                        TagetObjectAPIname="Implementation_Period__c"
+                                                                        RecordTitle="{!Implementation_Period__c.Name}"
+                                                                        FieldNames="{!lstGranInfoFields}" /></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td align="center" style=""><apex:commandButton value="{!$Label.OK}"
+                                                                        onclick="CloseConfirmPopup('{!$Component.HistoryPopup}'); return OpenConfirmPopup('{!$Component.grantInfoPopup}');"
+                                                                        style="width:50px" reRender="frm" status="Processing">
+                                                                    </apex:commandButton></td>
+                                                            </tr>
+                                                        </table>
+                                                    </apex:outputPanel>
+                                                </apex:outputPanel> -->
+
+                                                <!-- <apex:commandLink styleClass="TGFbtn TGFbtn-mini TGFbtn-primary" onclick="return OpenConfirmPopup('{!$Component.grantInfoPopup}');" style="margin-left:20px;margin-top:6px;padding-top:3px;padding-bottom:3px" rendered="{!$Setup.GM_Objectives__c.Edit__c = $Profile.Name}"> 
+                                     <i class="icon-download icon-white">
+                                     </i> <strong>{!$Label.Grant_Information}</strong>
+                        </apex:commandLink>-->
+
+                                                <apex:outputPanel id="grantInfoPopup" style="display:none;">
+                                                    <apex:outputPanel id="popupBackground2"
+                                                        styleClass="popupBackgroundDialog" />
+                                                    <apex:outputPanel id="custPopup2"
+                                                        styleClass="custPopupGrantInfo">
+
+                                                        <table style="width: 90%; height: 90%; margin-left: 40px;">
+                                                            <tr>
+                                                                <td class="middle" style="text-align: center;"><h3>{!$Label.Grant_Information}</h3></td>
+                                                                <td><apex:commandLink reRender="HistoryPopup"
+                                                                        status="Processing" oncomplete="focusonme();"
+                                                                        onclick="OpenConfirmPopup('{!$Component.HistoryPopup}'); return CloseConfirmPopup('{!$Component.GrantInfoPopup}');">
+
+                                                                        <apex:image styleClass="Image"
+                                                                            url="{!$Resource.History}"
+                                                                            title="{!$Label.View_History}"
+                                                                            style="height: 25px;width:20px;" />
+                                                                        <apex:param value="" name="HistoryIndiIndex" />
+                                                                    </apex:commandLink></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td><b>{!$Label.Describe_Rationale}</b>
+                                                                <div id="counter"></div></td>
+                                                            </tr>
+
+                                                            <tr>
+                                                                <td>
+                                                                    <!-- TCS 25/08/2014: Replaced Rendering Condition from: if(CONTAINS($Profile.Name,$Label.PR_Read_Write_Edit)||CONTAINS($Profile.Name,$Label.PR_Admin)||CONTAINS($Profile.Name,$Label.FPM)||CONTAINS($Profile.Name,'PSM Officer')||CONTAINS($Profile.Name,'Technical Hub')||CONTAINS($Profile.Name,'Management')||CONTAINS($Profile.Name,$Label.System_Admin),true,false)-->
+                                                                    <apex:outputPanel layout="block"
+                                                                        style="overflow:auto;width:675px;height:80px; border: 2px solid #CCCCCC;"
+                                                                        rendered="{!if(blnGrantInfo==true,false,true)}">
+                                                                        <apex:outputfield value="{!Implementation_Period__c.Rationale_for_Program__c}" />
+                                                                        <!-- Revert commented after changes to field type is deployed-->
+                                                                    </apex:outputPanel>
+                                                                </td>
+                                                            </tr>
+                                                            <!--<tr style="height:5%;"><td><apex:outputText value="{!Implementation_Period__c.Rationale_for_Program__c}" rendered="{!if(CONTAINS($Profile.Name,$Label.PR_Read_Write_Edit)||CONTAINS($Profile.Name,$Label.PR_Admin)||CONTAINS($Profile.Name,'Country Team')||CONTAINS($Profile.Name,$Label.FPM)||CONTAINS($Profile.Name,'PO')||CONTAINS($Profile.Name,'Technical Hub')||CONTAINS($Profile.Name,'Management')||CONTAINS($Profile.Name,$Label.System_Admin),false,true)}" rows="3"/></td></tr>-->
+
+                                                            <tr>
+                                                                <td><apex:inputField style="height: 30%;resize: none;width: 90%;"
+                                                                        value="{!Implementation_Period__c.Rationale_for_Program__c}"
+                                                                        rendered="{!blnGrantInfo}" id="rationale" /></td>
+                                                            </tr>
+                                                            <!-- Revert commented after changes to field type is deployed-->
+
+                                                            <!-- TCS25/08/2014 Replaced rendering condition if(CONTAINS($Profile.Name,$Label.PR_Read_Write_Edit)||CONTAINS($Profile.Name,$Label.PR_Admin)||CONTAINS($Profile.Name,$Label.FPM)||CONTAINS($Profile.Name,'PSM Officer')||CONTAINS($Profile.Name,'Technical Hub')||CONTAINS($Profile.Name,'Management')||CONTAINS($Profile.Name,$Label.System_Admin),true,false) -->
+                                                        
+
+                                                            <tr>
+                                                                <td><b>{!$Label.Describe_Goals_and_Strategies}</b></td>
+                                                            </tr>
+
+                                                            <tr>
+                                                                <td>
+                                                                    <!-- TCS25/08/2014 Replaced rendering condition if(CONTAINS($Profile.Name,$Label.PR_Read_Write_Edit)||CONTAINS($Profile.Name,$Label.PR_Admin)||CONTAINS($Profile.Name,$Label.FPM)||CONTAINS($Profile.Name,'PSM Officer')||CONTAINS($Profile.Name,'Technical Hub')||CONTAINS($Profile.Name,'Management')||CONTAINS($Profile.Name,$Label.System_Admin),true,false) -->
+                                                                    <apex:outputPanel layout="block"
+                                                                        style="overflow:auto;width:675px;height:80px;border: 2px solid #CCCCCC;"
+                                                                        rendered="{!if(blnGrantInfo==true,false,true)}">
+                                                                        <apex:outputField value="{!Implementation_Period__c.Goals_and_Strategies_for_program__c}" />
+                                                                        <!-- Revert commented after changes to field type is deployed-->
+                                                                    </apex:outputPanel>
+                                                                </td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td> <apex:inputField style="height: 30%;resize: none;width: 90%;"
+                                                                        value="{!Implementation_Period__c.Goals_and_Strategies_for_program__c}"
+                                                                        rendered="{!blnGrantInfo}" id="strategies" /></td>
+                                                            </tr>
+                                                            <!-- Revert commented after changes to field type is deployed-->
+
+                                                            <!-- TCS25/08/2014 Replaced rendering condition if(CONTAINS($Profile.Name,$Label.PR_Read_Write_Edit)||CONTAINS($Profile.Name,$Label.PR_Admin)||CONTAINS($Profile.Name,$Label.FPM)||CONTAINS($Profile.Name,'PSM Officer')||CONTAINS($Profile.Name,'Technical Hub')||CONTAINS($Profile.Name,'Management')||CONTAINS($Profile.Name,$Label.System_Admin),true,false) -->
+                                                            
+                                                            <tr>
+                                                                <td><b>{!$Label.Describe_Target_Beneficiaries}</b><br /></td>
+                                                            </tr>
+
+                                                            <tr>
+                                                                <td>
+                                                                    <!-- TCS25/08/2014 Replaced rendering condition if(CONTAINS($Profile.Name,$Label.PR_Read_Write_Edit)||CONTAINS($Profile.Name,$Label.PR_Admin)||CONTAINS($Profile.Name,$Label.FPM)||CONTAINS($Profile.Name,'PSM Officer')||CONTAINS($Profile.Name,'Technical Hub')||CONTAINS($Profile.Name,'Management')||CONTAINS($Profile.Name,$Label.System_Admin),true,false) -->
+                                                                    <apex:outputPanel layout="block"
+                                                                        style="overflow:auto;width:675px;height:80px;border: 2px solid #CCCCCC;"
+                                                                        rendered="{!if(blnGrantInfo==true,false,true)}">
+                                                                         <apex:outputField value="{!Implementation_Period__c.Target_beneficiaries_of_program__c}" />
+                                                                        <!-- Revert commented after changes to field type is deployed-->
+                                                                    </apex:outputPanel>
+                                                                </td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td> <apex:inputField style="height: 30%;resize: none;width: 90%;"
+                                                                        value="{!Implementation_Period__c.Target_beneficiaries_of_program__c}"
+                                                                        rendered="{!blnGrantInfo}" id="beneficiaries" /></td>
+                                                            </tr>
+                                                            <!-- Revert commented after changes to field type is deployed-->
+                                                            <!-- TCS25/08/2014 Replaced rendering condition if(CONTAINS($Profile.Name,$Label.PR_Read_Write_Edit)||CONTAINS($Profile.Name,$Label.PR_Admin)||CONTAINS($Profile.Name,$Label.FPM)||CONTAINS($Profile.Name,'PSM Officer')||CONTAINS($Profile.Name,'Technical Hub')||CONTAINS($Profile.Name,'Management')||CONTAINS($Profile.Name,$Label.System_Admin),true,false) -->
+                                                            
+                                                            <tr>
+                                                                <td class="dataCell TDstyle" colspan="2"
+                                                                    style="text-align: center;padding: 20px;">
+                                                                    <!-- TCS 04/09/2014: Replaced rendering condition from if(CONTAINS($Profile.Name,$Label.PR_Read_Write_Edit)||CONTAINS($Profile.Name,$Label.PR_Admin)||CONTAINS($Profile.Name,$Label.Country_Team)||CONTAINS($Profile.Name,$Label.FPM)||CONTAINS($Profile.Name,$Label.PSM_Officer)||CONTAINS($Profile.Name,$Label.Technical_Hub)||CONTAINS($Profile.Name,$Label.Management)||CONTAINS($Profile.Name,$Label.System_Admin),true,false) -->
+                                                                    <apex:outputPanel >
+                                                                        <apex:commandLink styleClass="TGFbtn TGFbtn-mini TGFbtn-success"
+                                                                            style="width:37px;align:right;" onclick="return SaveGrantInfo();"
+                                                                            status="Processing" rendered="{!blnGrantInfo}">
+                                                                            <strong>{!$Label.Save}</strong>
+                                                                        </apex:commandLink>&nbsp;
+                                                            </apex:outputPanel> <apex:commandLink styleClass="TGFbtn TGFbtn-mini TGFbtn-danger"
+                                                                        style="align:left;" action="{!cancelIP}"
+                                                                        status="Processing">
+                                                                        <strong>{!$Label.Cancel}</strong>
+                                                                    </apex:commandLink>
+                                                                </td>
+                                                            </tr>
+
+                                                            <!-- <tr>
+                                                        <td class="resourcetTable" colspan="2">
+                                                            <div id="boxscroll" class="chatterFeedPanel">
+                                                                <apex:iframe id="ifResourceChatter" height="225px" scrolling="true" src="{!if($Profile.Name=='PR Standard Portal User','/GM','')}/apex/ServiceChatter?ServiceId={!P.Id}" />
+                                                            </div>
+                                                        </td>
+                                                    </tr>-->
+                                                        </table>
+                                                    </apex:outputPanel>
+                                                </apex:outputPanel>
+                                                <apex:outputPanel id="HistoryPopup" style="display:none;">
+                                                    <apex:outputPanel id="popupBackgroundH"
+                                                        styleClass="popupBackgroundHistory" />
+                                                    <apex:outputPanel id="custPopupH"
+                                                        styleClass="custPopupHistory">
+                                                        <table>
+                                                            <tr>
+                                                                <td><c:FieldHistoryByField TargetRecordId="{!Implementation_Period__c.Id}"
+                                                                        TagetObjectAPIname="Implementation_Period__c"
+                                                                        RecordTitle="{!Implementation_Period__c.Name}"
+                                                                        FieldNames="{!lstGranInfoFields}" /></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td align="center" style=""><apex:commandButton value="{!$Label.OK}"
+                                                                        onclick="CloseConfirmPopup('{!$Component.HistoryPopup}'); return OpenConfirmPopup('{!$Component.grantInfoPopup}');"
+                                                                        style="width:50px" reRender="frm" status="Processing">
+                                                                    </apex:commandButton></td>
+                                                            </tr>
+                                                        </table>
+                                                    </apex:outputPanel>
+                                                </apex:outputPanel>
+                                            </div> <br />
+
+                                            <div style="margin-right: 40px">
+                                                <!-- TCS 04/09/2014: Rearranging the sequence of table start here -->
+                                                <table class="table"
+                                                    style="margin-left: 40px; margin-right: 1%;">
+                                                    <tr>
+                                                        <!--<td style="width:30%">-->
+                                                        <td>
+                                                            <!--<apex:outputtext styleclass="bold text" value="Country : "/>{!Implementation_Period__c.Principal_Recipient__r.Country__r.Name}-->
+                                                            <b>{!$Label.Country} : </b> <apex:outputField value="{!Implementation_Period__c.Principal_Recipient__r.Country__r.Name}" />
+                                                        </td>
+                                                        <!--<td style="width:30%">-->
+                                                        <td>
+                                                            <!--<apex:outputtext styleclass="bold text" value="Disease Component : "/>
+                                {!Implementation_Period__c.Grant__r.Disease_Component__c}-->
+                                                            <b>{!$Label.Component} : </b> <apex:outputField value="{!Implementation_Period__c.Grant__r.Disease_Component__c}" />
+                                                        </td>
+                                                        <!--<td style="width:10%">-->
+                                                        <td><b>{!$Label.Language} : </b> <apex:outputField value="{!Implementation_Period__c.Language__c}" /> <!--<apex:outputtext styleclass="bold text" value="Disease Component : "/>
+                                {!Implementation_Period__c.Grant__r.Disease_Component__c}-->
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <!--<td style="width:30%">-->
+                                                        <td>
+                                                            <!--<apex:outputtext styleclass="bold" value="Start Date : "/>-->
+                                                            <!--<apex:outputfield value="{!Implementation_Period__c.Start_Date__c}"/>-->
+                                                            <b>{!$Label.StartDate} : </b> <apex:outputText value="{0,date,dd MMMM yyyy}">
+                                                                <apex:param value="{!Implementation_Period__c.Start_Date__c}" />
+                                                            </apex:outputText> <!-- <apex:outputField value="{!Implementation_Period__c.Start_Date__c}"/>-->
+                                                        </td>
+
+                                                        <!--<td style="width:8%">-->
+                                                        <td>
+                                                            <!--<apex:outputtext styleclass="bold" value="End Date : "/>
+                                <apex:outputfield value="{!Implementation_Period__c.End_Date__c}"/>-->
+                                                            <b>{!$Label.EndDate} : </b> <apex:outputText value="{0,date,dd MMMM yyyy}">
+                                                                <apex:param value="{!Implementation_Period__c.End_Date__c}" />
+                                                            </apex:outputText> <!-- <apex:outputField value="{!Implementation_Period__c.End_Date__c}"/>-->
+                                                        </td>
+                                                        <!--<td style="width:5%">-->
+                                                        <td>
+                                                            <!--<apex:outputtext styleclass="bold" value="End Date : "/>
+                                <apex:outputfield value="{!Implementation_Period__c.End_Date__c}"/>-->
+                                                            <b>{!$Label.Status} : </b> <apex:outputField value="{!Implementation_Period__c.Grant_Status__c}" />
+                                                        </td>
+
+                                                    </tr>
+                                                    <tr>
+                                                        <!--<td style="width:5%">-->
+
+                                                        <td colspan="3">
+                                                            <!--<apex:outputtext styleclass="bold" value="Start Date : "/>-->
+                                                            <!--<apex:outputfield value="{!Implementation_Period__c.Start_Date__c}"/>-->
+                                                            <b>{!$Label.Principal_Recipient_no_colon} : </b> <apex:outputField value="{!Implementation_Period__c.Principal_Recipient__r.Name}" />
+                                                        </td>
+
+                                                    </tr>
+                                                    <tr>
+                                                        <td colspan="3">
+                                                            <div>
+                                                                <apex:outputpanel id="opp1">
+
+
+                                                                    <b>{!$Label.Program_Title} : </b>
+                                                                    <apex:outputField value="{!Implementation_Period__c.Program_Title__c}"
+                                                                        id="opf1" />
+                                                                    <apex:inputField value="{!Implementation_Period__c.Program_Title__c}"
+                                                                        id="ipf1" style="display:none;"
+                                                                        onblur="showText('{!$Component.ipf1}');" />
+
+                                                                    <!-- TCS 04/09/2014: Replaced rendering condition from if(CONTAINS($Profile.Name,$Label.PR_Read_Write_Edit)||CONTAINS($Profile.Name,$Label.PR_Admin)||CONTAINS($Profile.Name,$Label.Country_Team)||CONTAINS($Profile.Name,$Label.FPM)||CONTAINS($Profile.Name,$Label.PSM_Officer)||CONTAINS($Profile.Name,$Label.System_Admin),true,false) -->
+                                                                    <apex:image value="{!$Resource.EditImage}" id="img"
+                                                                        ondblclick="showText('{!$Component.img}');"
+                                                                        onclick="showText('{!$Component.img}');"
+                                                                        rendered="{!blnPrgTitle}" />
+                                                                </apex:outputpanel>
+                                                            </div>
+                                                        </td>
+													</tr>
+                                                    <tr>
+														<td>
+															<!-- <apex:commandLink styleClass="TGFbtn TGFbtn-mini TGFbtn-primary ButtonColor" style="margin-top:6px;padding-top:3px;padding-bottom:3px;width:200px;" action="{!SubmitDetailBudget}" rendered="{!blnSubmitBudgetToCT}">
+                                                  			<strong>{!$Label.Submit_Budget_to_Country_Team}</strong>
+                                                			</apex:commandLink> -->
+														</td>
+														<td>
+															<b>{!$Label.Status}</b>
+															
+														</td>
+														<td>
+															<b>{!$Label.Action}</b>
+															
+														</td>
+													</tr>
+													<tr style="background-color: #cccccc;">
+														<td>
+															<b>{!$Label.Detailed_Budget}</b>
+															<!-- <apex:commandLink styleClass="TGFbtn TGFbtn-mini TGFbtn-primary ButtonColor" style="margin-top:6px;padding-top:3px;padding-bottom:3px;width:200px;" action="{!SubmitDetailBudget}" rendered="{!blnSubmitBudgetToCT}">
+                                                  			<strong>{!$Label.Submit_Budget_to_Country_Team}</strong>
+                                                			</apex:commandLink> -->
+														</td>
+														<td >
+															<b><apex:outputtext value=" {!strBudgetStatus}"/></b>
+															
+														</td>
+														
+														<td >
+															<apex:commandLink styleClass="TGFbtn TGFbtn-mini TGFbtn-primary ButtonColor" action="{!SubmitDetailBudget}" rendered="{!blnSubmitBudgetToCT}">
+                                                  			<strong>{!$Label.Submit}</strong>
+                                                			</apex:commandLink>
+															
+														</td>
+														
+													</tr>
+                                                </table>
+                                                <!-- TCS 04/09/2014: Rearranging the sequence of table end here -->
+                                            </div>
+                                            
+                                        </td>
+                                    </tr>
+                                   
+                                    <tr>
+                                        <td>
+
+
+                                            <table class="table-margin">
+                                                <tr>
+
+                                                    <td width="140px"><b>{!$Label.View_Costs}
+                                                            {!Implementation_Period__c.Currency_of_Grant_Agreement__c}):</b>
+                                                    </td>
+                                                    <td rowspan="2" width="340px" style="padding-left: 20px;"><b>{!$label.Approved_Budget}:</b>
+
+
+                                                        <apex:outputtext value=" {!IF((NOT(ISBLANK(Implementation_Period__c.High_level_budget_GAC_1_USD__c))&&Implementation_Period__c.Currency_of_Grant_Agreement__c=='USD')||(NOT(ISBLANK(Implementation_Period__c.High_level_budget_GAC_1_EUR__c))&&Implementation_Period__c.Currency_of_Grant_Agreement__c=='EUR'),Implementation_Period__c.Currency_of_Grant_Agreement__c,'')} {0,number,##,###,###,###}">
+                                                            <apex:param value="{!IF(Implementation_Period__c.Currency_of_Grant_Agreement__c=='USD',Implementation_Period__c.High_level_budget_GAC_1_USD__c,Implementation_Period__c.High_level_budget_GAC_1_EUR__c)}" />
+                                                        </apex:outputtext></td>
+													
+
+                                                </tr>
+                                                <tr>
+
+                                                    <td><apex:selectList size="1"
+                                                            onchange="onchangeView(this);" id="SelCategory" >
+                                                            <apex:selectOption itemvalue="{!$Label.View_Cost_Module}" />
+                                                            <apex:selectOption itemvalue="{!$Label.View_Cost_CostGrouping}" />
+                                                            <apex:selectOption itemvalue="{!$Label.View_Cost_Recipients}" />
+                                                        </apex:selectList></td>
+                                                </tr>
+												
+                                            </table>
+
+                                            <table style="width:100%;" id="moduleTable" class="table-margin">
+                                                <!--  <table style="margin-left:40px;margin-right:20px;" id="moduleTable" class="table-margin">-->
+
+
+                                                <tr>
+                                        <!--TCS 25/08/2014: Remoed rendering condition rendered="{!if(($Profile.Name == $Label.PR_Read_Only),false,true)}" from OutputPanel as per security Matrix--><!-- TCS 15/09/2014: Conditional render Click to View Chart. Rendering is false for profiles with Customer Community Login License and LFA* users-->
+                                                <td><apex:OutputPanel rendered="{!!blnViewChart}">
+                                                        <!-- TCS 25/08/2014 Replaced Rendering condition from if((CONTAINS($Profile.Name,'PR') || CONTAINS($Profile.Name,$Label.Applicant_CM_Admin) || CONTAINS($Profile.Name,$Label.Applicant_CM_Read_Write) || CONTAINS($Profile.Name,$Label.Applicant_CM_Read_Only) || CONTAINS($Profile.Name,$Label.LFA_GM_Admin_Portal_User)),'/GM','') -->
+                                                        <a
+                                                            href="/{!$label.Total_Budget_by_Intervention}={!Implementation_Period__c.Name}"
+                                                            target="_blank" class="link">{!$label.View_Chart}</a>
+                                                    </apex:OutputPanel></td>
+                                    </tr>
+                                    
+        
+        
+                                    <tr>
+            <td style="vertical-align:top">
+               
+                <table style="width:90% !important;cellpadding:10px;" class="table table-striped">
+                    <tr>
+                        <th>
+                           {!$label.Module}
+                        </th>
+                        <th>
+                           {!$Label.Intervention}
+                        </th>
+                        <th>
+                            {!Implementation_Period__c.Year_1__c}
+                        </th>
+                        <th>
+                            {!Implementation_Period__c.Year_2__c}
+                        </th>
+                        <th>
+                            {!Implementation_Period__c.Year_3__c}
+                        </th>
+                        <th
+                                                        style="display:{!if(Implementation_Period__c.Length_Years__c=='4','','none')}">
+                            {!Implementation_Period__c.Year_4__c}
+                        </th>
+                        <th>
+                            {!$label.Total}
+                        </th>
+                    </tr>
+                   
+                    <apex:repeat value="{!lstBLModule}" var="BLM">
+                        <tr style="background-color:{!IF(BLM.blnbckgrnd,'#C0C0C0','')}; font-weight:{!IF(BLM.blnbckgrnd,'bold','')};">
+                            <td >
+                                <apex:outputText value="{!BLM.ModuleName}"></apex:outputText>
+                            </td>
+                            <td >
+                                <apex:outputText value="{!BLM.InterventionName}"></apex:outputText>
+                            </td>
+                            <td>
+                                <apex:outputText value="{0, number,###,###,##0}">
+                                     
+                                     <apex:param value="{!BLM.ModuleCostY1}" />
+                                </apex:outputText>
+                            </td>
+                            <td>
+                                <apex:outputText value="{0, number,###,###,##0}">
+                                     
+                                     <apex:param value="{!BLM.ModuleCostY2}" />
+                                </apex:outputText>
+                            </td>
+                            <td>
+                                <apex:outputText value="{0, number,###,###,##0}">
+                                    
+                                     <apex:param value="{!BLM.ModuleCostY3}" />
+                                </apex:outputText>
+                            </td>
+                            <td
+                                                            style="display:{!if(Implementation_Period__c.Length_Years__c=='4','','none')}">
+                                <apex:outputText value="{0, number,###,###,##0}">
+                                    
+                                     <apex:param value="{!BLM.ModuleCostY4}" />
+                                </apex:outputText>
+                            </td>
+                            <td>
+                                <apex:outputText value="{0, number,###,###,##0}" styleclass="bold">
+                                    
+                                     <apex:param value="{!BLM.TotalModuleCost}" />
+                                </apex:outputText>
+                            </td>
+                        </tr>
+                        
+                      
+                    <tr>
+                    
+                  
+                    
+                    </tr>
+                    
+                    </apex:repeat>
+                    
+                     <tr>
+                        <th>
+                            {!$Label.Total}
+                        </th>
+                        <th>
+                        </th>
+                        <td>
+                            <apex:outputText styleclass="bold"
+                                                            value="{0, number,###,###,##0}"> 
+                               
+                                <apex:param value="{!TotalModuleY1Cost}" />
+                            </apex:outputText>
+                        </td>
+                        <td>
+                            <apex:outputText styleclass="bold"
+                                                            value="{0, number,###,###,##0}"> 
+                               
+                                <apex:param value="{!TotalModuleY2Cost}" />
+                            </apex:outputText>
+                        </td>
+                        <td>
+                            <apex:outputText styleclass="bold"
+                                                            value="{0, number,###,###,##0}"> 
+                               
+                                <apex:param value="{!TotalModuleY3Cost}" />
+                            </apex:outputText>
+                        </td>
+                        <td
+                                                        style="display:{!if(Implementation_Period__c.Length_Years__c=='4','','none')}">
+                            <apex:outputText styleclass="bold"
+                                                            value="{0, number,###,###,##0}"> 
+                               
+                                <apex:param value="{!TotalModuleY4Cost}" />
+                            </apex:outputText>
+                        </td>
+                        <td>
+                            <apex:outputText styleclass="bold"
+                                                            value="{0, number,###,###,##0}">
+                               
+                                <apex:param value="{!AllYearModuleTotalCost}" />
+                             </apex:outputText>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+           <!-- <td style="vertical-align:top">
+                <div id="chartBlock11" style="border:1px; width:400px;"/>     
+                <script type="text/javascript">        
+                    google.load('visualization', '1.0', {'packages':['corechart']});
+                    google.setOnLoadCallback(initCharts);
+                    function initCharts(){         
+                      
+                        ctrlGrantMakingOverview.loadDataModule(
+                              function(result, event){       
+                                     
+                                 var visualization = new google.visualization.BarChart(document.getElementById('chartBlock11'));                    
+                                 var data = new google.visualization.DataTable();
+                                 data.addColumn('string', 'Name');
+                                 data.addColumn('number', 'Year 1');
+                                 data.addColumn('number', 'Year 2');
+                                 data.addColumn('number', 'Year 3 ');
+                                 if('{!Implementation_Period__c.Length_Years__c}' == '4')
+                                 data.addColumn('number', 'Year 4');
+                                 data.addRows(result.length);
+                                 for(var i=0; i<result.length;i++){                        
+                                    var r = result[i];
+                                    data.setCell(i, 0, r.ModuleName);
+                                    data.setCell(i, 1, r.ModuleCostY1); 
+                                    data.setCell(i, 2, r.ModuleCostY2); 
+                                    data.setCell(i, 3, r.ModuleCostY3); 
+                                     if('{!Implementation_Period__c.Length_Years__c}' == '4')
+                                     data.setCell(i, 4, r.ModuleCostY4); 
+                                 }
+                                 visualization.draw(data,{
+                                                            pointSize:5,
+                                                            legend : {position: 'top',                        
+                                                                textStyle: {color: 'blue', fontSize: 10}
+                                                            },
+                                                            width: 500, height: 400,                        
+                                                            vAxis:{textStyle:{fontSize: 10},
+                                                                
+                                                                titleTextStyle:{fontSize: 20}
+                                                            },
+                                                            interpolateNulls : true,
+                                                            seriesType: "bars",
+                                                            bar: {groupWidth: 25},                                                                               
+                                                            hAxis:{textStyle:{fontSize: 10},
+                                                                titleTextStyle:{fontSize: 20},                      
+                                                                showTextEvery:1,                           
+                                                                slantedText:true,                        
+                                                                slantedTextAngle:70                        
+                                                                
+                                                           }
+                                                         }
+                                                    );                
+                              },{escape:true});
+                    } 
+                </script>
+            </td>-->
+        </tr>
+    </table>
+    
+   <!-- <table id="CostGrouptable"style="display:none; margin-left:40px;margin-right:20px;" class="table-margin">-->
+    
+    <table style="display:none; width:100%;" id="CostGrouptable"
+                                                class="table-margin">
+        <tr>
+            <!--TCS 25/08/2014: Remoed rendering condition rendered="{!if(($Profile.Name == $Label.PR_Read_Only),false,true)}" from OutputPanel as per security Matrix-->
+            <!-- TCS 15/09/2014: Conditional render Click to View Chart. Rendering is false for profiles with Customer Community Login License and LFA* users-->
+            <td><apex:OutputPanel rendered="{!!blnViewChart}">
+                <!-- TCS 25/08/2014 Replaced Rendering condition from if(CONTAINS($Profile.Name,'PR'),'/GM','')-->
+                <a
+                                                    href="/{!$label.Total_Budget_by_Cost_Grouping}={!Implementation_Period__c.Name}"
+                                                    target="_blank" class="link">{!$label.View_Chart}</a>
+            </apex:OutputPanel></td>
+        </tr>
+        
+        <tr>
+            <td style="vertical-align:top">
+               
+                <table style="width:90% !important;cellpadding:10px;"
+                                                class="table table-striped">
+                    <tr>
+                        <th>
+                            {!$Label.Cost_Grouping}
+                        </th>
+                        <th>
+                            {!Implementation_Period__c.Year_1__c}
+                        </th>
+                        <th>
+                            {!Implementation_Period__c.Year_2__c}
+                        </th>
+                        <th>
+                            {!Implementation_Period__c.Year_3__c}
+                        </th>
+                        <th
+                                                        style="display:{!if(Implementation_Period__c.Length_Years__c=='4','','none')}">
+                            {!Implementation_Period__c.Year_4__c}
+                        </th>
+                        <th>
+                            {!$label.Total}
+                        </th>
+                    </tr>
+                    <apex:repeat value="{!lstBLCost}" var="BLM">
+                        <tr>
+                            <td >
+                                <apex:outputText value="{!BLM.CostGrouping}"></apex:outputText>
+                            </td>
+                            <td>
+                                <apex:outputText value="{0, number,###,###,##0}">
+                                   
+                                    <apex:param value="{!BLM.CostY1}" />
+                                </apex:outputText>
+                            </td>
+                            <td>
+                                <apex:outputText value="{0, number,###,###,##0}">
+                                  
+                                    <apex:param value="{!BLM.CostY2}" />
+                                </apex:outputText>
+                            </td>
+                            <td>
+                                <apex:outputText value="{0, number,###,###,##0}">
+                                  
+                                    <apex:param value="{!BLM.CostY3}" />
+                                </apex:outputText>
+                            </td>
+                            <td style="display:{!if(Implementation_Period__c.Length_Years__c=='4','','none')}">
+                                <apex:outputText value="{0, number,###,###,##0}">
+                                  
+                                    <apex:param value="{!BLM.CostY4}" />
+                                </apex:outputText>
+                            </td>
+                            <td>
+                                <apex:outputText value="{0, number,###,###,##0}" styleclass="bold">
+                                  
+                                    <apex:param value="{!BLM.TotalCost}" />
+                                </apex:outputText>
+                            </td>
+                        </tr>
+                    </apex:repeat>
+                    <tr>
+                        <th>
+                            {!$Label.Total}
+                        </th>
+                        <td>
+                            <apex:outputText styleclass="bold"
+                                                            value="{0, number,###,###,##0}">
+                              
+                                <apex:param value="{!TotalY1Cost}" />
+                            </apex:outputText>
+                        </td>
+                        <td>
+                            <apex:outputText styleclass="bold"
+                                                            value="{0, number,###,###,##0}">
+                               
+                                <apex:param value="{!TotalY2Cost}" />
+                            </apex:outputText>
+                        </td>
+                        <td>
+                            <apex:outputText styleclass="bold"
+                                                            value="{0, number,###,###,##0}">
+                               
+                                <apex:param value="{!TotalY3Cost}" />
+                            </apex:outputText>
+                        </td>
+                        <td
+                                                        style="display:{!if(Implementation_Period__c.Length_Years__c=='4','','none')}">
+                            <apex:outputText styleclass="bold"
+                                                            value="{0, number,###,###,##0}">
+                               
+                                <apex:param value="{!round(TotalY4Cost/1000,0)}" />
+                            </apex:outputText>
+                        </td>
+                        <td>
+                            <apex:outputText styleclass="bold"
+                                                            value="{0, number,###,###,##0}">
+                              
+                                <apex:param value="{!AllYearTotalCost}" />
+                            </apex:outputText>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+            <!--<td style="vertical-align:top">
+                <div id="chartBlockCost" style="border:1px; width:400px;"/>     
+                <script type="text/javascript">        
+                    google.load('visualization', '1.0', {'packages':['corechart']});
+                    google.setOnLoadCallback(initCharts);
+                    function initCharts(){         
+                      
+                        ctrlGrantMakingOverview.loadDataCost(
+                              function(result, event){       
+                                     
+                                 var visualization = new google.visualization.BarChart(document.getElementById('chartBlockCost'));                    
+                                 var data = new google.visualization.DataTable();
+                                 data.addColumn('string', 'Name');
+                                 data.addColumn('number', 'Year 1');
+                                 data.addColumn('number', 'Year 2');
+                                 data.addColumn('number', 'Year 3');
+                                 if('{!Implementation_Period__c.Length_Years__c}' == '4')
+                                 data.addColumn('number', 'Year 4');
+                                 
+                                 data.addRows(result.length);
+                                 for(var i=0; i<result.length;i++){                        
+                                    var r = result[i];
+                                    data.setCell(i, 0, r.CostGrouping);
+                                    data.setCell(i, 1, r.CostY1); 
+                                    data.setCell(i, 2, r.CostY2); 
+                                    data.setCell(i, 3, r.CostY3); 
+                                    if('{!Implementation_Period__c.Length_Years__c}' == '4')
+                                    data.setCell(i, 4, r.CostY4); 
+                                 }
+                                 visualization.draw(data,{
+                                                            pointSize:5,
+                                                            legend : {position: 'top',                        
+                                                                textStyle: {color: 'blue', fontSize: 10}
+                                                            },
+                                                            width: 800, height: 400,                        
+                                                            vAxis:{textStyle:{fontSize: 10},
+                                                                
+                                                                titleTextStyle:{fontSize: 20}
+                                                            },
+                                                            interpolateNulls : true,
+                                                            seriesType: "bars",
+                                                            bar: {groupWidth: 25},                                                                               
+                                                            hAxis:{textStyle:{fontSize: 10},
+                                                                titleTextStyle:{fontSize: 20},                      
+                                                                showTextEvery:1,                           
+                                                                slantedText:true,                        
+                                                                slantedTextAngle:70                        
+                                                                
+                                                           }
+                                                         }
+                                                    );                
+                              },{escape:true});
+                    } 
+                </script>
+            </td>-->
+        </tr>
+    </table>
+    
+    <!-- <table id="Implementertable"style="display:none; margin-left:40px; margin-right:20px;" class="table-margin">-->
+        <table style="display:none; width:100%;" id="Implementertable" class="table-margin">                            
+    
+        <tr>
+            <!--TCS 25/08/2014: Remoed rendering condition rendered="{!if(($Profile.Name == $Label.PR_Read_Only),false,true)}" from OutputPanel as per security Matrix-->
+             <!-- TCS 15/09/2014: Conditional render Click to View Chart. Rendering is false for profiles with Customer Community Login License and LFA* users-->
+            <td><apex:OutputPanel rendered="{!!blnViewChart}">
+                <!-- TCS 25/08/2014 Replaced Rendering condition from if(CONTAINS($Profile.Name,'PR'),'/GM','')-->
+                <a
+                                                    href="/{!$label.Total_Budget_by_Recipient}={!Implementation_Period__c.Name}"
+                                                    target="_blank" class="link">{!$label.View_Chart}</a>
+             </apex:OutputPanel></td>
+        </tr>
+       
+        <tr>
+            <td style="vertical-align:top">
+               
+                <table style="width:90% !important;cellpadding:10px;"
+                                                class="table table-striped">
+                    <tr>
+                        <th>
+                            {!$Label.Recipient}
+                        </th>
+                        <th>
+                            {!Implementation_Period__c.Year_1__c}
+                        </th>
+                        <th>
+                            {!Implementation_Period__c.Year_2__c}
+                        </th>
+                        <th>
+                            {!Implementation_Period__c.Year_3__c}
+                        </th>
+                        <th
+                                                        style="display:{!if(Implementation_Period__c.Length_Years__c=='4','','none')}">
+                            {!Implementation_Period__c.Year_4__c}
+                        </th>
+                        <th>
+                            {!$label.Total}
+                        </th>
+                    </tr>
+                    <apex:repeat value="{!lstBLPayee}" var="BLM">
+                        <tr>
+                            <td >
+                                <apex:outputText value="{!BLM.PayeeName}"></apex:outputText>
+                            </td>
+                            <td>
+                                <apex:outputText value="{0, number,###,###,##0}">
+                                   
+                                    <apex:param value="{!BLM.PayeeCostY1}" />
+                                </apex:outputText>
+                            </td>
+                            <td>
+                                <apex:outputText value="{0, number,###,###,##0}">
+               
+                                    <apex:param value="{!BLM.PayeeCostY2}" />
+                                </apex:outputText>
+                            </td>
+                            <td>
+                                <apex:outputText value="{0, number,###,###,##0}">
+               
+                                    <apex:param value="{!BLM.PayeeCostY3}" />
+                                </apex:outputText>
+                            </td>
+                            <td
+                                                            style="display:{!if(Implementation_Period__c.Length_Years__c=='4','','none')}">
+                                <apex:outputText value="{0, number,###,###,##0}">
+               
+                                    <apex:param value="{!BLM.PayeeCostY4}" />
+                                </apex:outputText>
+                            </td>
+                            <td>
+                                <apex:outputText value="{0, number,###,###,##0}" styleclass="bold">
+               
+                                    <apex:param value="{!BLM.TotalPayeeCost}" />
+                                </apex:outputText>
+                            </td>
+                        </tr>
+                    </apex:repeat>
+                    <tr>
+                        <th>
+                            {!$Label.Total}
+                        </th>
+                        <td>
+                            <apex:outputText styleclass="bold"
+                                                            value="{0, number,###,###,##0}">
+               
+                                <apex:param value="{!TotalPayeeY1Cost}" />
+                            </apex:outputText>
+                        </td>
+                        <td>
+                            <apex:outputText styleclass="bold"
+                                                            value="{0, number,###,###,##0}">
+               
+                                <apex:param value="{!TotalPayeeY2Cost}" />
+                            </apex:outputText>
+                        </td>
+                        <td>
+                            <apex:outputText styleclass="bold"
+                                                            value="{0, number,###,###,##0}">
+               
+                                <apex:param value="{!TotalPayeeY3Cost}" />
+                            </apex:outputText>
+                        </td>
+                        <td
+                                                        style="display:{!if(Implementation_Period__c.Length_Years__c=='4','','none')}">
+                            <apex:outputText value="{0, number,###,###,##0}">
+               
+                                <apex:param value="{!TotalPayeeY4Cost}" />
+                            </apex:outputText>
+                        </td>
+                        <td>
+                            <apex:outputText styleclass="bold"
+                                                            value="{0, number,###,###,##0}">
+               
+                                <apex:param value="{!AllYearPayeeTotalCost}" />
+                            </apex:outputText>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+          <!--   <td style="vertical-align:top">
+                <div id="chartBlockPayee" />     
+                <script type="text/javascript">        
+                    google.load('visualization', '1.0', {'packages':['corechart']});
+                    google.setOnLoadCallback(initCharts);
+                    function initCharts(){         
+                      
+                        ctrlGrantMakingOverview.loadDataPayee(
+                              function(result, event){       
+                                     
+                                 var visualization = new google.visualization.BarChart(document.getElementById('chartBlockPayee'));                    
+                                 var data = new google.visualization.DataTable();
+                                 data.addColumn('string', 'Name');
+                                 data.addColumn('number', 'Year 1');
+                                 data.addColumn('number', 'Year 2');
+                                 data.addColumn('number', 'Year 3');
+                                 if('{!Implementation_Period__c.Length_Years__c}' == '4')
+                                 data.addColumn('number', 'Year 4');
+                                 data.addRows(result.length);
+                                 for(var i=0; i<result.length;i++){                        
+                                    var r = result[i];
+                                    data.setCell(i, 0, r.PayeeName);
+                                    data.setCell(i, 1, r.PayeeCostY1); 
+                                    data.setCell(i, 2, r.PayeeCostY2); 
+                                    data.setCell(i, 3, r.PayeeCostY3); 
+                                    if('{!Implementation_Period__c.Length_Years__c}' == '4')
+                                    data.setCell(i, 4, r.PayeeCostY4); 
+                                 }
+                                 visualization.draw(data,{
+                                                            pointSize:5,
+                                                            legend : {position: 'top',                        
+                                                                textStyle: {color: 'blue', fontSize: 10}
+                                                            },
+                                                            width: 800, height: 400,                        
+                                                            vAxis:{textStyle:{fontSize: 10},
+                                                                
+                                                                titleTextStyle:{fontSize: 20}
+                                                            },
+                                                            interpolateNulls : true,
+                                                            seriesType: "bars",
+                                                            bar: {groupWidth: 25},                                                                               
+                                                            hAxis:{textStyle:{fontSize: 10},
+                                                                titleTextStyle:{fontSize: 20},                      
+                                                                showTextEvery:1,                           
+                                                                slantedText:true,                        
+                                                                slantedTextAngle:70                        
+                                                                
+                                                           }
+                                                         }
+                                                    );                
+                              },{escape:true});
+                    } 
+                </script>
+            </td>-->
+        </tr>
+        
+
+
+       
+       
+                   </table>
+     
+                        </td>
+     </tr>
+     </table>  
+        </div>
+        </td>
+        </tr>
+        </table>
+                              
+                  
+       </div>        
+       
+       
+       <!--TABLE OF PAGE STATUSES --Removed current table from page until logical workflow is built into feature. Remove "Commented comment" after clarity of requirement-->
+     <!--   <apex:outputpanel id="swection" rendered="{!if(CONTAINS($Profile.Name,'PR'),false,true)}">
+        <table width="100%" cellpadding = "2px">
+       
+       <!-- <apex:outputpanel id="swection" rendered="{!if(CONTAINS($Profile.Name,'PR'),false,true)}">--Commented comment>
+        <tr>
+            <td style="vertical-align:top; padding-left: 350px;">
+                <table style="width:65%" class="table table-striped">
+                        <tr>
+                            <th>
+                                {!$label.Page}
+                            </th>
+                            <th>
+                                {!$label.Status}
+                            </th>
+                            <th>
+                                {!$label.Action}
+                            </th>
+                            <th>
+                                Dialog
+                            </th>
+                        </tr>
+                        <apex:variable value="{!0}" var="Count"/>
+                    <apex:repeat value="{!lstPages}" id="rptpages" var="P">
+                        <tr>  
+                            <td>
+                                {!P.Name}
+                            </td>
+                            <td style="color:{!CASE(P.Status__c,'Approved','#339900','Draft','black','#FFA500')}">
+                                <apex:outputfield value="{!P.Status__c}"/>
+                            </td>
+                            <td><!-- onclick="return OpenConfirmPopup('{!$Component.tstpopup}','{!Count}');" --Commented comment>
+                                <apex:commandLink styleClass="TGFbtn TGFbtn-mini TGFbtn-success" onclick="" rendered="{!if(P.Status__c=='Draft',true,false)}">
+                                <strong>Submit for review</strong>
+                                </apex:commandLink>
+                                <apex:outputPanel id="tstpopup" style="display:none;">
+                                     <apex:outputPanel id="popupBackground" styleClass="popupBackground"/>
+                                    <apex:outputPanel id="custPopup" styleClass="custPopup">
+                                        <table width="70%" height="50%" cellspacing="0" cellpadding="0" border="0" >
+                                            <tr>
+                                                <td colspan="3" class="deletePopup">
+                                                    <apex:outputtext style="color:#6590c4; font-size: 13.9pt;font-weight: bold;" value="{!$Label.Are_you_sure}"/>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td colspan="3" class="deletePopup">
+                                                    <apex:outputtext style="color:#6590c4; font-size: 13.9pt;font-weight: bold;" value="You want to submit this page for review."/>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td width="47%" class="deletePopup">
+                                                    
+                                                    <apex:commandButton styleClass="popupButtonYes" value="{!$Label.Yes}" action="{!SubmitToReview}" reRender="frm">
+                                                        <apex:param value="{!Count}" name="ReviewIndex"/>
+                                                    </apex:commandButton>
+                                                </td>
+                                                <td width="6%" class="deletePopup"></td>
+                                                <td width="47%" align="left" class="deletePopupCancel">
+                                                    <apex:commandButton styleClass="popupButtonCancel" value="{!$Label.No}" onclick="return CloseConfirmPopup('{!$Component.tstpopup}');"/>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </apex:outputPanel>
+                                </apex:outputPanel>
+                            </td>
+                            <td>
+                                <apex:commandLink styleClass="TGFbtn TGFbtn-mini TGFbtn-warning"  onclick="return OpenConfirmPopup('{!$Component.tstpopupdialog}','{!Count}');" rendered="{!if(CONTAINS($Profile.Name,$Label.PR_Read_Write_Edit)||CONTAINS($Profile.Name,$Label.PR_Admin)||CONTAINS($Profile.Name,'Country Team')||CONTAINS($Profile.Name,$Label.FPM)||CONTAINS($Profile.Name,'PSM Officer')||CONTAINS($Profile.Name,$Label.System_Admin), true, false)}">
+                                     
+                                     <strong>{!$Label.Dialog}</strong>
+                                </apex:commandLink>
+                                <apex:outputPanel id="tstpopupdialog" style="display:none;">
+                                    <apex:outputPanel id="popupBackground1" styleClass="popupBackgroundDialog"/>
+                                    <apex:outputPanel id="custPopup1" styleClass="custPopupDialog">
+                                        <h3>Dialog - {!P.Name}</h3>
+                                        <table width="90%">
+                                                    <tr>
+                                                        <td width="20%">
+                                                            <b>PR Comments:</b><br/>
+                                                            <apex:outputtext value="Last update : " rendered="{!if(isblank(P.Latest_PR_Comment__c)==false,true,false)}"/><br/>
+                                                            <apex:outputfield value="{!P.Latest_PR_Comment__c}"/>
+                                                        </td>
+                                                        <td>
+                                                            <apex:inputField style="height: 50px;resize: none;width: 90%;" value="{!P.PR_Comments__c}" rendered="{!if($Profile.Name=='{!$label.PR_Admin}',true,if($Profile.Name=='{!$label.PR_Read_Write_Edit}',true,if($Profile.Name=='System Administrator',true, false)))}" />
+                                                            <apex:outputField style="height: 50px;resize: none;width: 90%;" value="{!P.PR_Comments__c}" rendered="{!if($Profile.Name=='{!$label.PR_Admin}',false,if($Profile.Name=='{!$label.PR_Read_Write_Edit}',false,if($Profile.Name=='System Administrator',false, true)))}"/>
+                                                            
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td width="20%">
+                                                            <b>{!$Label.LFA_Comments}: </b><br/>
+                                                            <apex:outputtext value="Last update : " rendered="{!if(isblank(P.Latest_LFA_Comment__c)==false,true,false)}"/><br/>
+                                                            <apex:outputfield value="{!P.Latest_LFA_Comment__c}"/>
+                                                        </td>
+                                                        <td>
+                                                            <apex:inputField style="height: 50px;resize: none;width: 90%;" value="{!P.LFA_Comments__c}" rendered="{!if(CONTAINS($Profile.Name,$Label.LFA)||CONTAINS($Profile.Name,$Label.System_Admin),true,false)}"/>
+                                                            <apex:outputField style="height: 50px;resize: none;width: 90%;" value="{!P.LFA_Comments__c}" rendered="{!if(CONTAINS($Profile.Name,$Label.LFA)||CONTAINS($Profile.Name,$Label.System_Admin),false,true)}"/>
+                                                            
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td width="20%">
+                                                            <b>{!$Label.GF_Comments}: </b><br/>
+                                                            <apex:outputtext value="Last update : " rendered="{!if(isblank(P.Latest_LFA_Comment__c)==false,true,false)}"/><br/>
+                                                            <apex:outputfield value="{!P.Latest_LFA_Comment__c}"/> 
+                                                        </td>
+                                                        <td>
+                                                            <apex:inputField style="height: 50px;resize: none;width: 90%;" value="{!P.CT_Comments__c}" rendered="{!if(CONTAINS($Profile.Name,'Country Team')||CONTAINS($Profile.Name,$Label.FPM)||CONTAINS($Profile.Name,'PSM Officer')||CONTAINS($Profile.Name, 'Technical Hub')||CONTAINS($Profile.Name,'Management')||CONTAINS($Profile.Name,'Access to Funding')||CONTAINS($Profile.Name,'Finance Officer')||CONTAINS($Profile.Name,'PSM Officer')||CONTAINS($Profile.Name,$Label.System_Admin),true,false)}"/>
+                                                            <apex:outputField style="height: 50px;resize: none;width: 90%;" value="{!P.CT_Comments__c}" rendered="{!if(CONTAINS($Profile.Name,'Country Team')||CONTAINS($Profile.Name,$Label.FPM)||CONTAINS($Profile.Name,'PSM Officer')||CONTAINS($Profile.Name, 'Technical Hub')||CONTAINS($Profile.Name,'Management')||CONTAINS($Profile.Name,'Access to Funding')||CONTAINS($Profile.Name,'Finance Officer')||CONTAINS($Profile.Name,'PSM Officer')||CONTAINS($Profile.Name,$Label.System_Admin),false,true)}"/>
+                                                                                                                        
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="dataCell TDstyle" colspan="2" style="text-align:center;">
+                                                            <apex:commandLink styleClass="TGFbtn TGFbtn-mini TGFbtn-success" style="width:37px;align:right;" action="{!SavePage}" status="Processing" rerender="frm">
+                                                                <apex:param value="{!Count-1}" name="SavePageIndex"/>
+                                                                <strong>{!$Label.Save}</strong>&nbsp;
+                                                            </apex:commandLink>
+                                                            <apex:commandLink styleClass="TGFbtn TGFbtn-mini TGFbtn-danger" style="align:left;" action="{!CancelPage}" status="Processing" rerender="frm"> 
+                                                                <apex:param value="{!Count}" name="CancelPageIndex"/>
+                                                                <strong>{!$Label.Cancel}</strong>
+                                                            </apex:commandLink>
+                                                        </td>
+                                                    </tr>
+                                                    
+                                                     <!-- <tr>
+                                                        <td class="resourcetTable" colspan="2">
+                                                            <div id="boxscroll" class="chatterFeedPanel">
+                                                                <apex:iframe id="ifResourceChatter" height="225px" scrolling="true" src="{!if($Profile.Name=='PR Standard Portal User','/GM','')}/apex/ServiceChatter?ServiceId={!P.Id}" />
+                                                            </div>
+                                                        </td>
+                                                    </tr>--Commented comment>
+                                                </table>
+                                    </apex:outputPanel>
+                                </apex:outputPanel>
+                             </td>
+                        </tr>
+                        <apex:variable value="{!Count+1}" var="Count"/>
+                     </apex:repeat>
+                        <tr>
+                       
+                            <th></th>
+                            <th align="right" >
+                               <apex:outputText value="{!$Label.Final_Submission}" rendered="{!if(CONTAINS($Profile.Name,'Management')||CONTAINS($Profile.Name,'Access to Funding')||CONTAINS($Profile.Name,'Country Team')||CONTAINS($Profile.Name,$Label.FPM)||CONTAINS($Profile.Name,'PSM Officer')||CONTAINS($Profile.Name,$Label.System_Admin),true,false)}"/> 
+                            </th>
+                            <th>
+                                <!-- TCS 25/08/2014 Replaced rendering condition from if(CONTAINS($Profile.Name,'Management')||CONTAINS($Profile.Name,'Access to Funding')||CONTAINS($Profile.Name,'Country Team')||CONTAINS($Profile.Name,$Label.FPM)||CONTAINS($Profile.Name,'PSM Officer')||CONTAINS($Profile.Name,$Label.System_Admin) --Commented comment>
+                                <apex:commandLink styleClass="TGFbtn TGFbtn-mini TGFbtn-warning" rendered="{!if(blnDraftStatusExist && blnSubmitGrant ,true,false)}" onclick="return OpenConfirmPopup('{!$Component.tstpopup1}');" >
+                                    <i class="icon-download icon-white">
+                                     </i> <strong>{!$Label.Submit_Grant}</strong>
+                                </apex:commandLink>
+                                </th>
+                             
+                                <th>
+                                <apex:outputPanel id="tstpopup1" style="display:none;">
+                                    <apex:outputPanel id="popupBackground1" styleClass="popupBackground"/>
+                                    <apex:outputPanel id="custPopup1" styleClass="custPopup">
+                                        <table style="width:50% !important;padding:0px !important;" cellspacing="0" cellpadding="0" border="0" >
+                                            <tr>
+                                                <td colspan="2" class="deletePopup">
+                                                    <apex:outputtext style="color:#6590c4; font-size: 13.9pt;font-weight: bold;" value="{!$Label.Are_you_sure}"/>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td colspan="2" class="deletePopup">
+                                                    <apex:outputtext style="color:#6590c4; font-size: 13.9pt;font-weight: bold;" value="You want to submit your grant for review."/>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td class="deletePopup">
+                                                    <apex:commandButton styleClass="popupButtonYes" value="{!$Label.Yes}" action="{!SubmitToGrant}" reRender="frm">
+                                                        <apex:param value="{!Count}" name="ReviewIndex"/>
+                                                    </apex:commandButton>
+                                                </td>
+                                               
+                                                <td align="left" class="deletePopupCancel">
+                                                    <apex:commandButton styleClass="popupButtonCancel" value="{!$Label.No}" onclick="return CloseConfirmPopup('{!$Component.tstpopup1}');"/>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                         
+                                    </apex:outputPanel>
+                                </apex:outputPanel>
+                            </th>
+                        </tr>
+                     </table>
+                      
+                     </td></tr>
+                     
+                     </table>
+                     </apex:outputPanel>-->
+                     </div>
+                     
+                  
+   
+     
+     <script>
+     
+     function SaveGrantInfo(panelId){
+           var cke_editor_instance_rationale = $("textarea[id*='rationale']").attr("id");
+           var cke_editor_instance_strategies = $("textarea[id*='strategies']").attr("id");
+           var cke_editor_instance_beneficiaries = $("textarea[id*='beneficiaries']").attr("id");
+        
+        if(CKEDITOR.instances[cke_editor_instance_rationale].getData().length >32768)
+        
+        {
+        alert('{!$Label.Rationale_Length_Alert}');
+        return false;
+        }
+        else if(CKEDITOR.instances[cke_editor_instance_strategies].getData().length > 32768)
+        {
+        alert('{!$Label.Goals_Length_Alert}');
+        return false;
+        }
+        else if(CKEDITOR.instances[cke_editor_instance_beneficiaries].getData().length > 32768)
+        {
+        alert('{!$Label.Targets_Length_Alert}' );
+        return false;
+        }
+        else
+       {
+            GrantInfo();
+            CloseConfirmPopup(panelId);            
+            return true;      
+       }
+           
+        }
+       
+        
+        function CancelGrantInfo(panelId){
+            CancelPopup();
+            CloseConfirmPopup(panelId);
+            
+            
+        }
+        
+        function closePanel(){
+            document.getElementById('Infopanel').style.display = 'none';
+        }
+        function switchMenu(obj,obj1,obj2,hdn,val) 
+        {   
+            var AllLI = document.getElementsByTagName('li');
+            for(var i=0;i<AllLI.length;i++){
+                if(AllLI[i].id == obj){
+                    if(AllLI[i].style.display != 'none'){
+                        AllLI[i].style.display = 'none';
+                    }else{
+                        AllLI[i].style.display = '';
+                    }
+                }
+            }
+            document.getElementById(hdn).value=val; 
+            
+            var e2 = document.getElementById(obj1);                                       
+            if ( e2.style.display != 'none' ) {
+                e2.style.display = 'none';
+            }
+            else {
+                e2.style.display = '';
+            }
+            var e3 = document.getElementById(obj2);                                       
+            if ( e2.style.display != 'none' ) {
+                e3.style.display = 'none';
+            }
+            else {
+                e3.style.display = '';
+            }
+        }
+        function onchangeView(viewValue){
+            if(viewValue.value == '{!$Label.View_Cost_Module}'){
+                document.getElementById('moduleTable').style.display = '';
+                document.getElementById('CostGrouptable').style.display = 'none';
+                document.getElementById('Implementertable').style.display = 'none';
+                }else if(viewValue.value == '{!$Label.View_Cost_CostGrouping}'){
+                document.getElementById('moduleTable').style.display = 'none';
+                document.getElementById('CostGrouptable').style.display = '';
+                document.getElementById('Implementertable').style.display = 'none';
+                }else if(viewValue.value == '{!$Label.View_Cost_Recipients}'){
+                document.getElementById('moduleTable').style.display = 'none';
+                document.getElementById('CostGrouptable').style.display = 'none';
+                document.getElementById('Implementertable').style.display = '';
+            }
+            
+        }
+        function OpenConfirmPopup(popId,count){
+            document.getElementById(popId).style.display = '';
+            return false;
+        }
+        
+        function CloseConfirmPopup(panelId){
+            document.getElementById(panelId).style.display = 'none';
+            return false;
+        }
+        function CloseGrantPopup(panelId){
+            document.getElementById(panelId).style.display = 'none';
+            return false;
+            canceltextinJS();
+        }
+        function onCompleteConfirm(){
+        
+            var Category = document.getElementById('GMoverview:frm:SelCategory');
+            onchangeView(Category)
+        }
+        
+     </script>  
+     <style>
+        .ProcessingBackground
+        {
+            background-color: black;
+            opacity: 0.50;
+            filter: alpha(opacity = 50);
+            width: 100%;
+            height: 100%;
+            position: fixed;
+            z-index: 9999;
+            top:0;
+            left:0;
+        }
+        .Processing
+        {
+            z-index: 9999; 
+            left: 50%;
+            top: 50%;
+            text-align: center;
+            position: fixed;
+        }        
+        </style>
+        <div id="divProcessing" style="display:none;">
+            <div class="ProcessingBackground"></div>
+            <div class="Processing">
+                <apex:image alt="Processing" url="{!$Resource.LoadingCircle}" />
+            </div>
+        </div>  
+        <apex:actionStatus id="Processing" onstart="document.getElementById('divProcessing').style.display = '';" onstop="document.getElementById('divProcessing').style.display = 'none';">                            
+        </apex:actionStatus>      
+    </apex:form>
+</apex:page>

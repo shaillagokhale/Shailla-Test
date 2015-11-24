@@ -1,0 +1,23 @@
+<apex:page showHeader="false" sideBar="false" standardController="DocumentUpload__c" extensions="downloadTemplate">
+    <apex:form >
+        <apex:pageBlock >
+        <apex:pageBlockSection >
+            <apex:selectlist value="{!SelectedTemplate}" size="1">            
+                <apex:selectoption itemvalue="{!if(CONTAINS(strUserLanguage,'US'),$Label.Detailed_budget_Template_english,if(CONTAINS(strUserLanguage,'fr'),$Label.Detailed_budget_Template_french,if(CONTAINS(strUserLanguage,'ru'),$Label.Detailed_budget_Template_russian,if(CONTAINS(strUserLanguage,'es'),$Label.Detailed_budget_Template_spanish,$Label.Detailed_budget_Template_english))))}" itemLabel="Detailed Budget"/>
+                <apex:selectoption itemvalue="{!if(CONTAINS(strUserLanguage,'US'),$Label.Performance_framework_Template_english,if(CONTAINS(strUserLanguage,'fr'),$Label.Performance_framework_Template_french,if(CONTAINS(strUserLanguage,'ru'),$Label.Performance_framework_Template_russian,if(CONTAINS(strUserLanguage,'es'),$Label.Performance_framework_Template_spanish,$Label.Performance_framework_Template_english))))}" itemLabel="Performance Framework"/>           
+                <apex:selectoption itemvalue="{!if(CONTAINS(strUserLanguage,'US'),$Label.PSM_plan_Template_english,if(CONTAINS(strUserLanguage,'fr'),$Label.PSM_plan_Template_french,if(CONTAINS(strUserLanguage,'ru'),$Label.PSM_plan_Template_russian,if(CONTAINS(strUserLanguage,'es'),$Label.PSM_plan_Template_spanish,$Label.PSM_plan_Template_english))))}" itemLabel="List of Health Products, Quantities and Costs"/>                                    
+            </apex:selectlist>
+            <br/>
+            <apex:commandlink styleClass="btnStyle TGFbtn-mini buttonStyle3" action="{!downloadTemplate}" target="_blank" oncomplete="closeWindow();">
+                <i class="icon-download icon-white"/>
+                <b>{!$Label.Download_Template}</b>
+            </apex:commandlink> 
+        </apex:pageBlockSection>
+        </apex:pageBlock>        
+    </apex:form>
+    <script>
+         function closeWindow() {
+             window.close();             
+         }       
+    </script>
+</apex:page>
