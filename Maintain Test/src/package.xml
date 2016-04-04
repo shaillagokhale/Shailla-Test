@@ -8,6 +8,7 @@
         <members>BatchUpdatePETResponseStatus</members>
         <members>BatchUpdateResourceStatus</members>
         <members>TestClass</members>
+        <members>TestClass2</members>
         <members>attachFileController</members>
         <members>autoCompleteController</members>
         <name>ApexClass</name>
